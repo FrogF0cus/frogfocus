@@ -355,9 +355,9 @@
           <h3>🖥 Live Preview</h3>
           
           <div class="preview-tabs">
-            <button class="preview-tab active" onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('_hub.html', this)">_hub.html</button>
+            <button class="preview-tab active" onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('_hub.html', this)">_hub.html</button><button class="preview-tab " onclick="switchPreview('index.html', this)">index.html</button>
           </div>
-          <iframe id="preview-iframe" class="preview-frame" src="index.html"></iframe>
+          <iframe id="preview-iframe" class="preview-frame" src="_portal.html"></iframe>
         </div>
         
 
@@ -372,7 +372,7 @@
               <div class="stat-label">Pages</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">0</div>
+              <div class="stat-value">5</div>
               <div class="stat-label">Images</div>
             </div>
             <div class="stat-card">
@@ -388,22 +388,22 @@
         <h3>📄 Pages</h3>
         <div class="file-grid">
           
-            <a href="index.html" class="file-card" target="_blank">
-              <span class="file-icon">📄</span>
-              <span class="file-name">index.html</span>
-              <span class="file-meta">59.2 KB</span>
-            </a>
-          
             <a href="_portal.html" class="file-card" target="_blank">
               <span class="file-icon">📄</span>
               <span class="file-name">_portal.html</span>
-              <span class="file-meta">12.0 KB</span>
+              <span class="file-meta">16.2 KB</span>
             </a>
           
             <a href="_hub.html" class="file-card" target="_blank">
               <span class="file-icon">📄</span>
               <span class="file-name">_hub.html</span>
-              <span class="file-meta">14.2 KB</span>
+              <span class="file-meta">15.8 KB</span>
+            </a>
+          
+            <a href="index.html" class="file-card" target="_blank">
+              <span class="file-icon">📄</span>
+              <span class="file-name">index.html</span>
+              <span class="file-meta">59.2 KB</span>
             </a>
           
         </div>
@@ -419,7 +419,7 @@
             <a href="_brief.md" class="file-card" target="_blank">
               <span class="file-icon">📝</span>
               <span class="file-name">_brief.md</span>
-              <span class="file-meta">5.0 KB</span>
+              <span class="file-meta">5.5 KB</span>
             </a>
           
         </div>
@@ -427,6 +427,44 @@
       </div>
     
         
+      <div class="file-section">
+        <h3>📁 Other Files</h3>
+        <div class="file-grid">
+          
+            <a href="uploads/pasted-image-1786663123428.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">uploads/pasted-image-1786663123428.png</span>
+              <span class="file-meta">111.0 KB</span>
+            </a>
+          
+            <a href="images/frog-longbreak.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">images/frog-longbreak.png</span>
+              <span class="file-meta">133.4 KB</span>
+            </a>
+          
+            <a href="images/frog-break.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">images/frog-break.png</span>
+              <span class="file-meta">117.7 KB</span>
+            </a>
+          
+            <a href="images/frog-hero.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">images/frog-hero.png</span>
+              <span class="file-meta">120.9 KB</span>
+            </a>
+          
+            <a href="images/frog-focus.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">images/frog-focus.png</span>
+              <span class="file-meta">140.1 KB</span>
+            </a>
+          
+        </div>
+        
+      </div>
+    
 
         
           <div class="section" id="metadata">
@@ -435,17 +473,27 @@
               
                 <div class="metadata-item">
                   <div class="metadata-key">memory.distill.watermark</div>
-                  <div class="metadata-value">2026-08-13T22:50:45.407Z</div>
+                  <div class="metadata-value">2026-08-13T23:17:44.913Z</div>
                 </div>
               
                 <div class="metadata-item">
                   <div class="metadata-key">recommendations v1</div>
-                  <div class="metadata-value">[{&quot;title&quot;:&quot;Ask Zara to Ship Frog PNGs to images/&quot;,&quot;desc&quot;:&quot;Koba needs the real mascot assets to replace the SVG fallback in the build.&quot;,&quot;action&quot;:&quot;Ask Zara&quot;},{&quot;title&quot;:&quot;Verify Background Audio Fix Is in Queue&quot;,&quot;desc&quot;:&quot;KR&#039;s tab-switch audio bug must be tracked so the next round actually fixes it.&quot;,&quot;action&quot;:&quot;Check workload&quot;},{&quot;title&quot;:&quot;Test the Built Timer and Frog States&quot;,&quot;desc&quot;:&quot;Confirm the 25/5/15 loop and 4-state mascot work before adding more features.&quot;,&quot;action&quot;:&quot;Review page&quot;}]</div>
+                  <div class="metadata-value">[{&quot;title&quot;:&quot;Verify All Four Frog States Render&quot;,&quot;desc&quot;:&quot;Confirm the four new frog PNGs appear correctly in focus, break, and long break modes on the live URL.&quot;,&quot;action&quot;:&quot;Check live URL&quot;},{&quot;title&quot;:&quot;Test Timer Toggle with Settings Open&quot;,&quot;desc&quot;:&quot;Ensure Space no longer starts/stops the timer while the settings dialog is open, per the developer&#039;s fix.&quot;,&quot;action&quot;:&quot;Run QA pass&quot;},{&quot;title&quot;:&quot;Share Frog Focus with Early Users&quot;,&quot;desc&quot;:&quot;Get the shareable URL into a few beta testers&#039; hands to catch UX and image issues before wider launch.&quot;,&quot;action&quot;:&quot;Post to #beta&quot;}]</div>
                 </div>
               
                 <div class="metadata-item">
                   <div class="metadata-key">recommendations v1 msg count</div>
-                  <div class="metadata-value">16</div>
+                  <div class="metadata-value">30</div>
+                </div>
+              
+                <div class="metadata-item">
+                  <div class="metadata-key">recommendations v1 fail ts</div>
+                  <div class="metadata-value">1786662085627</div>
+                </div>
+              
+                <div class="metadata-item">
+                  <div class="metadata-key">media.imageBatchCheckpoint.v1</div>
+                  <div class="metadata-value">{&quot;version&quot;:1,&quot;pending&quot;:[{&quot;outputPath&quot;:&quot;images/frog-longbreak.png&quot;,&quot;prompt&quot;:&quot;Same exact flat-vector frog mascot as the reference, identical anatomy and palette (sage green body, cream belly, clay accents, golden-rimmed round glasses, warm yellow eyes, thin charcoal linework). Change only the pose and mood: the frog celebrating with both long arms raised in a small quiet victory, joyful closed-happy smile, subtle warm gold and sage sparkle dots floating around it. Long-break energy, still understated and modern, plain off-white background, same minimalist children&#039;s-book flat style.&quot;,&quot;aspectRatio&quot;:&quot;1:1&quot;,&quot;referenceImage&quot;:&quot;images/frog-focus.png&quot;,&quot;attempts&quot;:0,&quot;lastError&quot;:&quot;generate_image skipped — this turn already produced 2 edits of images/frog-focus.png. Do not retry this reference under another filename. If dense baked-in text is still wrong, rewrite the entire text block into shorter copy with the same meaning and make one fresh image without referenceImage; otherwise deliver the latest clean edit or explain what remains.&quot;,&quot;createdAt&quot;:&quot;2026-08-13T23:15:13.142Z&quot;,&quot;updatedAt&quot;:&quot;2026-08-13T23:15:49.271Z&quot;}],&quot;updatedAt&quot;:&quot;2026-08-13T23:17:29.592Z&quot;}</div>
                 </div>
               
             </div>
@@ -457,7 +505,7 @@
         <div class="sidebar-panel">
           <h3>📊 Quick Stats</h3>
           <div class="quick-stat-grid">
-            <div class="qs-card"><div class="qs-val">4</div><div class="qs-label">Files</div></div>
+            <div class="qs-card"><div class="qs-val">9</div><div class="qs-label">Files</div></div>
             <div class="qs-card"><div class="qs-val">3</div><div class="qs-label">Pages</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Code</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Decisions</div></div>
@@ -472,26 +520,56 @@
             
               <li>
                 <span>📄</span>
-                <a href="index.html" target="_blank">index.html</a>
-                <span class="file-size">59.2 KB</span>
-              </li>
-            
-              <li>
-                <span>📄</span>
                 <a href="_portal.html" target="_blank">_portal.html</a>
-                <span class="file-size">12.0 KB</span>
+                <span class="file-size">16.2 KB</span>
               </li>
             
               <li>
-                <span>📄</span>
-                <a href="_hub.html" target="_blank">_hub.html</a>
-                <span class="file-size">14.2 KB</span>
+                <span>🖼️</span>
+                <a href="uploads/pasted-image-1786663123428.png" target="_blank">uploads/pasted-image-1786663123428.png</a>
+                <span class="file-size">111.0 KB</span>
               </li>
             
               <li>
                 <span>📝</span>
                 <a href="_brief.md" target="_blank">_brief.md</a>
-                <span class="file-size">5.0 KB</span>
+                <span class="file-size">5.5 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="images/frog-longbreak.png" target="_blank">images/frog-longbreak.png</a>
+                <span class="file-size">133.4 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="images/frog-break.png" target="_blank">images/frog-break.png</a>
+                <span class="file-size">117.7 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="images/frog-hero.png" target="_blank">images/frog-hero.png</a>
+                <span class="file-size">120.9 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="images/frog-focus.png" target="_blank">images/frog-focus.png</a>
+                <span class="file-size">140.1 KB</span>
+              </li>
+            
+              <li>
+                <span>📄</span>
+                <a href="_hub.html" target="_blank">_hub.html</a>
+                <span class="file-size">15.8 KB</span>
+              </li>
+            
+              <li>
+                <span>📄</span>
+                <a href="index.html" target="_blank">index.html</a>
+                <span class="file-size">59.2 KB</span>
               </li>
             
             

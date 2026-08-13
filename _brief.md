@@ -2,64 +2,67 @@
 
 ## Vision & Goals
 - Build an **original, polished single-page Pomodoro timer** — inspired by pomodorokitty.com, not a clone.
-- **Frog mascot** (based on the frog on KR's shirt) as the companion; **Pomodoro = the technique** (25/5/15), not the fruit.
-- Audience: focus-seekers who find productivity apps sterile and guilt-inducing; the timer should feel like a **warm, cozy, shareable companion** that becomes a daily ritual.
-- The frog **speaks** — audio/voice cues are core; audible even when the tab is in the background (queued for next round).
+- **Frog mascot** (based on KR's shirt) as a warm companion; **Pomodoro = the technique** (25/5/15), not the fruit.
+- Audience: focus-seekers who find productivity apps sterile; the timer should feel like a **cozy, shareable daily ritual**.
+- The frog **speaks** — audio/voice cues are core, audible even when the tab is in the background.
 - Deliverable: a clean, deployable single-page app with a shareable URL, four consistent frog states, and QA-verified timer behavior.
+- **New goal:** modernize the small frog face used *inside the timer UI* (face-only redesign), keeping it recognizable as the same character.
 
 ## Current Status
-- All four frog PNGs exist on disk, but the set is **mid-revision**. KR rejected the first "sleek modern" redesign pass, then chose `frog-focus.png` as the canonical character and asked for another pass on the other three.
-- **Hero and break are done** — regenerated from `frog-focus.png` as reference and verified as clean matches to canon.
-- **Longbreak is the hold.** Its render was blocked twice by the per-reference edit cap (2 edits per turn). Two pending checkpoint items exist — one correct (`images/frog-longbreak.png`) and one typo'd duplicate (`images/images/frog-longbreak.png`). Disk likely still holds the older, non-matching version.
-- CEO paused the pass and handed control back to KR ("Stopped — let me know what you want next") — **the project is awaiting KR's direction**.
-- Developer fix already landed in code: **Space no longer starts/stops the timer while the settings dialog is open** — unverified on the live URL.
-- No shareable link published yet; early-user sharing is queued.
+- **Four-state PNG set is consistent and complete** — hero, focus, break, and longbreak all match canon. Longbreak finally rendered (previously blocked by the 2-edits-per-reference cap), was moved up from `images/images/` to `images/frog-longbreak.png`, and the stray `images/images/` clutter is cleared.
+- KR signaled another pass: *"not yet, i have edits"* → first edit request: **"make the frog in the timer a little more modern too please. you can keep it just a face though. ask me clarifying questions."**
+- CEO inspected the current timer frog (cute bulbous face, round head, big playful eyes, soft blush, cream muzzle) and asked clarifying questions — **Q1: keep the rounded head, or go sharper/more geometric?** — awaiting KR's answers.
+- Space-key/settings-dialog fix landed in code but is still **unverified on the live URL**.
+- No shareable link published yet; early-user beta share is queued.
 
 ## Files & Structure
-- **App shell**: `index.html` (59KB) — "Frog Focus — a cozy Pomodoro companion"; contains the timer, settings dialog, keyboard handling, and audio hooks.
-- **Frog mascot assets** (`images/`, 4 files):
-  - `images/frog-hero.png` — standing, gentle wave, welcoming (✅ matches canon)
-  - `images/frog-focus.png` — desk, quiet studied pose (**canonical reference** for all edits)
-  - `images/frog-break.png` — break state (✅ matches canon)
-  - `images/frog-longbreak.png` — long-break state (⚠️ pending regenerate; may be stale)
-- **Pending render checkpoint**: outputs `images/frog-longbreak.png` and a stray duplicate `images/images/frog-longbreak.png` (typo path — prune).
+- **App shell**: `index.html` (59KB) — "Frog Focus — a cozy Pomodoro companion"; contains timer, settings dialog, keyboard handling, audio hooks, and the in-UI timer frog face (next edit target).
+- **Frog mascot PNGs** (`images/`, 4 files — all consistent with canon):
+  - `images/frog-hero.png` — standing, gentle wave
+  - `images/frog-focus.png` — desk, quiet studied pose (**canonical reference**)
+  - `images/frog-break.png` — relaxed break pose
+  - `images/frog-longbreak.png` — quiet victory, arms raised, gold/sage sparkles (final render landed; stale checkpoint entry referencing it may remain — prune/finalize)
+- **Scratch**: `uploads/` (1 file — KR's reference screenshot); `images/images/` desktop duplicate folder removed.
 
 ## Key Decisions Made
 - **`frog-focus.png` is canon** — KR: "i actually like this one."
-- **Character spec** (encoded in prompts): oversized golden-rimmed round glasses, warm yellow eyes, big rounded head on compact body, long simple arms, thin dark charcoal linework, muted sage `#6C7F6A` / cream `#FBF6EC` / gold / clay `#C55E33`, handcrafted editorial flat style, plain off-white background.
-- **State poses**: hero = standing/waving; focus = quiet studied desk pose; break = relaxed; longbreak = small quiet victory, both arms raised, gold/sage sparkle dots.
-- **No text baked into images** — prior baked-in text was problematic; pending longbreak prompt specifies transparent, no text.
-- **Per-reference edit cap is 2 per turn** — longbreak must be generated fresh without `referenceImage` (per checkpoint guidance), since the character is fully documented textually.
+- **Character spec**: oversized golden-rimmed round glasses, warm yellow eyes, big rounded head on compact body, long simple arms, thin charcoal linework, muted sage `#6C7F6A` / cream `#FBF6EC` / gold / clay `#C55E33`, handcrafted editorial flat style, off-white background.
+- **State poses**: hero = standing/waving; focus = quiet studied; break = relaxed; longbreak = small quiet victory + sparkles.
+- **No text baked into images** (prior baked-in text was problematic).
+- **Timer frog is its own asset** — a face-only graphic, to be modernized while staying on-character.
+- Per-reference edit cap is 2 per turn — future renders needing the canon character should generate fresh from the textual spec rather than via `referenceImage`.
 
 ## Pending Decisions
-- **KR's call on the current matched set** (hero/break verified; longbreak pending) — CEO is stopped and waiting for direction.
-- Whether to publish the shareable link immediately after longbreak lands, or run another visual pass first.
-- Final go-ahead on the frog voice/audio layer (queued for next round).
+- **KR's answers to CEO's clarifying questions** on the timer frog: shape (keep rounded vs sharper/geometric — Q1, more questions coming).
+- Whether the modern timer face stays strictly on-character (same palette/glasses) or diverges stylistically.
+- Publish/share timing after the timer-face pass.
+- Final go-ahead on the audio/voice layer (queued).
 
 ## Tasks
-- [x] Full four-frog redesign pass (hero, focus, break, longbreak)
-- [x] Regenerate hero + break to match `frog-focus.png` canon — verified clean
-- [x] Fix Space-key toggle conflicting with settings dialog (done in code)
-- [ ] Render `frog-longbreak.png` to match canon — generate fresh **without** referenceImage or deliver latest clean edit
-- [ ] Prune duplicate pending checkpoint path `images/images/frog-longbreak.png`
-- [ ] Verify all four frog states render correctly on the live URL (focus, break, long break)
-- [ ] QA: confirm Space does not start/stop the timer while settings is open
-- [ ] Publish shareable URL
-- [ ] Share with early beta testers (post to #beta)
-- [ ] (Queued) Frog voice/audio cues, audible with tab in background
+- [x] Four-frog redesign pass (hero, focus, break, longbreak) — set is now consistent
+- [x] Regenerate hero + break to match `frog-focus.png` canon
+- [x] Render `frog-longbreak.png` to match canon (moved from `images/images/` → `images/frog-longbreak.png`)
+- [x] Clear stray `images/images/` clutter
+- [x] Fix Space-key toggle conflicting with settings dialog (in code)
+- [ ] Get KR's answers on timer-frog shape/style direction
+- [ ] Redesign the timer frog face — more modern, face only
+- [ ] Swap the new face into the timer UI in `index.html`
+- [ ] Verify all four frog states render on the live URL
+- [ ] QA: Space does not start/stop the timer while settings is open
+- [ ] Publish shareable URL; post to #beta for early-user feedback
+- [ ] (Queued) Frog voice/audio cues, background-audible
 
 ## Opportunities
-1. **Unblock longbreak via text-only generation** — the canon spec is fully documented; a fresh image without `referenceImage` sidesteps the edit cap and lets the whole set ship in one turn.
-2. **Ship the beta link as soon as longbreak lands** — all three stored recommendations are QA/launch-oriented, signaling the project is near shareable; a quick #beta loop will surface UX and image issues before broader launch.
-3. **Add the audio/voice layer next** — background-audible frog voice is the differentiator that makes the companion feel alive; lock visuals first, then layer in voice reactions per state.
+1. **Modern timer face doubles as app identity** — the in-timer face is the most-seen element; a modernized, on-character version can double as favicon/social-share card, cementing the brand right before the beta link goes out.
+2. **Offer KR 2–3 quick direction options** — "modern" is ambiguous; presenting tight variations (e.g., geometric/flat vs softer rounded) in one pass shortens the loop and avoids another rejected round.
+3. **Ship the beta link as soon as the face lands** — all stored recommendations are QA/launch-focused; a #beta loop will validate the new face, the four-state set, and the Space-key fix before broader launch.
 
 ## Next Steps
-1. Inspect `images/frog-longbreak.png` on disk to confirm it's stale.
-2. Generate the longbreak asset fresh (no `referenceImage`; victory pose, sparkle dots, no text, transparent/off-white) or deliver the latest clean edit.
-3. Remove the typo'd pending path `images/images/frog-longbreak.png`.
-4. Resume with KR → confirm the matched set is approved before publishing.
-5. Run QA checks: four-state render + Space-key/settings fix.
-6. Publish shareable link and post to #beta.
+1. KR answers the CEO's clarifying questions (shape first, then style details).
+2. Generate 2–3 timer-face variants for selection, or one chosen direction.
+3. Swap the chosen face into the timer UI in `index.html`.
+4. QA pass: four-state render + Space-key/settings behavior on the live URL.
+5. Publish shareable link; post to #beta.
 
 ---
-*Last updated: 2026-08-13T23:15:13Z*
+*Last updated: 2026-08-13T23:17:44Z*
