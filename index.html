@@ -888,9 +888,9 @@ function setFrog(){
   if (frogImg.src !== entry.src){
     frogImg.src = entry.src;
     frogImg.alt = entry.alt;
-    frogImg.classList.remove('frog-in');
-    void frogImg.offsetWidth;                 // restart the intro animation
-    frogImg.classList.add('frog-in');
+    frogImg.style.animation = 'none';          // restart the intro animation
+    void frogImg.offsetWidth;
+    frogImg.style.animation = '';
   }
 }
 function celebrateFrog(){
@@ -1190,8 +1190,9 @@ $('#skipBtn').addEventListener('click', skip);
 
 document.addEventListener('keydown', function(e){
   if (e.code === 'Space' && !e.repeat){
+    if (dlg.open) return;
     const t = e.target;
-    if (t.closest('input, textarea, select, button, [role="button"], dialog')) return;
+    if (t.closest('input, textarea, select, button, [role="button"]')) return;
     e.preventDefault();
     toggle();
   }

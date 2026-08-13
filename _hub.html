@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Project | Project Hub</title>
+  <title>Frog Focus | Project Hub</title>
   <style>
     :root {
       --bg-dark: #0a0a0f;
@@ -337,28 +337,103 @@
   <div class="container">
     <header>
       <a href="/workspace/projects/" style="color:var(--text-muted);text-decoration:none;font-size:0.8rem;">← Back to Project Hub</a>
-      <div class="project-icon">📊</div>
-      <h1 class="project-title">New Project</h1>
-      <div class="project-type">general</div>
+      <div class="project-icon">🌐</div>
+      <h1 class="project-title">Frog Focus</h1>
+      <div class="project-type">landing page</div>
       
       <div class="quick-actions">
-        <a href="/workspace/projects/" class="action-btn">← All Projects</a>
+        <a href="index.html" class="action-btn primary" target="_blank">👀 Preview Site</a>
+<a href="#metrics" class="action-btn">📊 View Metrics</a>
+<a href="/workspace/projects/" class="action-btn">← All Projects</a>
       </div>
     </header>
 
     <div class="two-col">
       <div class="main-content">
         
-
+        <div class="live-preview-wrap">
+          <h3>🖥 Live Preview</h3>
+          
+          <div class="preview-tabs">
+            <button class="preview-tab active" onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('_hub.html', this)">_hub.html</button>
+          </div>
+          <iframe id="preview-iframe" class="preview-frame" src="index.html"></iframe>
+        </div>
         
 
         
 
         
+        <div class="section type-specific" id="metrics">
+          <h3>📊 Quick Stats</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">2</div>
+              <div class="stat-label">Pages</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">0</div>
+              <div class="stat-label">Images</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">In Progress</div>
+              <div class="stat-label">Status</div>
+            </div>
+          </div>
+        </div>
+      
+
+        
+      <div class="file-section">
+        <h3>📄 Pages</h3>
+        <div class="file-grid">
+          
+            <a href="index.html" class="file-card" target="_blank">
+              <span class="file-icon">📄</span>
+              <span class="file-name">index.html</span>
+              <span class="file-meta">59.2 KB</span>
+            </a>
+          
+            <a href="_hub.html" class="file-card" target="_blank">
+              <span class="file-icon">📄</span>
+              <span class="file-name">_hub.html</span>
+              <span class="file-meta">11.0 KB</span>
+            </a>
+          
+        </div>
+        
+      </div>
+    
         
         
+      <div class="file-section">
+        <h3>📝 Documentation</h3>
+        <div class="file-grid">
+          
+            <a href="_brief.md" class="file-card" target="_blank">
+              <span class="file-icon">📝</span>
+              <span class="file-name">_brief.md</span>
+              <span class="file-meta">5.0 KB</span>
+            </a>
+          
+        </div>
+        
+      </div>
+    
         
 
+        
+          <div class="section" id="metadata">
+            <h3>📊 Project Info</h3>
+            <div class="metadata-grid">
+              
+                <div class="metadata-item">
+                  <div class="metadata-key">memory.distill.watermark</div>
+                  <div class="metadata-value">2026-08-13T22:50:45.407Z</div>
+                </div>
+              
+            </div>
+          </div>
         
       </div>
 
@@ -366,8 +441,8 @@
         <div class="sidebar-panel">
           <h3>📊 Quick Stats</h3>
           <div class="quick-stat-grid">
-            <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Files</div></div>
-            <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Pages</div></div>
+            <div class="qs-card"><div class="qs-val">3</div><div class="qs-label">Files</div></div>
+            <div class="qs-card"><div class="qs-val">2</div><div class="qs-label">Pages</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Code</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Decisions</div></div>
           </div>
@@ -379,7 +454,25 @@
           <h3>📁 All Files</h3>
           <ul class="all-files-list">
             
-            <li style="color:var(--text-muted);">No files yet</li>
+              <li>
+                <span>📄</span>
+                <a href="index.html" target="_blank">index.html</a>
+                <span class="file-size">59.2 KB</span>
+              </li>
+            
+              <li>
+                <span>📝</span>
+                <a href="_brief.md" target="_blank">_brief.md</a>
+                <span class="file-size">5.0 KB</span>
+              </li>
+            
+              <li>
+                <span>📄</span>
+                <a href="_hub.html" target="_blank">_hub.html</a>
+                <span class="file-size">11.0 KB</span>
+              </li>
+            
+            
           </ul>
         </div>
       </div>
