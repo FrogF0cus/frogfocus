@@ -1152,14 +1152,13 @@ function pillText(){
   return st.running ? 'Focus' : 'Focus';
 }
 function hintText(){
+  // Space-press hints are hidden per KR. The space-bar shortcut still works;
+  // only the on-screen prompt text is gone. Break copy stays so the phase isn't bare.
   if (st.running){
-    return st.phase === 'focus' ? 'Space to pause · you\'ve got this' :
-           st.phase === 'short' ? 'Sip, stretch, breathe' :
-           'You earned the big one';
+    return st.phase === 'short' ? 'Sip, stretch, breathe' :
+           st.phase === 'long' ? 'You earned the big one' : '';
   }
-  if (st.phase === 'short') return 'Press space when you\'re ready';
-  if (st.phase === 'long')  return 'Press space when you\'re ready';
-  return st.remaining >= totalMs() ? 'Press space to begin' : 'Press space to keep going';
+  return '';
 }
 function updateTimeUI(){
   timeEl.textContent = fmt(st.remaining);
