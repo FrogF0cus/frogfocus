@@ -923,9 +923,29 @@ function speakLocal(text){
     window.speechSynthesis.speak(u);
   } catch(e){ /* TTS unavailable */ }
 }
-function say(text){
+/* Recorded frog voice — prefer the user's own mp4 clips, fall back to
+   speech synthesis when a clip is missing or fails to load. */
+const PHRASE_AUDIO = {
+  'focus-start': 'audio/focus-start.mp4',
+  'short-break': 'audio/short-break.mp4',
+  'long-break':  'audio/long-break.mp4',
+  'short-back':  'audio/short-back.mp4',
+  'long-back':   'audio/long-back.mp4'
+};
+function speakPhrase(key, fallbackText){
   if (!voiceOn) return;
-  speakLocal(text);
+  const src = PHRASE_AUDIO[key];
+  if (!src){ speakLocal(fallbackText); return; }
+  let fellBack = false;
+  const doFallback = function(){
+    if (fellBack) return;
+    fellBack = true;
+    speakLocal(fallbackText);
+  };
+  const a = new Audio(src);
+  a.onerror = doFallback;
+  const p = a.play();
+  if (p && typeof p.catch === 'function') p.catch(doFallback);
 }
 
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
@@ -1092,7 +1112,7 @@ function start(){
   const freshStart = (st.remaining >= totalMs());
   st.running = true;
   st.endTime = Date.now() + st.remaining;
-  if (st.phase === 'focus' && freshStart && voiceOn) say('Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.');
+  if (st.phase === 'focus' && freshStart && voiceOn) speakPhrase('focus-start', 'Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.');
   announce(st.phase === 'focus' ? 'Timer started. ' + durations.focus + ' minutes of focus.' : (st.phase === 'short' ? 'Short break started.' : 'Long break started.'));
   updateAll();
   saveTimer();
@@ -1132,10 +1152,10 @@ function completePhase(){
     else { celebrateFrog(); }
     if (soundOn) chimeFocusEnd();
     if (earnedLong){
-      say('Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.');
+      speakPhrase('long-break', 'Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.');
       announce('Round complete! Long break earned.');
     } else {
-      say('Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.');
+      speakPhrase('short-break', 'Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.');
       announce('Focus complete. Time for a short break.');
     }
     if (autoBreak) start();
@@ -1147,7 +1167,11 @@ function completePhase(){
     }
     setPhase('focus');
     if (soundOn) chimeBreakEnd();
-    say(wasLong ? 'Welcome back. Feeling good? Let\'s give the next round a go together.' : 'Welcome back, friend. Ready to dive in for another one?');
+    if (wasLong){
+      speakPhrase('long-back', 'Welcome back. Feeling good? Let\'s give the next round a go together.');
+    } else {
+      speakPhrase('short-back', 'Welcome back, friend. Ready to dive in for another one?');
+    }
     announce(wasLong ? 'Long break over. New round ready.' : 'Break over. Ready to focus?');
   }
   saveTimer();
