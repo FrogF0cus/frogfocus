@@ -296,8 +296,8 @@ html[data-theme="dark"] .cycle-item{color:#FFD98A;background:color-mix(in srgb,v
 
 /* Constellation divider */
 .constellation{
-  display:flex;align-items:center;justify-content:center;gap:26px;
-  margin:20px 0 6px;
+  display:flex;align-items:center;justify-content:center;max-width:720px;
+  margin:22px auto 8px;gap:clamp(34px,7vw,72px);
 }
 .constellation .dot{
   display:block;width:var(--s);height:var(--s);border-radius:50%;
