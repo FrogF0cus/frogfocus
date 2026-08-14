@@ -836,8 +836,8 @@ function say(text){
       voices.find(v => /google uk english male/i.test(v.name)) ||
       voices.find(v => /^en/i.test(v.lang));
     if (pick) u.voice = pick;
-    u.rate = 0.92;
-    u.pitch = 1.0;
+    u.rate = 0.95;      // gentle, unhurried
+    u.pitch = 0.85;     // softer, warmer, more reassuring
     u.volume = 0.95;
     window.speechSynthesis.speak(u);
   } catch(e){ /* TTS unavailable */ }
@@ -978,7 +978,7 @@ function start(){
   const freshStart = (st.remaining >= totalMs());
   st.running = true;
   st.endTime = Date.now() + st.remaining;
-  if (st.phase === 'focus' && freshStart && voiceOn) say('Focus time. You\'ve got this.');
+  if (st.phase === 'focus' && freshStart && voiceOn) say('Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.');
   announce(st.phase === 'focus' ? 'Timer started. ' + durations.focus + ' minutes of focus.' : (st.phase === 'short' ? 'Short break started.' : 'Long break started.'));
   updateAll();
   saveTimer();
@@ -1018,10 +1018,10 @@ function completePhase(){
     else { celebrateFrog(); }
     if (soundOn) chimeFocusEnd();
     if (earnedLong){
-      say('Wonderful! You finished the whole round. Take the long break — you earned it.');
+      say('Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.');
       announce('Round complete! Long break earned.');
     } else {
-      say('Great work. Time for a short break.');
+      say('Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.');
       announce('Focus complete. Time for a short break.');
     }
     if (autoBreak) start();
@@ -1033,7 +1033,7 @@ function completePhase(){
     }
     setPhase('focus');
     if (soundOn) chimeBreakEnd();
-    say(wasLong ? 'And we\'re back. Ready for the next round?' : 'Break\'s over. Ready to focus?');
+    say(wasLong ? 'Welcome back. Feeling good? Let\'s give the next round a go together.' : 'Welcome back, friend. Ready to dive in for another one?');
     announce(wasLong ? 'Long break over. New round ready.' : 'Break over. Ready to focus?');
   }
   saveTimer();
