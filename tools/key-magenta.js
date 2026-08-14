@@ -61,14 +61,14 @@ for (let i = 0; i < data.length; i += 4) {
     R = Math.max(0, Math.min(255, Math.round((r - t * br) * inv)));
     G = Math.max(0, Math.min(255, Math.round((g - t * bgG) * inv)));
     B = Math.max(0, Math.min(255, Math.round((b - t * bb) * inv)));
-  } else if (a === 255 && d < 240) {
-    // despill opaque JPEG-ringing fringe. Magenta/pink contamination lifts R and B
-    // relative to G; the frog's legit palette (sage/cream/clay/gold/charcoal)
-    // always keeps B clearly BELOW G, and green-dominant colors keep R below G.
-    // So: B not clearly below G  AND  R not clearly below G  => contaminated.
-    const bAboveG = (b - g) > -10;
-    const rAboveG = (r - g) > -5;
-    if (bAboveG && rAboveG) {
+  }
+  if (a > 0 && d < 240) {
+    // despill (applies to feather AND opaque pixels): JPEG ringing pixels are not
+    // true blends, so un-mix alone leaves a magenta cast. Magenta/pink lifts R and
+    // B relative to G; the frog's legit palette (sage/cream/clay/gold/charcoal)
+    // always keeps B clearly BELOW G and green-dominant colors keep R below G.
+    // So: B not clearly below G  AND  R clearly above G  => contaminated.
+    if ((b - g) > -10 && (r - g) > 25) {
       const strength = Math.max(0.15, Math.min(1, (b - g + 10) / 50));
       B = Math.round(g - 14 * strength);
       R = Math.round(g + 18 * strength);
