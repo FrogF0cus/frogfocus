@@ -2,60 +2,61 @@
 
 ## Vision & Goals
 - Single-page Pomodoro companion — **"Frog Focus — your intentional productivity companion"**, inspired by pomodorokitty.com, not a clone.
-- Flat-vector frog mascot: sage green body, cream belly, clay accents, golden-rimmed glasses, warm yellow eyes, thin charcoal linework; phase-specific visuals auto-swap. **KR accepted the current frog as-is** — no further mascot iteration.
-- Positioning locked: a **productive tool**; tagline "Slow down. Focus. Get the good stuff done."; the frog is a **friend**.
-- Timer voice: warm, comforting, encouraging — rebuilt to **"talk like a friend"**. KR's stated ship gate: **solve the voice, then ship.**
+- Flat-vector frog mascot — accepted as-is; no further iteration.
+- Positioning locked: a **productive tool**; tagline "Slow down. Focus. Get the good stuff done."; frog is a **friend**.
+- Timer voice: warm and encouraging — **resolved**: picker and ElevenLabs stripped; single baked-in British browser voice (Daniel / Google UK English), no options.
+- Ship gate: **voice solved → ship.** Voice is now implemented; final QA remains before shipping.
 
 ## Current Status
-- **Voice is the remaining blocker.** KR chose **path 2 (fully in-browser)** and asked "what are my options within 2" — answer still pending.
-- Root-cause found: `server.js` locks in **Antoni** (`ErXwobaYiN019PkySvjV`) as the ElevenLabs default, but only if the node backend is reachable at `/api/tts`. When served as a static file, it silently falls back to browser voices — which is why KR hears non-Antoni today.
-- Original "British" voice was never custom-built — it was the browser's default British TTS (robotic). Going back = choosing browser voice defaults, not restoring a created asset.
-- Three break-saying copy swaps **completed** in `index.html`: "Blink slow, little frog" → "Close your eyes, slow count"; "A sip for the pond, pal" → "Refill the cup, then back"; "You earned the big one" → "The grand rest — take it".
-- Frog PNG fix shipped; KR reminded to hard-refresh (Ctrl/Cmd+Shift+R) to bypass cache.
+- **Voice simplification is complete.** Developer finished the four low-risk removals (voice-picker CSS, HTML, dead `populateVoiceSelect`/`checkNeuralTTS` calls) and swapped the big JS block: all ElevenLabs TTS + voice-selection machinery replaced with a baked-in British default. `index.html` dropped 73KB→65KB and saved successfully.
+- **`server.js` stripped.** Since the static page never called it, the backend was also reduced/removed — the page now speaks entirely from front-end code. KR was informed and accepted ("thanks koba. apologies for the duplicate work").
+- **Cadence investigation closed.** Rate (0.95) and pitch (0.85) were never changed by the cleanup — only the voice picker, which had been forcing British. The bake-in now makes that the permanent default.
+- Root cause confirmed: previous default logic preferred **American** voices (David/Mark/Guy → Google US → en-US → en). The original "British" voice KR remembered was simply the browser's free built-in Daniel / Google UK English — no custom voice existed.
+- Three break-saying copy swaps shipped earlier: "Blink slow, little frog" → "Close your eyes, slow count"; "A sip for the pond, pal" → "Refill the cup, then back"; "You earned the big one" → "The grand rest — take it".
+- Frog PNG fix shipped previously; the JPEG-bytes-under-PNG re-encode is still queued.
 
 ## Files & Structure
-- **Core Page**: `index.html` (73KB) — entire single-page app, contains the voice-picker (Voice dropdown + Test voice button), break sayings, timer face, frog visuals.
-- **Backend**: `server.js` (5KB) — ElevenLabs TTS proxy; holds the Antoni voice key server-side at `/api/tts`.
-- **Documentation**: `TTS-SETUP.md` (4KB) — voice setup/architecture notes.
-- **Static Assets**: `images/` (8 files — includes `frog-face.png`, currently JPEG bytes under a .png name), `audio/` (1 file), `uploads/` (10 files).
-- **Dependencies**: `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files).
+- **Core Page**: `index.html` (65KB) — entire single-page app; now fully self-contained for TTS, voice-picker removed, British default baked in.
+- **Backend (legacy, stripped)**: `server.js` (5KB) — previously an ElevenLabs proxy holding Antoni at `/api/tts`; stripped since the static page never used it. Remove or leave dormant pending cleanup decision.
+- **Documentation**: `TTS-SETUP.md` (4KB) — stale; needs rewrite or deletion.
+- **Static Assets**: `images/` (8 files — `frog-face.png` is JPEG bytes under a .png name), `audio/` (1 file), `uploads/` (10 files).
+- **Dependencies (legacy)**: `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files) — only existed to run `server.js`.
 - **Scripts**: `scripts/` (1 file).
 
 ## Key Decisions Made
-- **Voice path**: stick with path 2 (in-browser) for now; options within it still to be enumerated.
-- **Mascot**: accept the current frog ("it's the wrong frog but let's just roll with it").
-- **Backend default**: Antoni (ElevenLabs) remains the server-side default; browser voices are the fallback.
-- **Copy**: three break sayings swapped exactly as specified; all other sayings untouched.
-- **Ship gate**: voice solved → ship.
+- **Voice**: remove picker + ElevenLabs entirely; bake in one British browser default (Daniel / Google UK English), no options — mirrors the original KR remembered.
+- **Backend**: `server.js` stripped mid-session — page is now a true static client.
+- **Mascot**: accept current frog ("it's the wrong frog but let's just roll with it").
+- **Copy**: three break sayings swapped exactly as specified; all others untouched.
+- **Ship gate**: voice solved → ship, pending final live QA.
 
 ## Pending Decisions
-- **Path-2 voice options** — which browser voices to expose/prefer in the picker, and what the default selection order should be (KR's open question).
-- **Backend fate** — keep the ElevenLabs `server.js` dependency or go fully in-browser/static.
-- **KR's Five Page Edits** — dark mode → frog green, "productive tool" positioning, "the what" section, beverage line, recharge copy — queued, not yet dispatched to Koba.
-- **frog-face.png re-encode** — convert JPEG-byte file to a true PNG for transparency/editing safety.
+- **Legacy cleanup**: delete `server.js` + `node_modules` + `package*.json` + `TTS-SETUP.md` to complete the static-site transition, or leave dormant? (Recommend deleting.)
+- **Batch scope**: bundle KR's Five Page Edits into the same release now that voice is implemented, or ship voice first and edits in a second pass?
 
 ## Tasks
 - [x] Swap three break sayings in `index.html`
-- [x] Fix frog PNG asset (wrong frog, accepted by KR)
-- [ ] Answer KR's question: enumerate voice-picker options within path 2
-- [ ] Confirm default voice-selection strategy (restore familiar British feel via browser voice order, e.g., prefer Google UK English / Daniel)
-- [ ] Apply KR's Five Page Edits (frog-green dark mode, "productive tool", "the what", beverage line, recharge copy)
-- [ ] Re-encode `frog-face.png` to a real PNG
-- [ ] Open `index.html` in Chrome and confirm the timer face sits correctly inside the ring
-- [ ] Run a final live cycle to hear the updated break sayings
-- [ ] Ship once voice is confirmed
+- [x] Fix frog PNG asset (accepted by KR)
+- [x] Strip voice-picker CSS, HTML, and dead `populateVoiceSelect`/`checkNeuralTTS` calls from `index.html`
+- [x] Replace the big JS block: ElevenLabs TTS + voice-selection machinery → baked-in British default
+- [x] Strip `server.js` (page now speaks purely from front-end)
+- [ ] Apply KR's Five Page Edits: frog-green dark mode, "productive tool" positioning, "the what" section, beverage line, recharge copy
+- [ ] Re-encode `frog-face.png` to a true PNG
+- [ ] Open `index.html` in Chrome: confirm the timer face sits correctly inside the ring
+- [ ] Run a final live cycle: British voice + updated break sayings
+- [ ] Remove stale `TTS-SETUP.md` + `server.js` + node dependencies (if cleanup approved)
+- [ ] Ship after KR confirms the voice
 
 ## Opportunities
-1. **Curate the path-2 default voice order** to mirror the original British feel (UK English voices first) — returns the voice KR remembers without any backend work, and makes the in-browser path feel intentional rather than a fallback.
-2. **Drop the backend entirely** — if in-browser voices satisfy KR, removing `server.js` + the ElevenLabs dependency makes the project a pure static site (trivial hosting, no API key management, no silent-reachability bugs like the one that confused this session).
-3. **Add cache-busting** — stale-cached PNGs caused real friction this session. Versioned filenames (`?v=` or hashed names) would make future deploys instantly visible to KR without hard-refresh reminders.
+1. **Go fully static (nearly done)** — voice is baked in and `server.js` is stripped. Deleting the leftover node dependencies, `package*.json`, `server.js`, and `TTS-SETUP.md` yields a single self-contained file: trivial hosting, no API keys, no backend-fallback bugs.
+2. **Batch the queued edits into one ship** — KR's Five Page Edits are pre-approved; applying them now while the file is fresh avoids a second review cycle. Voice is already the gate, so one release is realistic.
+3. **Cache-bust assets** — versioned filenames (`?v=` or hashes) prevent the stale-PNG friction that cost a hard-refresh reminder this session.
 
 ## Next Steps
-- Give KR the concrete path-2 voice options (what the picker lists, what Test voice does, what each voice sounds like).
-- Decide the default voice-selection order; implement in `index.html`.
-- Dispatch Koba on the Five Page Edits and the `frog-face.png` re-encode.
-- Run the live timer-face check in Chrome.
-- Ship after KR confirms the voice.
+- Open `index.html` in Chrome: confirm British voice plays and the timer face is centered in the ring.
+- Dispatch the Five Page Edits + `frog-face.png` re-encode.
+- Decide on legacy-file cleanup; if deleting, remove `server.js`, `TTS-SETUP.md`, and node dependencies.
+- Final live cycle (British voice + break sayings), then ship after KR's confirmation.
 
 ---
-*Last updated: 2026-08-14T17:08:53.033Z*
+*Last updated: 2026-08-14T17:23Z*

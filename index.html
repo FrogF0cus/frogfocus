@@ -900,9 +900,9 @@ function pickUkVoice(){
   const gb = en.filter(function(v){ return /^en[-_]gb/i.test(v.lang || ''); });
   const pool = gb.length ? gb : en;
   const named = function(re){ return pool.find(function(v){ return re.test(v.name); }); };
-  return named(/Daniel/i) ||
-         named(/Google UK English Female/i) ||
+  return named(/Google UK English Female/i) ||
          named(/Google UK English Male/i) ||
+         named(/Daniel/i) ||
          (gb.length ? gb[0] : null) ||
          en[0];
 }
@@ -917,7 +917,7 @@ function speakLocal(text){
     const u = new SpeechSynthesisUtterance(text);
     const v = resolveVoice();
     if (v) u.voice = v;
-    u.rate = 0.95;      // gentle, unhurried
+    u.rate = 0.88;      // gentle, unhurried
     u.pitch = 0.85;     // softer, warmer, more reassuring
     u.volume = 0.95;
     window.speechSynthesis.speak(u);
