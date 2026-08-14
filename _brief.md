@@ -11,9 +11,9 @@
 ## Current Status
 - **Four API keys in play — none usable yet:**
   1. `sk_9001…9be` — INVALID (HTTP 400: "API key ID used as API key").
-  2. `66040a9f6b0bb9bd43e8aa0dc9d425fdc7147a98c05eb3a9c6e883e019f3e2fa` — re-tested this cycle, still `missing_permissions`; workspace lacks TTS access.
+  2. `66040a…2fa` — re-tested this cycle, still `missing_permissions`; workspace lacks TTS access.
   3. `sk_14e1…f3efa` — public in chat, untested; rotation still recommended.
-  4. `sk_f99f5ef600004d94dcc09406a7589b662f6507b1d4c5dc46` — NEW this cycle, publicly pasted in chat; developer-tested **INVALID** (HTTP 400: "API key ID used as API key"). Needs rotation.
+  4. `sk_f99f5ef…5dc46` — NEW this cycle, publicly pasted in chat; developer-tested **INVALID** (HTTP 400: "API key ID used as API key"). Needs rotation.
 - **No valid audio exists — confirmed twice.** All synthesis attempts (including the CEO's claimed 46KB/60KB "MP3s") are 244-byte JSON error bodies (`missing_permissions` / `authentication_error`), not MP3s. The "TTS is working now" claim was contradicted by developer file verification; treat only file-verified states as true.
 - **KR's clickable-link ask is unmet.** KR explicitly approved publishing `adam.mp3` and `antoni.mp3` to public, no-login links and kept asking where to access them ("they aren't showing up in the files folder"). Nothing publishable exists until a working key produces real audio.
 - **Voice availability signal:** Adam and Antoni voices are reachable; **Josh hit 402 Payment Required** — that specific voice needs quota/credit the trial doesn't cover.
