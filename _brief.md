@@ -2,69 +2,72 @@
 
 ## Vision & Goals
 - Polished, original single-page Pomodoro timer inspired by pomodorokitty.com — not a clone.
-- Frog mascot (from KR's shirt) is the consistent identity across hero, timer states, in-timer face, and dark mode — modern flat-vector style: sage green body, cream belly, clay accents, golden-rimmed glasses, thin charcoal linework.
-- Positioning: a **productive tool** — "Slow down. Focus. Get the good stuff done." — not just a cozy ritual.
-- Clean, deployable single-page app with a shareable public URL; KR verifies a live preview in-browser before launch.
+- Frog mascot is the consistent identity across hero, timer states, in-timer face, and dark mode — modern flat-vector style: sage green body, cream belly, clay accents, golden-rimmed glasses, thin charcoal linework.
+- Positioning: a **productive tool** — "Slow down. Focus. Get the good stuff done."
+- The frog is also a **friend**: the "Why a frog?" section is restored, and the timer voice now sounds like a warm male human companion, not a robotic default.
+- Clean, deployable single-page app on a shareable public URL; KR verifies live in-browser before final launch.
 
 ## Current Status
-- **All five page edits applied & verified** (developer confirmed line-by-line):
-  1. Hero title → `Slow down.<br>Focus.<br>Get the <em>good stuff</em> done.` (line 475, three-line headline)
-  2. Hero lede → "...and a **frog friend** who's genuinely proud of you." (line 476)
-  3. What section → **"One task or goal at a time"**
-  4. **"Why the frog?" section removed** — verified no `#why` JS references (whole-file div balance checked clean)
-  5. Timer face modernized to match `frog-focus.png`
-- **Batch 1 (prior) applied** — dark mode to warm frog sage green (`#475A44` family), "productive tool" copy, "the what" heading, beverage line, recharge copy.
-- **Timer face bug root-caused & fixed** — the timer referenced `frog-face.png`, which was the **old chubby storybook character** (round, rosy-peach cheeks) while all four state images were the modern frog. `frog-face.png` regenerated from `frog-focus.png` as reference: shoulder-up portrait, sage green `#6C7F6A` head, oversized round golden-rimmed glasses, warm cream-yellow eyes with charcoal pupils/highlights, tiny clay blush, charcoal linework. Designer confirmed pixel-consistent identity with the approved mascot.
-- **Copy verified in-file** by CEO after edits; face consistency confirmed against `frog-focus.png`.
-- **Live preview: publishing now** — KR asked for an in-app preview pane refresh first, then gave a final "yes" to publish publicly; CEO said "Publishing now." Public shareable link is being spun up, pending hand-off to KR for browser review.
-- **`images/frog-longbreak.png` still pending** — previous generation skipped due to image-edit rate limit (2 edits of `frog-focus.png` already used that turn). Checkpoint rule: do NOT retry under another filename; if baked-in text is broken, write shorter copy with the same meaning and generate a fresh image WITHOUT `referenceImage`; otherwise deliver the latest clean edit.
+- **All 5 of KR's page edits are applied & verified.** The final two landed in the last batch:
+  1. **"Why a frog?" / frog-friend section RESTORED** — recovered from git history and reinserted between `#ritual` and `<!-- SHARE -->` (~line 590) with `id="why"`, the waving `frog-hero.png` image, and the original quote *"Pomodoro is the technique. The frog is the friend." — the pond, probably*. Tag balance verified; `.why-*` CSS was already present.
+  2. **Voice now male & human-sounding** — the robotic default TTS was replaced; developer confirms the timer "talks like a person now, not a bot." Live-browser voice QA still pending (KR hasn't re-listened yet).
+  - Earlier in this batch: breathe card water-only copy, footer nav "The what", and the timer-frog JS state fix (face now stays consistent across all phases) all confirmed clean.
+- **KR announced "more edits"** — a new batch is incoming ("we're almost there!"). CEO is ready to receive.
+- **Asset pipeline still open:**
+  - `images/frog-longbreak.png` — final generation pending. Checkpoint rule: do NOT retry under another filename; if baked-in text is wrong, rewrite into shorter copy and make one fresh image WITHOUT `referenceImage`; otherwise deliver the latest clean edit.
+  - `images/frog-face.png` — re-encode to a true PNG still pending (suspected JPEG bytes under `.png` name).
 
 ## Files & Structure
-- **`index.html` (57KB)** — single-page app; inline CSS, theme tokens at top, hero, timer, "the what" section, footer.
+- **`index.html` (60KB)** — single-page app; inline CSS with theme tokens; hero → timer → "the what" → ritual → **"Why a frog?" (restored, ~590)** → footer nav (617–620); `.why-*` classes at ~291–309; `say()` TTS function in the ~788–796 region (now human-voiced).
 - **`images/` (5 files)** — frog asset set:
-  - `frog-focus.png` — approved full-body mascot reference (desk pose), used as the identity reference
-  - `frog-face.png` — in-timer face, **regenerated & verified consistent** (**pending re-encode check** — suspected JPEG bytes under a `.png` name)
+  - `frog-focus.png` — approved full-body mascot reference (desk pose); identity reference for all states
+  - `frog-face.png` — in-timer face, verified consistent with reference (**re-encode pending**)
   - `frog-break.png` — break state
-  - `frog-longbreak.png` — long-break state (**pending final generation**)
-  - 1 additional state/hero asset
+  - `frog-longbreak.png` — long-break state (**final generation pending**)
+  - `frog-hero.png` — waving frog used in the restored "Why a frog?" section
 - **`uploads/` (1 file)** — KR's original shirt/character reference.
 
 ## Key Decisions Made
-- Hero headline: `Slow down.<br>Focus.<br>Get the <em>good stuff</em> done.`
-- Hero lede includes "...a **frog friend** who's genuinely proud of you."
-- What-section copy: **"One task or goal at a time"** (not "one pomodoro at a time").
-- **"Why the frog?" section removed** — verified no JS references to `#why`.
-- Dark mode = warm frog sage green, not gray-olive: `--bg:#475A44` · `--surface:#4E624A` · `--surface-2:#5A6F55` · `--ink:#F2EDDE` · `--ink-soft:#C6D4BF`
-- Timer face must match the modern `frog-focus.png` mascot — never the old chubby storybook style. `frog-face.png` regenerated **using `frog-focus.png` as the image reference** to guarantee pixel consistency.
-- Live preview flow: KR first preferred the in-app preview pane; ultimately approved a public publish — **public link must be reviewed by KR in-browser before final launch**.
+- Hero: `Slow down.<br>Focus.<br>Get the <em>good stuff</em> done.` with "...a **frog friend** who's genuinely proud of you."
+- Dark mode = warm frog sage green (`#475A44` family), not gray-olive.
+- **Timer shows one consistent modern frog face across all phases** — the JS state-swap to full-body frogs was the bug and is removed.
+- Breathe card: no beverage line — water only. Footer nav: "The what".
+- **Voice: male, human-sounding, non-robotic** — replaces the rejected default TTS; implemented and developer-verified.
+- **"Why a frog?" section restored verbatim from git history** — including "— the pond, probably."
+- Live preview flow: public URL published; KR reviews in-browser before final launch.
 
 ## Pending Decisions
-- None formally open; remaining decisions are asset-QA calls:
-  - `frog-longbreak.png` text handling (shorter baked-in copy + fresh image without `referenceImage` vs. delivering the latest clean edit)
-  - Whether `frog-face.png` needs re-encoding to a real PNG
+- Details of **KR's announced "more edits"** — not yet enumerated.
+- Voice plugin polish: developer offered optional voice options in the settings dialog — accept or defer?
+- Quote tweak in the restored section — developer offered; no change requested yet.
+- `frog-longbreak.png` text approach — shorter baked-in copy + fresh image without `referenceImage`, vs. delivering the latest clean edit.
+- Whether `frog-face.png` re-encode is required before publish (likely yes for transparency safety).
 
 ## Tasks
 - [x] Apply Batch 1 copy/theme edits (dark sage green, "productive tool", "the what", beverage, recharge)
-- [x] Apply Batch 2 edits (hero "Focus." + "frog friend", "one task or goal at a time", remove `#why` section, timer face)
+- [x] Apply Batch 2 edits (hero "Focus." + "frog friend", "one task or goal at a time", timer face)
+- [x] Apply Batch 3 edits (breathe-card water copy, footer "The what", timer frog JS state fix)
 - [x] Regenerate `images/frog-face.png` from `frog-focus.png` (shoulder-up portrait, same mascot identity)
-- [x] Verify all copy + face consistency in-file (CEO + developer confirmation)
-- [x] Get KR's final "yes" to publish live preview
-- [ ] Publish live preview to public link and hand to KR for browser review (publishing in progress)
-- [ ] Generate `images/frog-longbreak.png` — per checkpoint: fresh image WITHOUT `referenceImage` if baked-in text is broken (shorter text block); otherwise deliver the latest clean edit; do not retry under another filename
-- [ ] Re-encode `frog-face.png` to a real PNG (JPEG bytes under `.png` name may break transparency/editing)
-- [ ] Confirm timer face sits correctly in the ring via live browser preview
-- [ ] Final QA: full-page div balance, hero/footer, timer behavior, dark mode; then deploy
+- [x] Publish public live preview; KR reviewed in-browser and returned 5 edits
+- [x] Restore the "Why a frog?" frog-friend section with original "— the pond, probably" copy (recovered from git history)
+- [x] Replace robotic default TTS with a male, human-sounding voice (developer-verified)
+- [ ] Receive and apply KR's next edit batch ("more edits" announced)
+- [ ] Generate `images/frog-longbreak.png` — fresh image WITHOUT `referenceImage`, same anatomy/palette, shorter clean text block if baked-in text is broken
+- [ ] Re-encode `frog-face.png` to a valid PNG
+- [ ] Live browser QA: voice quality, timer face in ring, restored section, tag balance, dark mode
+- [ ] Final deploy
 
 ## Opportunities
-- **Complete the state set now** — landing `frog-longbreak.png` unblocks all four frog states and makes final QA deterministic; do this before the review pass. Follow the checkpoint rule: shorter copy + fresh image without `referenceImage` if text is still wrong.
-- **Share-card polish** — add favicon + OG meta using `frog-face.png` so the public preview/launch link already reads as the product in chat and social embeds.
-- **Frog voice/audio cues** — the mascot set is consistent; short focus/break chimes or voice cues would fulfill the "frog speaks" vision, especially in backgrounded tabs.
+- **Close the asset loop before KR's next review** — land `frog-longbreak.png` and re-encode `frog-face.png` now so the incoming edit batch is the only variable. All four timer states will finally be pixel-consistent on the live link.
+- **Make the voice a feature, not a fix** — the developer offered voice options in the settings dialog. A small "frog voice" preference (male voice + pitch/rate + on/off toggle) turns the just-fixed TTS into a signature personality trait, matching the restored "frog friend" section.
+- **Launch-ready share polish** — add favicon + OG meta using `frog-face.png` so the public URL already reads as finished in browser tabs and chat embeds before the final deploy.
 
 ## Next Steps
-1. Confirm the live preview link is up and hand it to KR for browser review (verify timer face sits in the ring).
-2. Generate `images/frog-longbreak.png` (fresh image, same anatomy/palette, clean short text block, no `referenceImage`).
-3. Re-encode `frog-face.png` to a clean PNG so transparency/editing isn't broken.
-4. Final full-page QA and deploy.
+1. Pull KR's announced "more edits" and apply them (quote tweak and/or settings-dialog voice options may be among them — confirm scope).
+2. Generate `images/frog-longbreak.png` per checkpoint rules (fresh image, no `referenceImage`, short text).
+3. Re-encode `frog-face.png` as a true PNG.
+4. Full live-browser QA: voice, timer face in ring, restored section, tag balance, dark mode.
+5. Final deploy on the public URL.
 
 ---
-*Last updated: 2026-08-14T00:03:00Z*
+*Last updated: 2026-08-14T00:31:25Z*
