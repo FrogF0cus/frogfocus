@@ -149,10 +149,12 @@ html[data-theme="dark"] .streak-badge{background:color-mix(in srgb,var(--sage) 1
 .chip{
   display:inline-flex;align-items:center;gap:8px;
   padding:9px 15px;border-radius:999px;
-  background:var(--surface);border:1.5px solid var(--line);
-  font-size:14px;font-weight:700;color:var(--ink);
+  background:var(--sage);border:none;
+  font-size:14px;font-weight:700;color:var(--surface);
+  box-shadow:0 8px 20px -12px color-mix(in srgb,var(--sage) 80%,transparent);
 }
-.chip svg{width:16px;height:16px;color:var(--sage-strong)}
+.chip svg{width:16px;height:16px;color:var(--surface)}
+html[data-theme="dark"] .chip{color:#2A3526}
 .hero-cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
 
 /* ============ TIMER CARD ============ */
