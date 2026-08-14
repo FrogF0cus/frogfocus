@@ -871,11 +871,11 @@ function say(text){
     const u = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
     const pick =
-      voices.find(v => /daniel/i.test(v.name)) ||
-      voices.find(v => /microsoft.*(david|guy|mark)/i.test(v.name)) ||
-      voices.find(v => /alex/i.test(v.name)) ||
+      voices.find(v => /microsoft.*(david|mark|guy)/i.test(v.name)) ||
+      voices.find(v => /google us english male/i.test(v.name)) ||
+      voices.find(v => /google us english/i.test(v.name)) ||
+      voices.find(v => /en-us/i.test(v.lang)) ||
       voices.find(v => /male/i.test(v.name)) ||
-      voices.find(v => /google uk english male/i.test(v.name)) ||
       voices.find(v => /^en/i.test(v.lang));
     if (pick) u.voice = pick;
     u.rate = 0.95;      // gentle, unhurried
