@@ -407,6 +407,27 @@ dialog[open]{animation:dialog-in .25s cubic-bezier(.16,1,.3,1)}
 }
 .switch:checked{background:var(--sage);border-color:var(--sage)}
 .switch:checked::after{transform:translateX(20px);background:#FBF6EC}
+.voice-picker{margin-top:22px;border-top:1px dashed var(--line);padding-top:18px}
+.voice-picker-title{display:block;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
+.voice-row{display:flex;align-items:center;gap:10px}
+.voice-select-wrap{position:relative;flex:1;min-width:0}
+.voice-select{
+  width:100%;padding:11px 34px 11px 12px;
+  border:1.5px solid var(--line);border-radius:12px;
+  background:var(--surface-2);color:var(--ink);
+  font-family:var(--font-b);font-size:14px;font-weight:600;
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+  transition:border-color .18s ease;
+}
+.voice-select:hover{border-color:var(--sage)}
+.voice-select:focus{outline:none;border-color:var(--sage)}
+.voice-select:disabled{opacity:.55;cursor:default}
+.voice-chevron{position:absolute;right:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none;color:var(--ink-soft)}
+.btn-test{flex:none;padding:12px 16px;font-size:14px}
+@media (max-width:640px){
+  .voice-row{flex-direction:column;align-items:stretch}
+  .btn-test{width:100%}
+}
 .dialog-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
 
 /* ============ MISC DECOR ============ */
@@ -750,6 +771,20 @@ dialog[open]{animation:dialog-in .25s cubic-bezier(.16,1,.3,1)}
         </label>
       </div>
 
+      <div class="voice-picker">
+        <span class="voice-picker-title">Voice</span>
+        <div class="voice-row">
+          <div class="voice-select-wrap">
+            <select id="inpVoicePick" aria-label="Choose the frog's voice">
+              <option value="">Loading voices…</option>
+            </select>
+            <svg class="voice-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <button type="button" class="btn btn-ghost btn-test" id="testVoiceBtn">Test voice</button>
+        </div>
+        <p class="field-note">Pick the voice the frog speaks with. Changes save right away.</p>
+      </div>
+
       <div class="dialog-actions">
         <button type="button" class="btn btn-ghost" id="resetCycleBtn">Reset cycle</button>
         <button type="submit" class="btn btn-primary">Save</button>
@@ -869,15 +904,8 @@ function say(text){
   try {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const pick =
-      voices.find(v => /microsoft.*(david|mark|guy)/i.test(v.name)) ||
-      voices.find(v => /google us english male/i.test(v.name)) ||
-      voices.find(v => /google us english/i.test(v.name)) ||
-      voices.find(v => /en-us/i.test(v.lang)) ||
-      voices.find(v => /male/i.test(v.name)) ||
-      voices.find(v => /^en/i.test(v.lang));
-    if (pick) u.voice = pick;
+    if (!currentVoice) currentVoice = resolveSavedVoice();
+    if (currentVoice) u.voice = currentVoice;
     u.rate = 0.95;      // gentle, unhurried
     u.pitch = 0.85;     // softer, warmer, more reassuring
     u.volume = 0.95;
@@ -885,12 +913,100 @@ function say(text){
   } catch(e){ /* TTS unavailable */ }
 }
 
-/* Voices can load asynchronously after page load — re-arm once so later say() calls find the male voice. */
-if ('speechSynthesis' in window && !window.__ffVoicesArmed){
-  window.__ffVoicesArmed = true;
-  window.speechSynthesis.addEventListener('voiceschanged', function(){
-    window.speechSynthesis.getVoices(); /* refresh the list for subsequent say() calls */
+/* ---------- voice selection ---------- */
+const VOICE_KEY = 'ff.voiceId';
+const TEST_PHRASE = 'Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.';
+let currentVoice = null;   // the SpeechSynthesisVoice the frog should use
+let voiceList = [];        // cached English voices
+
+function getVoices(){
+  return ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+}
+function englishVoices(){
+  return getVoices().filter(function(v){ return /^en/i.test(v.lang || ''); });
+}
+function guessGender(name){
+  const n = (name || '').toLowerCase();
+  if (/(^|[^a-z])(david|mark|guy|george|daniel|james|thomas|tom|alex|fred|paul|john|matthew|michael|andrew|william|steven|ryan|eric|brian|kevin|nathan|sam|samuel|chris|christopher|peter|robert|richard|charles|joseph|stephen|nick|oliver|harry|jack|ben|benjamin|adam|aaron|craig|geraint|russell)([^a-z]|$)/.test(n)) return 'Male';
+  if (/(^|[^a-z])(zira|susan|hazel|karen|moira|tessa|samantha|victoria|serena|fiona|kate|catherine|sarah|emily|emma|olivia|ava|mia|lily|laura|amy|anna|joanna|rachel|salli|ivy|joana|kendra|kimberly|allison|zoe|hannah|grace|alice|julie|julia|maria|rosa|sabina|helena|martha)([^a-z]|$)/.test(n)) return 'Female';
+  return null;
+}
+function voiceLabel(v){
+  const lang = v.lang || '';
+  const gender = guessGender(v.name);
+  return v.name + ' (' + lang + (gender ? ', ' + gender : '') + ')';
+}
+function pickDefaultVoice(list){
+  return list.find(function(v){ return /microsoft.*(david|mark|guy)/i.test(v.name); }) ||
+         list.find(function(v){ return /google us english/i.test(v.name); }) ||
+         list.find(function(v){ return /en-us/i.test(v.lang); }) ||
+         list.find(function(v){ return /^en/i.test(v.lang); });
+}
+function resolveSavedVoice(){
+  if (!voiceList.length) voiceList = englishVoices();
+  const saved = LS.get(VOICE_KEY, null);
+  if (saved && voiceList.length){
+    const byName = voiceList.find(function(v){ return v.name === saved.name; });
+    if (byName) return byName;
+    const byURI = voiceList.find(function(v){ return (v.voiceURI || v.name) === saved.uri; });
+    if (byURI) return byURI;
+  }
+  return pickDefaultVoice(voiceList) || null;
+}
+function persistVoice(v){
+  LS.set(VOICE_KEY, { name: v.name, uri: v.voiceURI || v.name, lang: v.lang });
+}
+function applySelectedVoice(){
+  const sel = $('#inpVoicePick');
+  if (!sel || !currentVoice) return;
+  const key = currentVoice.voiceURI || currentVoice.name;
+  if (Array.from(sel.options).some(function(o){ return o.value === key; })){
+    sel.value = key;
+  }
+}
+function populateVoiceSelect(){
+  const sel = $('#inpVoicePick');
+  if (!sel) return;
+  voiceList = englishVoices();
+  sel.innerHTML = '';
+  if (!voiceList.length){
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'No English voices found';
+    sel.appendChild(opt);
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  voiceList.forEach(function(v){
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI || v.name;
+    opt.textContent = voiceLabel(v);
+    sel.appendChild(opt);
   });
+  currentVoice = resolveSavedVoice();
+  applySelectedVoice();
+}
+
+$('#inpVoicePick').addEventListener('change', function(){
+  const key = this.value;
+  const v = voiceList.find(function(v){ return (v.voiceURI || v.name) === key; });
+  if (v){ currentVoice = v; persistVoice(v); }
+});
+
+$('#testVoiceBtn').addEventListener('click', function(){
+  if (!('speechSynthesis' in window)) return;
+  const v = currentVoice || resolveSavedVoice();
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(TEST_PHRASE);
+  if (v) u.voice = v;
+  u.rate = 0.95; u.pitch = 0.85; u.volume = 0.95;
+  window.speechSynthesis.speak(u);
+});
+
+/* Voices often load asynchronously after first paint — refresh the picker and re-resolve whenever they change. */
+if ('speechSynthesis' in window){
+  window.speechSynthesis.addEventListener('voiceschanged', populateVoiceSelect);
 }
 
 /* ---------- timing ---------- */
@@ -1208,6 +1324,7 @@ function openSettings(){
   $('#inpSound').checked = soundOn;
   $('#inpVoice').checked = voiceOn;
   $('#inpAutoBreak').checked = autoBreak;
+  populateVoiceSelect();
   dlg.showModal();
 }
 function closeSettings(){ if (dlg.open) dlg.close(); }
@@ -1286,6 +1403,7 @@ $('#shareBtn').addEventListener('click', async function(){
 document.getElementById('year').textContent = new Date().getFullYear();
 applyTheme();
 applySoundUI();
+populateVoiceSelect();
 updateStreakUI();
 loadTimer();
 updateAll();
