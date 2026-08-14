@@ -838,7 +838,8 @@ const st = {
   running: false,
   endTime: null,           // epoch ms when the current interval ends
   remaining: durations.focus * 60000,
-  cycleDone: Math.min(4, LS.get('ff.cycleDone', 0))
+  cycleDone: Math.min(4, LS.get('ff.cycleDone', 0)),
+  saying: ''               // current break saying (rotates each break)
 };
 
 /* ---------- dom refs ---------- */
@@ -1170,12 +1171,44 @@ function pillText(){
   if (st.phase === 'long')  return 'Long break';
   return st.running ? 'Focus' : 'Focus';
 }
+/* Warm, short frog-themed break sayings — rotated so each break feels fresh. */
+const BREAK_SAYINGS = {
+  short: [
+    'Sip, stretch, breathe',
+    'Roll your shoulders free',
+    'Blink slow, little frog',
+    'A sip for the pond, pal',
+    'Wiggle those toes',
+    'Look far away a moment',
+    'Soft shoulders, slow breath',
+    'Hop up, shake it out'
+  ],
+  long: [
+    'You earned the big one',
+    'Big stretch, big smile',
+    'Go wander — the frog has the watch',
+    'Step away and truly rest',
+    'Whole round done. Wow.',
+    'Reboot and come back fresh',
+    'Hop outside if you can',
+    'Four rounds — so proud of you'
+  ]
+};
+let sayingIdx = LS.get('ff.sayingIdx', { short: -1, long: -1 });
+function nextSaying(phase){
+  const list = BREAK_SAYINGS[phase];
+  if (!list) return '';
+  const idx = ((sayingIdx[phase] == null ? -1 : sayingIdx[phase]) + 1) % list.length;
+  sayingIdx[phase] = idx;
+  LS.set('ff.sayingIdx', sayingIdx);
+  return list[idx];
+}
 function hintText(){
   // Space-press hints are hidden per KR. The space-bar shortcut still works;
   // only the on-screen prompt text is gone. Break copy stays so the phase isn't bare.
-  if (st.running){
-    return st.phase === 'short' ? 'Sip, stretch, breathe' :
-           st.phase === 'long' ? 'You earned the big one' : '';
+  if (st.running && (st.phase === 'short' || st.phase === 'long')){
+    if (!st.saying) st.saying = nextSaying(st.phase);
+    return st.saying;
   }
   return '';
 }
@@ -1218,6 +1251,7 @@ function setPhase(p){
   st.remaining = durations[p] * 60000;
   st.endTime = null;
   st.running = false;
+  if (p === 'focus') st.saying = '';   // clear so the next break picks a fresh saying
   updateAll();
 }
 function start(){
