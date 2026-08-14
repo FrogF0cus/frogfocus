@@ -1,16 +1,19 @@
 const fs = require('fs');
-const { PNG } = require('pngjs');
+const jpeg = require('/tmp/pngwork/node_modules/jpeg-js');
+const { PNG } = require('/tmp/pngwork/node_modules/pngjs');
 
 const files = process.argv.slice(2);
 for (const f of files) {
-  const png = PNG.sync.read(fs.readFileSync(f));
-  const { width, height, data } = png;
-  const hasAlpha = png.data.length === width * height * 4 && (() => {
-    for (let i = 3; i < data.length; i += 4) {
-      if (data[i] !== 255) return true;
-    }
-    return false;
-  })();
+  const buf = fs.readFileSync(f);
+  const isPng = buf[0] === 0x89 && buf[1] === 0x50;
+  let width, height, data;
+  if (isPng) {
+    const png = PNG.sync.read(buf);
+    width = png.width; height = png.height; data = png.data;
+  } else {
+    const img = jpeg.decode(buf, { useTArray: true, formatAsRGBA: true });
+    width = img.width; height = img.height; data = img.data;
+  }
 
   function px(x, y) {
     const i = (y * width + x) * 4;
@@ -31,9 +34,8 @@ for (const f of files) {
     if (r > 235 && g > 235 && b > 235) creamCount++;
   }
   const total = width * height;
-  console.log(`\n=== ${f} ===`);
-  console.log(`size: ${width}x${height}, bitDepth: ${png.bitDepth}, colorType: ${png.colorType}`);
-  console.log(`hasAlphaChannel: ${hasAlpha}`);
+  console.log(`\n=== ${f} === (${isPng ? 'PNG' : 'JPEG'})`);
+  console.log(`size: ${width}x${height}`);
   console.log(`transparent px: ${transparentCount} (${(100*transparentCount/total).toFixed(1)}%)`);
   console.log(`magenta-ish px: ${magentaCount} (${(100*magentaCount/total).toFixed(1)}%)`);
   console.log(`cream-ish px: ${creamCount} (${(100*creamCount/total).toFixed(1)}%)`);
