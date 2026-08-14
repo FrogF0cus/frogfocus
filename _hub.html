@@ -9,8 +9,8 @@
       --bg-dark: #0a0a0f;
       --bg-card: #12121a;
       --bg-card-hover: #1a1a25;
-      --accent: #6366f1;
-      --accent-secondary: #a855f7;
+      --accent: #22c55e;
+      --accent-secondary: #10b981;
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
@@ -337,13 +337,13 @@
   <div class="container">
     <header>
       <a href="/workspace/projects/" style="color:var(--text-muted);text-decoration:none;font-size:0.8rem;">← Back to Project Hub</a>
-      <div class="project-icon">🌐</div>
+      <div class="project-icon">🛠️</div>
       <h1 class="project-title">Frog Focus</h1>
-      <div class="project-type">landing page</div>
+      <div class="project-type">application</div>
       
       <div class="quick-actions">
-        <a href="index.html" class="action-btn primary" target="_blank">👀 Preview Site</a>
-<a href="#metrics" class="action-btn">📊 View Metrics</a>
+        <a href="index.html" class="action-btn primary" target="_blank">🚀 Launch App</a>
+<a href="#docs" class="action-btn">📚 Documentation</a>
 <a href="/workspace/projects/" class="action-btn">← All Projects</a>
       </div>
     </header>
@@ -355,43 +355,25 @@
           <h3>🖥 Live Preview</h3>
           
           <div class="preview-tabs">
-            <button class="preview-tab active" onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('_hub.html', this)">_hub.html</button>
+            <button class="preview-tab active" onclick="switchPreview('_hub.html', this)">_hub.html</button><button class="preview-tab " onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('index.html', this)">index.html</button>
           </div>
-          <iframe id="preview-iframe" class="preview-frame" src="index.html"></iframe>
+          <iframe id="preview-iframe" class="preview-frame" src="_hub.html"></iframe>
         </div>
         
 
         
 
         
-        <div class="section type-specific" id="metrics">
-          <h3>📊 Quick Stats</h3>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-value">3</div>
-              <div class="stat-label">Pages</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">13</div>
-              <div class="stat-label">Images</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">In Progress</div>
-              <div class="stat-label">Status</div>
-            </div>
-          </div>
-        </div>
-      
 
         
       <div class="file-section">
         <h3>📄 Pages</h3>
         <div class="file-grid">
           
-            <a href="index.html" class="file-card" target="_blank">
+            <a href="_hub.html" class="file-card" target="_blank">
               <span class="file-icon">📄</span>
-              <span class="file-name">index.html</span>
-              <span class="file-meta">67.4 KB</span>
+              <span class="file-name">_hub.html</span>
+              <span class="file-meta">24.7 KB</span>
             </a>
           
             <a href="_portal.html" class="file-card" target="_blank">
@@ -400,10 +382,10 @@
               <span class="file-meta">19.9 KB</span>
             </a>
           
-            <a href="_hub.html" class="file-card" target="_blank">
+            <a href="index.html" class="file-card" target="_blank">
               <span class="file-icon">📄</span>
-              <span class="file-name">_hub.html</span>
-              <span class="file-meta">23.9 KB</span>
+              <span class="file-name">index.html</span>
+              <span class="file-meta">67.4 KB</span>
             </a>
           
         </div>
@@ -411,6 +393,26 @@
       </div>
     
         
+      <div class="file-section">
+        <h3>⚡ Code</h3>
+        <div class="file-grid">
+          
+            <a href="package.json" class="file-card" target="_blank">
+              <span class="file-icon">📋</span>
+              <span class="file-name">package.json</span>
+              <span class="file-meta">327 B</span>
+            </a>
+          
+            <a href="server.js" class="file-card" target="_blank">
+              <span class="file-icon">⚡</span>
+              <span class="file-name">server.js</span>
+              <span class="file-meta">5.4 KB</span>
+            </a>
+          
+        </div>
+        
+      </div>
+    
         
       <div class="file-section">
         <h3>📝 Documentation</h3>
@@ -419,7 +421,7 @@
             <a href="_brief.md" class="file-card" target="_blank">
               <span class="file-icon">📝</span>
               <span class="file-name">_brief.md</span>
-              <span class="file-meta">6.3 KB</span>
+              <span class="file-meta">6.7 KB</span>
             </a>
           
         </div>
@@ -430,6 +432,18 @@
       <div class="file-section">
         <h3>📁 Other Files</h3>
         <div class="file-grid">
+          
+            <a href=".gitignore" class="file-card" target="_blank">
+              <span class="file-icon">📁</span>
+              <span class="file-name">.gitignore</span>
+              <span class="file-meta">173 B</span>
+            </a>
+          
+            <a href=".env.example" class="file-card" target="_blank">
+              <span class="file-icon">📁</span>
+              <span class="file-name">.env.example</span>
+              <span class="file-meta">1.5 KB</span>
+            </a>
           
             <a href="uploads/pasted-image-1786671708676.png" class="file-card" target="_blank">
               <span class="file-icon">🖼️</span>
@@ -479,20 +493,8 @@
               <span class="file-meta">424.9 KB</span>
             </a>
           
-            <a href="uploads/pasted-image-1786663123428.png" class="file-card" target="_blank">
-              <span class="file-icon">🖼️</span>
-              <span class="file-name">uploads/pasted-image-1786663123428.png</span>
-              <span class="file-meta">111.0 KB</span>
-            </a>
-          
-            <a href="images/frog-longbreak.png" class="file-card" target="_blank">
-              <span class="file-icon">🖼️</span>
-              <span class="file-name">images/frog-longbreak.png</span>
-              <span class="file-meta">133.4 KB</span>
-            </a>
-          
         </div>
-        <p class="more-files">+3 more files</p>
+        <p class="more-files">+5 more files</p>
       </div>
     
 
@@ -503,7 +505,7 @@
               
                 <div class="metadata-item">
                   <div class="metadata-key">memory.distill.watermark</div>
-                  <div class="metadata-value">2026-08-14T13:26:11.684Z</div>
+                  <div class="metadata-value">2026-08-14T13:50:59.238Z</div>
                 </div>
               
                 <div class="metadata-item">
@@ -535,9 +537,9 @@
         <div class="sidebar-panel">
           <h3>📊 Quick Stats</h3>
           <div class="quick-stat-grid">
-            <div class="qs-card"><div class="qs-val">17</div><div class="qs-label">Files</div></div>
+            <div class="qs-card"><div class="qs-val">21</div><div class="qs-label">Files</div></div>
             <div class="qs-card"><div class="qs-val">3</div><div class="qs-label">Pages</div></div>
-            <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Code</div></div>
+            <div class="qs-card"><div class="qs-val">2</div><div class="qs-label">Code</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Decisions</div></div>
           </div>
         </div>
@@ -550,14 +552,38 @@
             
               <li>
                 <span>📄</span>
-                <a href="index.html" target="_blank">index.html</a>
-                <span class="file-size">67.4 KB</span>
+                <a href="_hub.html" target="_blank">_hub.html</a>
+                <span class="file-size">24.7 KB</span>
+              </li>
+            
+              <li>
+                <span>📁</span>
+                <a href=".gitignore" target="_blank">.gitignore</a>
+                <span class="file-size">173 B</span>
+              </li>
+            
+              <li>
+                <span>📁</span>
+                <a href=".env.example" target="_blank">.env.example</a>
+                <span class="file-size">1.5 KB</span>
+              </li>
+            
+              <li>
+                <span>📋</span>
+                <a href="package.json" target="_blank">package.json</a>
+                <span class="file-size">327 B</span>
+              </li>
+            
+              <li>
+                <span>⚡</span>
+                <a href="server.js" target="_blank">server.js</a>
+                <span class="file-size">5.4 KB</span>
               </li>
             
               <li>
                 <span>📝</span>
                 <a href="_brief.md" target="_blank">_brief.md</a>
-                <span class="file-size">6.3 KB</span>
+                <span class="file-size">6.7 KB</span>
               </li>
             
               <li>
@@ -568,8 +594,8 @@
             
               <li>
                 <span>📄</span>
-                <a href="_hub.html" target="_blank">_hub.html</a>
-                <span class="file-size">23.9 KB</span>
+                <a href="index.html" target="_blank">index.html</a>
+                <span class="file-size">67.4 KB</span>
               </li>
             
               <li>
