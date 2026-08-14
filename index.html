@@ -884,184 +884,53 @@ function chimeBreakEnd(){          // bright rising arpeggio
   const t = ctx.currentTime;
   [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => tone(ctx, f, t + i * 0.13, 0.6, 'triangle', 0.16));
 }
-/* ---------- ElevenLabs neural TTS (supersedes the browser voice when reachable) ---------- */
-/* The backend holds the API key server-side; the client only ever receives audio.
-   TTS_API defaults to same-origin (works when `node server.js` serves this file).
-   If the frontend is hosted elsewhere, set `window.__FF_TTS_BASE` to the backend URL. */
-const TTS_API = (window.__FF_TTS_BASE || '/api/tts').replace(/\/+$/, '');
-const TTS = (function(){
-  const audioEl = new Audio();
-  audioEl.preload = 'auto';
-  let enabled = true;      // flips off on first hard failure so we stop retrying
-  let objectUrl = null;
+/* ---------- voice (built-in speech synthesis) ---------- */
+/* Single baked-in British English default — no user-facing chooser.
+   Preference order: en-GB (Daniel → Google UK English Female/Male) → any en. */
+let ukVoice = null;
 
-  function clearUrl(){
-    if (objectUrl){ try { URL.revokeObjectURL(objectUrl); } catch(e){} objectUrl = null; }
-  }
-  function stop(){
-    try { audioEl.pause(); } catch(e){}
-    clearUrl();
-    if ('speechSynthesis' in window){ try { window.speechSynthesis.cancel(); } catch(e){} }
-  }
-
-  function speak(text, onFallback){
-    if (!enabled || !text) { if (onFallback) onFallback(); return false; }
-    stop();
-    fetch(TTS_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text })
-    })
-    .then(function(r){
-      if (!r.ok) throw new Error('tts http ' + r.status);
-      return r.blob();
-    })
-    .then(function(blob){
-      clearUrl();
-      objectUrl = URL.createObjectURL(blob);
-      audioEl.onended = function(){ clearUrl(); };
-      audioEl.onerror = function(){ clearUrl(); if (onFallback) onFallback(); };
-      audioEl.src = objectUrl;
-      const p = audioEl.play();
-      if (p && p.catch) p.catch(function(){ clearUrl(); if (onFallback) onFallback(); });
-    })
-    .catch(function(){
-      enabled = false;   // backend unreachable/misconfigured — stick to the browser voice
-      if (onFallback) onFallback();
-    });
-    return true;
-  }
-
-  function check(){
-    /* Free health probe — shows the "neural voice connected" note only when the
-       backend is up AND its key is set. Never synthesizes, never spends credit. */
-    fetch(TTS_API + '/health', { method: 'GET' })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(info){
-        const note = $('#ttsNote');
-        if (note && info && info.configured) note.hidden = false;
-      })
-      .catch(function(){ /* backend offline — leave the picker as primary */ });
-  }
-
-  return { speak: speak, stop: stop, check: check };
-})();
-window.__ffTTS = TTS;
-
+function getVoices(){
+  return ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+}
+function pickUkVoice(){
+  const voices = getVoices();
+  if (!voices.length) return null;
+  const en = voices.filter(function(v){ return /^en/i.test(v.lang || ''); });
+  if (!en.length) return null;
+  const gb = en.filter(function(v){ return /^en[-_]gb/i.test(v.lang || ''); });
+  const pool = gb.length ? gb : en;
+  const named = function(re){ return pool.find(function(v){ return re.test(v.name); }); };
+  return named(/Daniel/i) ||
+         named(/Google UK English Female/i) ||
+         named(/Google UK English Male/i) ||
+         (gb.length ? gb[0] : null) ||
+         en[0];
+}
+function resolveVoice(){
+  if (!ukVoice) ukVoice = pickUkVoice();
+  return ukVoice;
+}
 function speakLocal(text){
   if (!('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    if (!currentVoice) currentVoice = resolveSavedVoice();
-    if (currentVoice) u.voice = currentVoice;
+    const v = resolveVoice();
+    if (v) u.voice = v;
     u.rate = 0.95;      // gentle, unhurried
     u.pitch = 0.85;     // softer, warmer, more reassuring
     u.volume = 0.95;
     window.speechSynthesis.speak(u);
   } catch(e){ /* TTS unavailable */ }
 }
-
 function say(text){
   if (!voiceOn) return;
-  TTS.speak(text, function(){ speakLocal(text); });   // neural first, browser voice as fallback
-}
-function checkNeuralTTS(){ TTS.check(); }
-
-/* ---------- voice selection ---------- */
-const VOICE_KEY = 'ff.voiceId';
-const TEST_PHRASE = 'Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.';
-let currentVoice = null;   // the SpeechSynthesisVoice the frog should use
-let voiceList = [];        // cached English voices
-
-function getVoices(){
-  return ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
-}
-function englishVoices(){
-  return getVoices().filter(function(v){ return /^en/i.test(v.lang || ''); });
-}
-function guessGender(name){
-  const n = (name || '').toLowerCase();
-  if (/(^|[^a-z])(david|mark|guy|george|daniel|james|thomas|tom|alex|fred|paul|john|matthew|michael|andrew|william|steven|ryan|eric|brian|kevin|nathan|sam|samuel|chris|christopher|peter|robert|richard|charles|joseph|stephen|nick|oliver|harry|jack|ben|benjamin|adam|aaron|craig|geraint|russell)([^a-z]|$)/.test(n)) return 'Male';
-  if (/(^|[^a-z])(zira|susan|hazel|karen|moira|tessa|samantha|victoria|serena|fiona|kate|catherine|sarah|emily|emma|olivia|ava|mia|lily|laura|amy|anna|joanna|rachel|salli|ivy|joana|kendra|kimberly|allison|zoe|hannah|grace|alice|julie|julia|maria|rosa|sabina|helena|martha)([^a-z]|$)/.test(n)) return 'Female';
-  return null;
-}
-function voiceLabel(v){
-  const lang = v.lang || '';
-  const gender = guessGender(v.name);
-  return v.name + ' (' + lang + (gender ? ', ' + gender : '') + ')';
-}
-function pickDefaultVoice(list){
-  return list.find(function(v){ return /microsoft.*(david|mark|guy)/i.test(v.name); }) ||
-         list.find(function(v){ return /google us english/i.test(v.name); }) ||
-         list.find(function(v){ return /en-us/i.test(v.lang); }) ||
-         list.find(function(v){ return /^en/i.test(v.lang); });
-}
-function resolveSavedVoice(){
-  if (!voiceList.length) voiceList = englishVoices();
-  const saved = LS.get(VOICE_KEY, null);
-  if (saved && voiceList.length){
-    const byName = voiceList.find(function(v){ return v.name === saved.name; });
-    if (byName) return byName;
-    const byURI = voiceList.find(function(v){ return (v.voiceURI || v.name) === saved.uri; });
-    if (byURI) return byURI;
-  }
-  return pickDefaultVoice(voiceList) || null;
-}
-function persistVoice(v){
-  LS.set(VOICE_KEY, { name: v.name, uri: v.voiceURI || v.name, lang: v.lang });
-}
-function applySelectedVoice(){
-  const sel = $('#inpVoicePick');
-  if (!sel || !currentVoice) return;
-  const key = currentVoice.voiceURI || currentVoice.name;
-  if (Array.from(sel.options).some(function(o){ return o.value === key; })){
-    sel.value = key;
-  }
-}
-function populateVoiceSelect(){
-  const sel = $('#inpVoicePick');
-  if (!sel) return;
-  voiceList = englishVoices();
-  sel.innerHTML = '';
-  if (!voiceList.length){
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = 'No English voices found';
-    sel.appendChild(opt);
-    sel.disabled = true;
-    return;
-  }
-  sel.disabled = false;
-  voiceList.forEach(function(v){
-    const opt = document.createElement('option');
-    opt.value = v.voiceURI || v.name;
-    opt.textContent = voiceLabel(v);
-    sel.appendChild(opt);
-  });
-  currentVoice = resolveSavedVoice();
-  applySelectedVoice();
+  speakLocal(text);
 }
 
-$('#inpVoicePick').addEventListener('change', function(){
-  const key = this.value;
-  const v = voiceList.find(function(v){ return (v.voiceURI || v.name) === key; });
-  if (v){ currentVoice = v; persistVoice(v); }
-});
-
-$('#testVoiceBtn').addEventListener('click', function(){
-  if (!('speechSynthesis' in window)) return;
-  const v = currentVoice || resolveSavedVoice();
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(TEST_PHRASE);
-  if (v) u.voice = v;
-  u.rate = 0.95; u.pitch = 0.85; u.volume = 0.95;
-  window.speechSynthesis.speak(u);
-});
-
-/* Voices often load asynchronously after first paint — refresh the picker and re-resolve whenever they change. */
+/* Voices often load asynchronously after first paint — re-resolve once they arrive. */
 if ('speechSynthesis' in window){
-  window.speechSynthesis.addEventListener('voiceschanged', populateVoiceSelect);
+  window.speechSynthesis.addEventListener('voiceschanged', function(){ ukVoice = pickUkVoice(); });
 }
 
 /* ---------- timing ---------- */
