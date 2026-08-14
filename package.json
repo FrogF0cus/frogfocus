@@ -1,0 +1,16 @@
+{
+  "name": "frog-focus-tts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure ElevenLabs text-to-speech backend for the Frog Focus pomodoro app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
