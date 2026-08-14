@@ -1,29 +1,32 @@
 /**
  * Convert images/frog-longbreak.png -> true transparent PNG (real alpha).
  *
- * The source file is actually a JPEG (despite the .png extension) with the frog
- * rendered on a baked-in light neutral "card" (a faint white/light-gray
- * checkerboard, R==G==B everywhere in the background). It has NO alpha channel.
+ * The frog is rendered on a baked-in light neutral background (near-white /
+ * off-white, R==G==B everywhere in the background). Our job: punch ONLY the
+ * background out to real transparency, leaving the exact frog character intact
+ * (cozy green frog, oversized round golden-yellow glasses, both arms raised in
+ * celebration).
  *
  * Approach:
- *   1. Decode the JPEG to RGBA (jpeg-js).
- *   2. Score each pixel's "backgroundness" as:
+ *   1. Decode the source to RGBA. The file may be a PNG (RGBA) or a JPEG that
+ *      was shipped with a `.png` extension — detect by magic bytes.
+ *   2. Score each pixel's "backgroundness" (ignoring any pre-existing alpha):
  *        chroma  = max(r,g,b) - min(r,g,b)          (how far off the gray axis)
  *        lum     = (r+g+b)/3
  *        bgdist  = chroma + max(0, 235 - lum)
- *      Background = neutral gray (chroma ~0) and bright -> bgdist ~0.
+ *      Background = neutral (chroma ~0) and bright -> bgdist ~0.
  *      Frog       = colored (green/gold/cream) and/or darker -> high bgdist.
  *   3. Flood-fill from the image border (4-connectivity) through pixels with
  *      bgdist < D_HI to find the CONNECTED background region. Flood-filling
  *      (rather than a global threshold) protects interior bright pixels from
  *      being punched out — e.g. the white specular highlights on the gold
- *      glasses are the same neutral-white as the background checkerboard, but
- *      they are enclosed by the colored glasses so the flood never reaches them.
+ *      glasses are the same neutral-white as the background, but they are
+ *      enclosed by the colored glasses so the flood never reaches them.
  *   4. Inside the flood region apply a soft (smoothstep) alpha ramp between
  *      D_LO and D_HI so anti-aliased edge pixels fade out cleanly instead of
  *      leaving a harsh halo. Everything outside the region stays fully opaque.
  *   5. Encode as RGBA PNG (pngjs) with a real alpha channel, saving over the
- *      same path.
+ *      same path, then verify the written file actually has alpha.
  */
 
 const fs = require('fs');
@@ -41,8 +44,14 @@ const LUM_REF = 235; // background luma reference
 
 function decode(src) {
   const buf = fs.readFileSync(src);
+  const isPNG = buf.length > 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+  if (isPNG) {
+    const png = PNG.sync.read(buf); // returns { width, height, data (RGBA) }
+    return { width: png.width, height: png.height, data: png.data };
+  }
+  // Older source files shipped as `.png` but were actually JPEG.
   const img = jpeg.decode(buf, { useTArray: true, formatAsRGBA: true });
-  return img;
+  return { width: img.width, height: img.height, data: img.data };
 }
 
 function buildBgdist(width, height, data) {
@@ -116,8 +125,7 @@ function applyAlpha(width, height, data, bgdist, mask) {
 }
 
 function main() {
-  const img = decode(SRC);
-  const { width, height, data } = img;
+  const { width, height, data } = decode(SRC);
   console.log(`Decoded ${SRC}: ${width}x${height}`);
 
   const bgdist = buildBgdist(width, height, data);
@@ -135,6 +143,26 @@ function main() {
   Buffer.from(rgba.buffer, rgba.byteOffset, rgba.byteLength).copy(png.data);
   fs.writeFileSync(OUT, PNG.sync.write(png));
   console.log(`Wrote ${OUT} (${fs.statSync(OUT).size} bytes)`);
+
+  // ---- self-verify the written file has a real alpha channel ----
+  const check = PNG.sync.read(fs.readFileSync(OUT));
+  let minA = 255, maxA = 0, transparent = 0, opaque = 0, partial = 0;
+  for (let i = 3; i < check.data.length; i += 4) {
+    const a = check.data[i];
+    if (a < minA) minA = a;
+    if (a > maxA) maxA = a;
+    if (a === 0) transparent++;
+    else if (a === 255) opaque++;
+    else partial++;
+  }
+  const total = width * height;
+  console.log(
+    `VERIFY: alpha range [${minA},${maxA}] · transparent=${(100 * transparent / total).toFixed(1)}% · ` +
+    `opaque=${(100 * opaque / total).toFixed(1)}% · anti-aliased edge=${partial}px`
+  );
+  const hasAlpha = minA < 255;
+  console.log(hasAlpha ? 'PASS — output has a real alpha channel.' : 'FAIL — output is fully opaque.');
+  if (!hasAlpha) process.exitCode = 1;
 }
 
 main();

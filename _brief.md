@@ -7,23 +7,23 @@
 - Timer voice: warm, comforting, encouraging. **Antoni (ElevenLabs) locked as default; words locked verbatim; only delivery changes.**
 - Secure voice pipeline: ElevenLabs via Express proxy with phrase caching — key lives only in server env; browser `speechSynthesis` fallback. Wiring complete and smoke-tested.
 - **Rotating break sayings:** between-pomodoro phrases should differ every time instead of repeating the same message — in progress, assigned to Koba.
-- **Constellation star twinkle:** KR wants the dots to twinkle like stars, not just breathe.
+- **Constellation star twinkle:** dots now genuinely twinkle (opacity + gold glow flicker, staggered) — **implemented and confirmed done.**
 - Deployment target identified (unfunded): headless VPS (1 GB RAM, $36/year) — local run bridge is the gate.
 - **Share in the Emporium:** publish the finished page to the community; public link lives under the project and the post appears under KR's account/name.
 
 ## Current Status
 - **KR is mid-QA** on the full timer cycle; CEO standing by for notes, then a batch publish.
-- **Parallel work confirmed:** KR asked whether other edits can proceed while one is in progress — yes. Frog work and sayings already ran concurrently; Five Page Edits (not yet briefed to Koba) can follow the same pattern.
-- **Long-break frog rebuilt with true transparency — done.** Root cause confirmed: a white square baked into `images/frog-longbreak.png` (not CSS). Zara was straight that AI generation can't deliver real transparency and switched to a code-side cutout. Deliveries, both confirmed clean: `frog-longbreak.png` (v=1786720632912 — the file the page uses) and `frog-transparent.png` (v=1786720750759 — variant produced during the cutout). `scripts/frog-bg-removal.js` was saved with the work. **Awaiting KR's live-browser sign-off.**
-- **Rotating sayings — assigned, not yet implemented:** KR asked for different sayings between pomodoros each time. Koba owns the code; phrase list/content still needs KR's approval.
-- **Constellation twinkle — new request, direction set:** KR asked how to make the constellation dots twinkle like stars. CEO identified that the current `dot-pulse` is a slow "breathing" swell (scale+opacity) and a true star twinkle should be a short, punchy **opacity/brightness flicker** rather than a size change. Approach explained; implementation not yet assigned or written.
-- **Five Page Edits queued** (from recommendations, action: brief Koba): dark mode → frog green, "productive tool" framing, "the what" copy, beverage line, and recharge copy — not yet applied.
+- **Parallel work confirmed and already exercised:** KR asked whether other edits can proceed while one is in progress — yes. Frog cutout and sayings dispatch ran concurrently; the queued Five Page Edits can follow the same pattern.
+- **Constellation twinkle — done.** Koba replaced the calm `dot-pulse` scale/opacity swell with `@keyframes dot-twinkle` in `index.html`: opacity flickers ~0.35 → ~1.0 with two bright spikes over 2.5s; warm white/gold box-shadow glow (`rgba(255,255,255,.7)` + soft gold falloff) on bright frames; every dot blinks on its own staggered delay/duration so the constellation shimmers out of sync. CEO relayed completion to KR.
+- **Long-break frog rebuilt with true transparency — done.** Root cause confirmed: a white square baked into the PNG (not CSS). AI generation could not deliver real transparency (background kept reappearing even without the boxy reference); Zara flagged the tooling limit directly and switched to a code-side cutout. Deliveries, both confirmed clean: `frog-longbreak.png` (v=1786720632912 — the file the page uses) and `frog-transparent.png` (v=1786720750759 — variant produced during the cutout). `scripts/frog-bg-removal.js` was saved with the work. **Awaiting KR's live-browser sign-off.**
+- **Rotating sayings — assigned, not yet implemented:** KR re-confirmed the request ("new sayings in between the pomodoros so they are different every time instead of the same"). Koba owns the code; phrase content still needs KR approval.
+- **Five Page Edits queued** (recommendations_v1, action: brief Koba): dark mode → frog green, "productive tool" framing, "the what" copy, beverage line, and recharge copy — not yet applied.
 - **Hint-text removal complete and confirmed:** "Press space to begin" (idle) and "Space to pause" (running) are hidden; the **space-bar shortcut still works**.
 - **Emporium publishing — partial answer:** live link sits under the project; KR (account owner) posts from her account. Exact listing flow and display-name behavior **unconfirmed**. CEO will pull docs and file a note to the admin review queue.
 - **Editing model clarified:** this chat is the control room; publishing copies the file to a public link; edits are never locked; re-publishing pushes fresh versions to the same link.
 
 ## Files & Structure
-- **Core app** (`index.html`, 70KB): single-page app — all UI, timer logic, phase visuals, constellation animation (`dot-pulse`), copy, and the to-be-added sayings rotation. Every edit so far lands here.
+- **Core app** (`index.html`, 72KB): single-page app — all UI, timer logic, phase visuals, copy, the new `dot-twinkle` constellation animation, and the to-be-added sayings rotation. Every edit so far lands here.
 - **Mascot & phase visuals** (`images/`, 8 files): `frog-focus.png` (canonical reference for all poses), `frog-face.png` (⚠️ JPEG bytes under a .png name — needs re-encode), `frog-longbreak.png` (✅ rebuilt, true transparency — the file the page uses), `frog-transparent.png` (✅ transparent variant from the cutout), plus 4 other phase images.
 - **Background-removal tooling** (`scripts/frog-bg-removal.js`, 1 file): created during the frog cutout; saved in the workspace alongside the new assets.
 - **Voice pipeline**: `server.js` (5KB), `TTS-SETUP.md` (4KB), `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files); **audio cache** (`audio/`, 1 file). Express proxy + phrase cache; key in env; `speechSynthesis` fallback.
@@ -38,14 +38,13 @@
 - **Long-break frog background:** fixed at the image level (true-transparency PNG), not via CSS.
 - **AI generation can't do true transparency** — a code-side cutout was required; Zara flagged the limitation directly rather than shipping a flawed asset.
 - **Only the long-break frog needed the rebuild** — KR confirmed the other frog images were already fixed yesterday.
-- **Constellation twinkle direction:** replace the slow `dot-pulse` (scale+opacity swell) with a quicker **opacity/brightness flicker** — a true twinkle, not a breathing pulse.
+- **Constellation twinkle direction — locked in and shipped:** replace the slow `dot-pulse` (scale+opacity swell) with a quicker **opacity/brightness flicker** (`dot-twinkle`) — a true star twinkle, not a breathing pulse. Warm white/gold glow syncs with bright frames; per-dot stagger gives organic shimmer.
 - **Rotating sayings:** user-requested; phrases should differ on each break. Koba owns the code.
 - Publishing model: copy at public link → re-publish to update; KR's account owns the post.
 
 ## Pending Decisions
 - Sayings content: exact list/wording of the rotating between-pomodoro phrases (KR to approve).
 - KR's visual sign-off on the new transparent `frog-longbreak.png` in the live browser.
-- Twinkle implementation details: exact interval/flicker cadence, and whether it replaces `dot-pulse` entirely or layers on top of it.
 - Canonical transparent frog file (only `frog-longbreak.png` is used by the page; `frog-transparent.png` is a same-style variant — keep, delete, or reuse).
 - Whether to keep `scripts/frog-bg-removal.js` in the repo or treat it as one-off tooling.
 - Emporium listing specifics (exact listing flow, display-name behavior) — awaiting docs/admin-queue response.
@@ -58,29 +57,30 @@
 - [x] Diagnose long-break frog issue (root cause: baked-in white box in PNG, not CSS)
 - [x] Rebuild `frog-longbreak.png` with true transparent background (Zara) — delivered & confirmed
 - [x] Produce `frog-transparent.png` variant via code-side cutout (`scripts/frog-bg-removal.js` saved)
+- [x] Implement constellation twinkle — `dot-twinkle` opacity/gold-glow flicker with staggered per-dot timing replaces `dot-pulse` (Koba) — confirmed done
 - [ ] KR live-browser sign-off on transparent long-break frog
 - [ ] Implement rotating sayings between pomodoros in `index.html` (Koba) — phrases differ each time
 - [ ] Finalize the sayings list/content with KR
-- [ ] Implement constellation-dot twinkle — replace the slow `dot-pulse` swell with a quick opacity/brightness flicker (Koba; cadence TBD)
-- [ ] Apply KR's Five Page Edits (brief Koba per recommendations): dark mode → frog green; "productive tool"; "the what"; beverage line; recharge copy
-- [ ] Re-encode `frog-face.png` as a true PNG (JPEG bytes mislabeled)
-- [ ] Live-browser check in Chrome: timer face sits correctly inside the ring
+- [ ] Apply KR's Five Page Edits (brief Koba per recommendations_v1): dark mode → frog green; "productive tool"; "the what"; beverage line; recharge copy
+- [ ] Re-encode `frog-face.png` as a true PNG (JPEG bytes mislabeled) — per recommendations_v1
+- [ ] Live-browser check in Chrome: timer face sits correctly inside the ring — per recommendations_v1
+- [ ] Verify twinkle in the live browser while checking the timer ring (same QA pass)
 - [ ] KR completes full timer-cycle QA
 - [ ] Confirm Emporium publishing mechanics (docs + admin review queue note) and share findings with KR
 - [ ] Batch publish to public link; share in Emporium under KR's account
 
 ## Opportunities
 1. **Make the sayings rotation data-driven** — implement the phrase list as a simple editable array in `index.html` so KR can add/tweak sayings anytime without code changes. Low effort, high ongoing value.
-2. **Bundle the twinkle with the pending code batch** — the constellation twinkle, sayings rotation, and Five Page Edits are all `index.html` changes; one Koba pass with one QA cycle keeps the review tight instead of three round-trips.
+2. **Bundle the remaining `index.html` work into one Koba batch** — rotating sayings + Five Page Edits are all edits to the same file; one Koba pass with one QA cycle keeps the review tight instead of two round-trips. The twinkle already landed in the same file.
 3. **Reuse the transparent frog + cutout script beyond the break page** — e.g., a session-completion flash or social share card using `frog-longbreak.png`/`frog-transparent.png`; the same script could clean up any other phase image with a baked-in background. Extends the mascot identity with zero new art.
 
 ## Next Steps
-1. Brief Koba on the Five Page Edits **and** the constellation twinkle so both run in parallel with KR's frog review.
+1. Brief Koba on the Five Page Edits (recommendations_v1) — can run in parallel with KR's frog review, per the confirmed parallel-work model.
 2. Koba: implement rotating sayings; KR supplies/approves the phrase list.
-3. Run the live Chrome check — confirm the long-break frog renders transparent and the timer face sits correctly in the ring.
+3. Run the live Chrome check — confirm the long-break frog renders transparent, the timer face sits correctly in the ring, **and the twinkle animates in-browser** (single QA pass).
 4. Re-encode `frog-face.png` as a real PNG; confirm disposition of `frog-transparent.png` and `scripts/frog-bg-removal.js`.
 5. Pull Emporium docs + file note to admin review queue; share findings with KR.
 6. KR completes QA → batch publish to the public link.
 
 ---
-*Last updated: 2026-08-15T11:20Z*
+*Last updated: 2026-08-15T12:10Z*
