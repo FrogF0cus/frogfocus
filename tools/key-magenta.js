@@ -62,13 +62,16 @@ for (let i = 0; i < data.length; i += 4) {
     G = Math.max(0, Math.min(255, Math.round((g - t * bgG) * inv)));
     B = Math.max(0, Math.min(255, Math.round((b - t * bb) * inv)));
   } else if (a === 255 && d < 240) {
-    // despill opaque JPEG-ringing fringe: magenta fingerprint is B > G.
-    // The frog's own palette (sage/cream/clay/gold/charcoal) always has B <= G,
-    // so pulling the blue excess back to a warm neutral can't touch legit colors.
-    const spill = b - g - 8;
-    if (spill > 0) {
-      B = Math.round(g + spill * 0.10);
-      R = Math.max(0, Math.min(255, Math.round(r - spill * 0.30)));
+    // despill opaque JPEG-ringing fringe. Magenta/pink contamination lifts R and B
+    // relative to G; the frog's legit palette (sage/cream/clay/gold/charcoal)
+    // always keeps B clearly BELOW G, and green-dominant colors keep R below G.
+    // So: B not clearly below G  AND  R not clearly below G  => contaminated.
+    const bAboveG = (b - g) > -10;
+    const rAboveG = (r - g) > -5;
+    if (bAboveG && rAboveG) {
+      const strength = Math.max(0.15, Math.min(1, (b - g + 10) / 50));
+      B = Math.round(g - 14 * strength);
+      R = Math.round(g + 18 * strength);
     }
   }
   out[i] = R; out[i+1] = G; out[i+2] = B; out[i+3] = a;
