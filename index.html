@@ -293,6 +293,20 @@ html[data-theme="dark"] .cycle-item{color:#FFD98A;background:color-mix(in srgb,v
 .cycle-item.long .num{background:var(--clay);color:#FBF6EC}
 .cycle-arrow{color:var(--ink-soft);flex:none}
 .cycle-arrow svg{width:18px;height:18px;display:block}
+
+/* Constellation divider */
+.constellation{
+  display:flex;align-items:center;justify-content:center;gap:26px;
+  margin:20px 0 6px;
+}
+.constellation .dot{
+  display:block;width:var(--s);height:var(--s);border-radius:50%;
+  background:var(--d);opacity:.85;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--d) 14%,transparent);
+  animation:dot-pulse 3.2s ease-in-out infinite;
+  animation-delay:calc(var(--i,0)*0.35s);
+}
+@keyframes dot-pulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.18);opacity:1}}
 .cycle-note{text-align:center;margin-top:16px;font-size:14px;color:var(--ink-soft);font-weight:600}
 
 /* Why frog */
