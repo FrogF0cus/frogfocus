@@ -1,0 +1,12 @@
+# Secrets — NEVER commit the real key
+.env
+
+# Dependencies
+node_modules/
+
+# Synthesized audio cache (regenerates on demand)
+.tts-cache/
+
+# Logs / OS cruft
+*.log
+.DS_Store
