@@ -56,7 +56,7 @@ app.use(function (req, res, next) {
 });
 
 // ---- Serve ONLY the frontend assets (never server source or `.env`) --------
-['images', 'uploads'].forEach(function (dir) {
+['images', 'uploads', 'audio'].forEach(function (dir) {
   app.use('/' + dir, express.static(path.join(__dirname, dir)));
 });
 app.get('/', function (req, res) { res.sendFile(path.join(__dirname, 'index.html')); });
