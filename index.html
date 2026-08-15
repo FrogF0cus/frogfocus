@@ -923,14 +923,14 @@ function speakLocal(text){
     window.speechSynthesis.speak(u);
   } catch(e){ /* TTS unavailable */ }
 }
-/* Recorded frog voice — prefer the user's own mp4 clips, fall back to
-   speech synthesis when a clip is missing or fails to load. */
+/* Recorded frog voice — ElevenLabs "Will" clips (generated to audio/*.mp3),
+   fall back to speech synthesis when a clip is missing or fails to load. */
 const PHRASE_AUDIO = {
-  'focus-start': 'audio/focus-start.mp4',
-  'short-break': 'audio/short-break.mp4',
-  'long-break':  'audio/long-break.mp4',
-  'short-back':  'audio/short-back.mp4',
-  'long-back':   'audio/long-back.mp4'
+  'focus-start': 'audio/focus-start.mp3',
+  'short-break': 'audio/short-break.mp3',
+  'long-break':  'audio/long-break.mp3',
+  'short-back':  'audio/short-back.mp3',
+  'long-back':   'audio/long-back.mp3'
 };
 function speakPhrase(key, fallbackText){
   if (!voiceOn) return;
