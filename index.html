@@ -1132,10 +1132,18 @@ function reset(){
   saveTimer();
 }
 function skip(){
-  if (st.phase === 'focus')      setPhase('short');
-  else if (st.phase === 'short') setPhase('focus');
-  else { st.cycleDone = 0; setPhase('focus'); }
-  announce('Skipped to the next phase.');
+  if (st.phase === 'focus'){
+    // skipping a focus round still advances the cycle toward the long break
+    st.cycleDone += 1;
+    const earnedLong = st.cycleDone >= 4;
+    setPhase(earnedLong ? 'long' : 'short');
+    announce(earnedLong ? 'Skipped ahead — long break earned.' : 'Skipped ahead to a short break.');
+  } else {
+    // skipping a break (short or long) returns you to the next focus round
+    if (st.phase === 'long'){ st.cycleDone = 0; LS.set('ff.cycleDone', 0); }
+    setPhase('focus');
+    announce('Skipped ahead — back to focus.');
+  }
   saveTimer();
 }
 function completePhase(){
