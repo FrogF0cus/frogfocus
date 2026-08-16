@@ -926,37 +926,47 @@ function speakLocal(text){
   } catch(e){ /* TTS unavailable */ }
 }
 /* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3).
-   Played through the SAME AudioContext as the chimes. The context is resumed
-   on the Start tap (user gesture), so it stays unlocked and can play voice
-   clips that fire later from the timer with no further gesture. Clips are
-   fetched and decoded lazily, cached as AudioBuffers, then played via
-   createBufferSource — identical engine to the bells that already work from
-   the timer. Falls back to speech synthesis only if a clip can't load. */
-const voiceBufferCache = {};
-function decodeClip(url){
-  if (voiceBufferCache[url]) return Promise.resolve(voiceBufferCache[url]);
-  return fetch(url)
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
-    .then(function(ab){
-      const ctx = ensureAudio();
-      if (!ctx) throw new Error('no audio context');
-      return new Promise(function(resolve, reject){
-        ctx.decodeAudioData(ab, function(buf){ voiceBufferCache[url] = buf; resolve(buf); }, reject);
-      });
-    });
+   Played through a single reusable <audio> element (the browser's native MP3
+   decoder — no decodeAudioData step that can silently fail). The element is
+   unlocked on the Start tap by priming it with an inaudible play, so clips
+   that fire later from the timer can autoplay without a fresh gesture.
+   Falls back to speech synthesis only if a clip can't load. */
+const voiceEl = (function(){
+  const a = document.createElement('audio');
+  a.preload = 'auto';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  return a;
+})();
+let voiceUnlocked = false;
+function unlockVoice(){
+  if (voiceUnlocked) return;
+  const ctx = ensureAudio();
+  if (ctx && ctx.state === 'suspended') ctx.resume();
+  voiceUnlocked = true;
+  try {
+    voiceEl.src = 'audio/focus-start-1.mp3';
+    voiceEl.volume = 0;                       // inaudible prime
+    const p = voiceEl.play();
+    if (p && p.then){
+      p.then(function(){ voiceEl.pause(); voiceEl.currentTime = 0; voiceEl.volume = 1; })
+       .catch(function(){ voiceEl.volume = 1; });
+    } else {
+      voiceEl.pause(); voiceEl.currentTime = 0; voiceEl.volume = 1;
+    }
+  } catch(e){ voiceEl.volume = 1; }
 }
 function playClip(src, fallbackText){
-  const ctx = ensureAudio();
-  if (!ctx){ speakLocal(fallbackText); return; }
-  decodeClip(src).then(function(buf){
-    if (!voiceOn) return;
-    const node = ctx.createBufferSource();
-    node.buffer = buf;
-    const gain = ctx.createGain();
-    gain.gain.value = 1.0;
-    node.connect(gain); gain.connect(ctx.destination);
-    node.start(0);
-  }).catch(function(){ speakLocal(fallbackText); });
+  if (!voiceOn){ console.warn('[frog] voice off — skip', src); return; }
+  voiceEl.src = src;
+  voiceEl.volume = 1;
+  try {
+    const p = voiceEl.play();
+    if (p && p.then){
+      p.then(function(){ console.log('[frog] playing', src); })
+       .catch(function(e){ console.warn('[frog] play blocked', src, e && e.name, e && e.message); speakLocal(fallbackText); });
+    }
+  } catch(e){ console.warn('[frog] play threw', src, e && e.message); speakLocal(fallbackText); }
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
    Each line has its own Will clip at audio/<key>-<n>.mp3 (n = 1-based index). */
