@@ -9,34 +9,37 @@
 - **Launch strategy locked: ship the current build first** — roadmap features are update runway.
 
 ## Current Status
-- **Session is ACTIVE again — KR has returned.** The pause is over; KR is approving bridge actions, sending screenshots, and pushing for momentum ("update", "you stalled again"). CEO is mid-diagnostic, not holding.
-- **Public link is live and bridge-verified:** `https://usercontent.empir3.com/p/a3adb503b8/index.html` — the bridge's Chrome opens it directly with no login wall. The 405 workaround worked; the roadblock is bypassed.
-- **Constellation dots: mystery narrowed to Safari.** Published CSS is provably correct (`border-radius:50%`, square 8px dots, no overrides anywhere); the bridge's fresh Chrome renders the dots as **clean circles**; KR's Safari still shows boxes. Published bytes match the local file — this is a Safari-specific rendering quirk, not a stale-publish or CSS-defect issue.
-- **Break audio stays silent — mid-diagnosis.** CEO opened the live page in the bridge; KR approved the audio diagnostic. Web Audio code confirmed present in the published file; root cause not yet isolated.
-- **Zara's design QA pass remains down** (Grok route still unavailable; `recommendations_v1` failure timestamp `1786662085627` after 50 messages).
-- **Everything else is launch-ready**: Will's 5 clips verified, `PHRASE_AUDIO` on real `.mp3` paths, roadmap written, publish question answered.
+- **Session ACTIVE — KR is driving and bridge is warm.** KR requested, and CEO opened, a fresh bridge window with `?fresh=3` cache-bust; live dots + audio tests approved and run.
+- **Both live bugs fixed and republished.** (1) **Dots**: root cause found — `box-shadow` used hard spreads (zero/low blur), which Safari/WebKit renders as square-ish outlines. Fixed with soft circular glows; `border-radius` was never the issue. (2) **Voice**: two candidate culprits isolated — `speakVaried` bails on the `voiceOn` flag while chimes use a separate `soundOn` flag, and the Web Audio `decodeAudioData` path was a failure point. Fixed by switching to **one persistent `<audio>` element with no decode step**.
+- **Republish verified end-to-end:** no stale references, script parses, published `index.html` matches local, audio clips serve 200 as `audio/mpeg` (real MP3s, ID3v2.4 + ElevenLabs tags), images correct.
+- **Awaiting KR's Safari confirmation** of the two fixes on a fresh hard refresh — this is the last functional checkpoint before the aesthetic pass.
+- **Zara's design QA pass remains down** (Grok route unavailable; `recommendations_v1` failure timestamp `1786662085627` after 50 messages).
+- **Everything else is launch-ready**: Will's 5 clips verified, `PHRASE_AUDIO` on real `.mp3` paths, roadmap written, public link live.
 
 ## Files & Structure
-- **Core Page**: `index.html` (71KB) — "Frog Focus — your intentional productivity companion"; `PHRASE_AUDIO` map → real `.mp3` paths; per-state frog image wiring; cycle-pill labels; reworked `/* cycle strip */` block; Web Audio break code confirmed in published bytes. References `audio/`, `images/`, `uploads/` as external paths.
+- **Core Page**: `index.html` (70KB) — "Frog Focus — your intentional productivity companion"; `PHRASE_AUDIO` map → real `.mp3` paths; per-state frog image wiring; cycle-pill labels; reworked `/* cycle strip */` block; **soft-glow dot styling + single persistent audio element** now in the published bytes. References `audio/`, `images/`, `uploads/` as external paths.
 - **Backend**: `server.js` (5KB) — statically serves `audio/`, `images/`, `uploads/`; `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files).
 - **Scripts** (`scripts/`, 5 files): `generate-will-clips.js` — production track (the 5 shipped Will clips); `generate-more-clips.js` — vetted candidate voice menu; 3 pre-existing clip-generation scripts.
 - **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy files (Antoni, Josh, earlier Adam, Charlie) awaiting cleanup.
 - **Images**: `images/` (8 files — `frog-face.png` is JPEG bytes under a .png name, queued for re-encode); `uploads/` (21 files, all images — confirms MIME-level upload filter).
-- **Screenshots**: `screenshots/` (5 files) — bridge-window debugging captures (login wall, hero, dot section).
+- **Screenshots**: `screenshots/` (7 files) — bridge-window debugging captures (login wall, hero, dot section, audio checks).
 - **Docs**: `FROG-FOCUS-ROADMAP.md` (5KB) — post-launch source of truth; `TTS-SETUP.md` (4KB) — stale, rewrite or delete.
 
 ## Key Decisions Made
-- **Bridge debugging workflow proven.** The bridge now opens the public URL directly — CEO has real-browser ground truth: dots render as circles in Chrome; boxes are Safari-only.
-- **Dot CSS verified correct in the published bytes** — `border-radius:50%` present, no overrides; Safari is the only failing renderer, logged as a browser-quirk hunt, not a code defect.
-- **KR has returned and is actively driving** — approving bridge diagnostics, sending screenshots, expecting fast updates.
-- **Public-link publish is done** — the page is live at `usercontent.empir3.com/p/a3adb503b8/index.html`; the same URL that unblocked the dot check is the launch vehicle.
+- **Dot root cause locked: hard-spread box-shadows, not `border-radius`.** Safari/WebKit doesn't round zero-blur hard spreads. Fix shipped as blurred circular glows — the `border-radius:50%` theory and Safari-cache theory are superseded.
+- **Voice fix shipped: single persistent `<audio>` element, no decode path.** Removes the `decodeAudioData` failure mode entirely. The `voiceOn`/`soundOn` flag split remains a noted smell to unify.
+- **`?fresh=N` cache-busting adopted as the publish-verify workflow** — used to hard-refresh the live page and confirm the republished bytes.
+- **Republish confirmed live:** `https://usercontent.empir3.com/p/a3adb503b8/index.html` serves the fixed file; all assets return correct 200s and MIME types.
+- **Bridge remains the live-debug console** — new window opened per KR's request; dots and audio tested in real Chrome; publish question answered.
 - Earlier (unchanged): bridge login wall diagnosed as Empir3-side 405 (ref **b004e7eb**, logged with admin); sequencing locked (aesthetic changes → Koba's single combined pass); voice locked (Will, `.mp3`); scope locked (ship current build); shipping-music first track delivered to admin.
 
 ## Pending Decisions
-- **Safari dot fix approach:** belt-and-suspenders rule for the dot class (explicit `border-radius:50%`, possibly `-webkit-` variant / appearance reset) vs. testing whether KR's Safari is serving a stale cache. CEO to decide with bridge ground truth in hand.
-- **Public link = launch or staging?** The URL is live and shareable now; KR's call on whether that *is* the official launch or a pre-launch preview (domain/announcement still his).
-- **Break-audio root cause** — pending the in-flight bridge diagnostic; fix approach follows the result.
-- **Timing of `recommendations_v1`** (Five Page Edits, frog-face re-encode, timer-face check) — KR's stated intent is aesthetic edits before Koba's final pass; actions are tagged "Brief Koba" so one combined pass is possible.
+- **KR's Safari sign-off on the two live fixes** — the gate before the aesthetic pass; test with a hard refresh (not a cached tab).
+- **Public link = launch or staging?** The URL is live and shareable now; KR's call on whether that *is* the official launch or a pre-launch preview.
+- **KR's Five Page Edits** (`recommendations_v1`): dark mode → frog green, "productive tool" copy, "the what" section, beverage line, recharge copy — queued to brief Koba once KR defines/confirms the details.
+- **`frog-face.png` re-encode** to a real PNG before publish (JPEG bytes under a `.png` name).
+- **Timer face in ring + cycle-pill wrap live checks** — not yet confirmed this session; batch into the next bridge window.
+- **Unify `voiceOn`/`soundOn` flags** — a code-quality cleanup to fold into Koba's pass, or leave as-is given the persistent-element fix works.
 - **Zara's design QA deep pass** — reschedule when the Grok route recovers; no further retry attempts until then.
 - **Shipping-music playlist** — first track delivered; whether to formalize a rotating playlist is unpicked.
 - Minor cleanup: confirm/drop Adam from backup menu; delete legacy preview clips; rewrite or delete `TTS-SETUP.md`.
@@ -61,17 +64,20 @@
 - [x] **Diagnose bridge login wall** — isolated browser + fresh session; KR's login attempt → 405
 - [x] **Log Empir3 405 as admin bug** (ref **b004e7eb**)
 - [x] **Publish to public link and open in bridge** — URL live and accessible
-- [x] **Verify constellation dots in bridge's Chrome** — renders as clean circles; published file correct
-- [x] **Confirm published bytes match local file** — `border-radius:50%` and Web Audio code both present
-- [x] **KR returns — session active again**
-- [ ] **Diagnose silent break audio** — in flight in the bridge; KR approved
-- [ ] **Fix Safari-only dot rendering** (boxes in Safari vs. circles in Chrome)
+- [x] **Root-cause dot rendering** — hard-spread box-shadows (Safari/WebKit doesn't round zero-blur spreads), not `border-radius`
+- [x] **Ship dot fix** — soft circular glow replacing hard rings; `index.html` edited and republished
+- [x] **Isolate voice failure candidates** — `speakVaried` gated on `voiceOn` vs. chimes' `soundOn`; fragile `decodeAudioData` path
+- [x] **Ship voice fix** — single persistent `<audio>` element, no decode step; `index.html` edited and republished
+- [x] **Verify republished file live** — no stale references, script parses, assets 200 with correct MIME types
+- [x] **KR returns — session active again; fresh bridge window opened** (`?fresh=3`); dots + audio tested live with KR's approval
+- [ ] **KR's Safari confirmation** — hard refresh: dots render as circular glows, voice plays
 - [ ] **KR's final timer-cycle run-through** — verify phase/off-beat behavior
 - [ ] **KR's go → official launch** — public link live; final step is KR's call
 - [ ] Apply KR's Five Page Edits: dark mode → frog green, "productive tool" copy, "the what" section, beverage line, recharge copy
 - [ ] Re-encode `frog-face.png` to a real PNG
 - [ ] Live Chrome check: timer face sits right in the ring (batch with bridge session)
 - [ ] Verify cycle-strip pills wrap correctly (batch with bridge session)
+- [ ] Unify `voiceOn`/`soundOn` toggle flags (fold into Koba's pass)
 - [ ] **Koba's single final pass** — implement `recommendations_v1` edits + technical/UX together; queued until KR's aesthetic changes are defined
 - [ ] Zara design QA deep pass — reschedule when Grok recovers
 - [ ] Coordinate with Empir3 admin on the 405 fix (b004e7eb)
@@ -80,18 +86,17 @@
 - [ ] Decide whether to formalize the "shipping music" playlist for Koba
 
 ## Opportunities
-1. **The bridge is now a working live-debug console — use it while it's warm.** CEO opened the public URL, read computed styles, scrolled the live page, and ran JS in a real Chrome. Batch the remaining live checks (silent break audio, timer face in the ring, cycle-pill wrap) in this same connected session instead of ping-ponging — that directly matches KR's "keep me updated" energy.
-2. **The public link collapses "preview vs. launch."** The page is live at a real, shareable URL. KR can send it around *today* — to the admin who got the shipping music, to the team, to anyone whose opinion matters — turning the official launch into a naming/announcement decision rather than an engineering one. Zebra-stripe momentum with zero extra build work.
-3. **The Safari-only dot failure is a polish signal, not a crisis.** Chrome renders perfect circles; Safari boxes them despite provably correct CSS. A belt-and-suspenders dot rule (explicit `border-radius:50%`, `-webkit-` fallback, no shorthand ambiguity) fixes it once and becomes a reusable pattern for every future project — plus it gives KR a quick visible win the moment he checks back in.
+1. **Close the loop in one Safari refresh.** Both fixes are live and verified server-side. One hard refresh from KR turns "two open bugs" into "confirmed-shipped," clearing the last functional blocker. The fastest path to the aesthetic pass is asking KR for exactly one fresh-load check.
+2. **Codify the `?fresh=N` publish-verify pattern.** It just worked end-to-end (cache-bust → live check → republish → confirm 200s/MIME). Making this the standard for Frog Focus updates and future Empir3 publishes eliminates the entire class of "is it live or is it cached" confusion.
+3. **Package the shared cleanup with Koba's pass.** The `voiceOn`/`soundOn` split, `frog-face.png` re-encode, legacy clip removal, and stale `TTS-SETUP.md` are all small, mechanical, and can ride along with the Five Page Edits — one briefing to Koba, one pass, no serial round-trips.
 
 ## Next Steps
-- **Finish the bridge audio diagnostic now** (KR already approved) — root-cause the silent break audio; fix immediately.
-- **While the bridge is open, run the remaining live checks in one batch:** timer face in the ring, cycle-pill wrap, dot section screenshot for the record.
-- **Ship the Safari dot fix** (belt-and-suspenders border-radius rule) and have KR confirm in his Safari.
-- **Present `recommendations_v1` to KR** for the "lock the look" pass; on sign-off, brief Koba for the combined aesthetic + final technical/UX pass.
+- **Get KR's Safari confirmation on the hard refresh** (dots as glows, voice audible) — the gate that unlocks the aesthetic pass.
+- **Present `recommendations_v1` to KR** to lock the Five Page Edits; on sign-off, brief Koba for the combined aesthetic + technical/UX pass (include the `frog-face.png` re-encode and flag unification).
+- **Batch remaining live checks into the next bridge window:** timer face in the ring, cycle-pill wrap, dot-section screenshot for the record.
 - **Confirm with KR whether the public link is the launch or staging** — if staging, the official "go" is still his word, but it's now a one-word decision with zero wait.
 - **Coordinate the Empir3 405 fix (b004e7eb) in parallel** — affects other bridge workflows beyond Frog Focus.
 - Post-launch: reschedule Zara's deep pass when Grok recovers; cleanup pass (legacy clips, stale `TTS-SETUP.md`); decide on the shipping-music playlist.
 
 ---
-*Last updated: 2026-08-16T11:41Z*
+*Last updated: 2026-08-16T14:48Z*
