@@ -1182,6 +1182,7 @@ function setPhase(p){
 }
 function start(){
   ensureAudio();                     // unlock on user gesture
+  unlockVoice();                     // prime the voice <audio> element
   const freshStart = (st.remaining >= totalMs());
   st.running = true;
   st.endTime = Date.now() + st.remaining;
