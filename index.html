@@ -948,6 +948,36 @@ function speakPhrase(key, fallbackText){
   const p = a.play();
   if (p && typeof p.catch === 'function') p.catch(doFallback);
 }
+/* Varied spoken sayings — rotated so each focus / short break opens fresh.
+   Spoken via the built-in voice (speakLocal) for now; recorded clips can
+   swap in later per key. */
+const SPOKEN_SAYINGS = {
+  'focus-start': [
+    'Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.',
+    'Deep breath. Let\'s make the next twenty-five minutes count. I\'m right here with you.',
+    'Time to focus, friend. Settle in — I\'ll keep an eye on the clock for you.',
+    'Ready when you are. One good block, together. You\'ve got this.',
+    'Focus time. One thing, twenty-five minutes, and I\'m cheering you on.',
+    'Let\'s dive in. You focus, I\'ll watch the lily pads.'
+  ],
+  'short-break': [
+    'Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.',
+    'Good one. Stand up, shake it out, and come back fresh.',
+    'Solid focus. Grab a sip of water and breathe easy for a bit.',
+    'Well done. Roll your shoulders and give those eyes a rest.',
+    'Beautiful. Take a little breather — you\'ve earned it.'
+  ]
+};
+let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1 });
+function speakVaried(key){
+  if (!voiceOn) return;
+  const list = SPOKEN_SAYINGS[key];
+  if (!list || !list.length) return;
+  const idx = ((spokenIdx[key] == null ? -1 : spokenIdx[key]) + 1) % list.length;
+  spokenIdx[key] = idx;
+  LS.set('ff.spokenIdx', spokenIdx);
+  speakLocal(list[idx]);
+}
 
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
 if ('speechSynthesis' in window){
@@ -1113,7 +1143,7 @@ function start(){
   const freshStart = (st.remaining >= totalMs());
   st.running = true;
   st.endTime = Date.now() + st.remaining;
-  if (st.phase === 'focus' && freshStart && voiceOn) speakPhrase('focus-start', 'Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.');
+  if (st.phase === 'focus' && freshStart) speakVaried('focus-start');
   announce(st.phase === 'focus' ? 'Timer started. ' + durations.focus + ' minutes of focus.' : (st.phase === 'short' ? 'Short break started.' : 'Long break started.'));
   updateAll();
   saveTimer();
@@ -1164,7 +1194,7 @@ function completePhase(){
       speakPhrase('long-break', 'Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.');
       announce('Round complete! Long break earned.');
     } else {
-      speakPhrase('short-break', 'Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.');
+      speakVaried('short-break');
       announce('Focus complete. Time for a short break.');
     }
     if (autoBreak) start();
