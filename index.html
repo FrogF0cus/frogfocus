@@ -924,19 +924,9 @@ function speakLocal(text){
     window.speechSynthesis.speak(u);
   } catch(e){ /* TTS unavailable */ }
 }
-/* Recorded frog voice — ElevenLabs "Will" clips (generated to audio/*.mp3),
+/* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3),
    fall back to speech synthesis when a clip is missing or fails to load. */
-const PHRASE_AUDIO = {
-  'focus-start': 'audio/focus-start.mp3',
-  'short-break': 'audio/short-break.mp3',
-  'long-break':  'audio/long-break.mp3',
-  'short-back':  'audio/short-back.mp3',
-  'long-back':   'audio/long-back.mp3'
-};
-function speakPhrase(key, fallbackText){
-  if (!voiceOn) return;
-  const src = PHRASE_AUDIO[key];
-  if (!src){ speakLocal(fallbackText); return; }
+function playClip(src, fallbackText){
   let fellBack = false;
   const doFallback = function(){
     if (fellBack) return;
@@ -949,8 +939,7 @@ function speakPhrase(key, fallbackText){
   if (p && typeof p.catch === 'function') p.catch(doFallback);
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
-   Spoken via the built-in voice (speakLocal) for now; recorded clips can
-   swap in later per key. */
+   Each line has its own Will clip at audio/<key>-<n>.mp3 (n = 1-based index). */
 const SPOKEN_SAYINGS = {
   'focus-start': [
     'Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.',
@@ -995,8 +984,8 @@ function speakVaried(key){
   spokenIdx[key] = idx;
   LS.set('ff.spokenIdx', spokenIdx);
   const text = list[idx];
-  if (PHRASE_AUDIO[key]) speakPhrase(key, text);   // recorded Will clip (reliable); TTS fallback
-  else speakLocal(text);
+  const src = 'audio/' + key + '-' + (idx + 1) + '.mp3';
+  playClip(src, text);   // recorded Will clip per line; browser TTS fallback
 }
 
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
