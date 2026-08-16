@@ -957,7 +957,7 @@ const SPOKEN_SAYINGS = {
     'Deep breath. Let\'s make the next focus round count. I\'m right here with you.',
     'Time to focus, friend. Settle in — I\'ll keep an eye on the clock for you.',
     'Ready when you are. One good block, together. You\'ve got this.',
-    'Focus time. One thing, get the good stuff done, and I\'m cheering you on.'
+    'Focus time. One thing, get the good stuff done, and I\'m cheering you on.',
     'Let\'s dive in. You focus, I\'ll watch the lily pads.'
   ],
   'short-break': [
@@ -966,9 +966,27 @@ const SPOKEN_SAYINGS = {
     'Solid focus. Grab a sip of water and breathe easy for a bit.',
     'Well done. Roll your shoulders and give those eyes a rest.',
     'Beautiful. Take a little breather — you\'ve earned it.'
+  ],
+  'long-break': [
+    'Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.',
+    'Four rounds done. That\'s a real accomplishment. Now go actually rest — walk, stretch, snack. I\'ll be here.',
+    'A full cycle complete. This is where the good stuff settles in. Enjoy every minute of this long break.',
+    'You did the whole round. I\'m seriously impressed. Give your brain a proper rest now.'
+  ],
+  'short-back': [
+    'Welcome back, friend. Ready to dive in for another one?',
+    'Feeling refreshed? Let\'s make this next block count.',
+    'Good to see you again. One more focused round, together.',
+    'Ready when you are. Let\'s go again.'
+  ],
+  'long-back': [
+    'Welcome back. Feeling good? Let\'s give the next round a go together.',
+    'Nice to have you back. Fresh cycle, fresh start — I\'m with you.',
+    'That long break was well earned. Ready to begin a new round together?',
+    'Welcome back, friend. New round, same you — let\'s do this.'
   ]
 };
-let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1 });
+let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
 function speakVaried(key){
   if (!voiceOn) return;
   const list = SPOKEN_SAYINGS[key];
@@ -1191,7 +1209,7 @@ function completePhase(){
     else { celebrateFrog(); }
     if (soundOn) chimeFocusEnd();
     if (earnedLong){
-      speakPhrase('long-break', 'Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.');
+      speakVaried('long-break');
       announce('Round complete! Long break earned.');
     } else {
       speakVaried('short-break');
@@ -1207,9 +1225,9 @@ function completePhase(){
     setPhase('focus');
     if (soundOn) chimeBreakEnd();
     if (wasLong){
-      speakPhrase('long-back', 'Welcome back. Feeling good? Let\'s give the next round a go together.');
+      speakVaried('long-back');
     } else {
-      speakPhrase('short-back', 'Welcome back, friend. Ready to dive in for another one?');
+      speakVaried('short-back');
     }
     announce(wasLong ? 'Long break over. New round ready.' : 'Break over. Ready to focus?');
   }
