@@ -996,8 +996,7 @@ const SPOKEN_SAYINGS = {
   ]
 };
 
-/* Voice clips load on demand through the persistent element; preload='auto'
-   means each clip is fetched as soon as its src is set. */
+/* Voice clips load on demand and decode through the shared AudioContext. */
 
 let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
 function speakVaried(key){
