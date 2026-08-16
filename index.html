@@ -868,7 +868,7 @@ function ensureAudio(){
 let _dbgEl = null;
 function debugLog(s){
   try {
-    if (!/\bdebug\b/.test(location.search)) return;
+    if (/\bdebug=0\b/.test(location.search)) return;  // opt-out only; visible by default during final test
     if (!_dbgEl){
       _dbgEl = document.createElement('pre');
       _dbgEl.id = 'ffDebug';
@@ -991,16 +991,17 @@ function preloadVoiceClips(){
 function playBufferStore(storeKey){
   const ctx = ensureAudio();
   if (!ctx){ debugLog('playBuffer ' + storeKey + ': no ctx'); return false; }
-  if (ctx.state === 'suspended'){ ctx.resume(); debugLog('playBuffer ' + storeKey + ': ctx was suspended, resumed (may be too late)'); }
+  if (ctx.state === 'suspended'){ ctx.resume(); debugLog('playBuffer ' + storeKey + ': ctx suspended, resume() called'); }
   const buf = voiceBuffers[storeKey];
-  if (!buf){ debugLog('playBuffer ' + storeKey + ': buffer MISSING (decoded count=' + Object.keys(voiceBuffers).length + ')'); return false; }
+  if (!buf){ debugLog('playBuffer ' + storeKey + ': buffer MISSING (decoded=' + Object.keys(voiceBuffers).length + ')'); return false; }
+  if (ctx.state !== 'running'){ debugLog('playBuffer ' + storeKey + ': ctx NOT running (' + ctx.state + ') -> fall back to <audio>'); return false; }
   const node = ctx.createBufferSource();
   node.buffer = buf;
   const g = ctx.createGain();
   g.gain.value = 1;
   node.connect(g); g.connect(ctx.destination);
   node.start(0);
-  debugLog('playBuffer ' + storeKey + ': PLAYING, ctx=' + ctx.state);
+  debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio');
   return true;
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
@@ -1058,6 +1059,7 @@ function speakVaried(key){
   // 2) fresh <audio> element — no shared-element .src race
   const a = new Audio('audio/' + storeKey + '.mp3');
   a.volume = 1;
+  a.preload = 'auto';
   let p = null;
   try { p = a.play(); } catch(e){ debugLog('fallback audio play() threw: ' + (e && e.message)); }
   if (p && p.then){ p.then(function(){ debugLog('fallback audio PLAYED: ' + storeKey); }).catch(function(err){ debugLog('fallback audio BLOCKED: ' + storeKey + ' (' + (err && err.message) + ')'); speakLocal(text); }); }
@@ -1369,7 +1371,15 @@ setInterval(function(){
   saveTimerThrottled();
 }, 250);
 document.addEventListener('visibilitychange', function(){
-  if (!document.hidden && st.running) updateTimeUI();
+  if (!document.hidden){
+    if (st.running) updateTimeUI();
+    // Revive the AudioContext when the tab returns to the foreground — browsers
+    // suspend it while backgrounded, which was silencing the voice at break time.
+    if (audioCtx && audioCtx.state === 'suspended'){
+      audioCtx.resume();
+      debugLog('visibility: resumed suspended ctx, state=' + audioCtx.state);
+    }
+  }
 });
 
 /* ---------- confetti ---------- */
