@@ -864,6 +864,14 @@ function ensureAudio(){
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
+async function ensureAudioRunning(){
+  const ctx = ensureAudio();
+  if (!ctx) return null;
+  if (ctx.state !== 'running'){
+    try { await ctx.resume(); } catch(e){}
+  }
+  return ctx;
+}
 /* Self-diagnostic strip — visible only with ?debug=1 in the URL. */
 let _dbgEl = null;
 function debugLog(s){
@@ -904,15 +912,15 @@ function tone(ctx, freq, start, dur, type, vol){
   osc.connect(g); g.connect(ctx.destination);
   osc.start(start); osc.stop(start + dur + 0.05);
 }
-function chimeFocusEnd(){          // gentle two-note bell
-  const ctx = ensureAudio(); if (!ctx || !soundOn) return;
+async function chimeFocusEnd(){          // gentle two-note bell
+  const ctx = await ensureAudioRunning(); if (!ctx || !soundOn) return;
   const t = ctx.currentTime;
   tone(ctx, 587.33, t, 1.4, 'sine', 0.22);
   tone(ctx, 880.00, t + 0.22, 1.8, 'sine', 0.14);
   tone(ctx, 1760.0, t + 0.22, 1.4, 'sine', 0.04);
 }
-function chimeBreakEnd(){          // bright rising arpeggio
-  const ctx = ensureAudio(); if (!ctx || !soundOn) return;
+async function chimeBreakEnd(){          // bright rising arpeggio
+  const ctx = await ensureAudioRunning(); if (!ctx || !soundOn) return;
   const t = ctx.currentTime;
   [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => tone(ctx, f, t + i * 0.13, 0.6, 'triangle', 0.16));
 }
@@ -988,20 +996,19 @@ function preloadVoiceClips(){
   Promise.all(jobs).then(function(){ voiceReady = true; debugLog('preload done: ' + Object.keys(voiceBuffers).length + ' buffers'); }).catch(function(){ voiceReady = true; debugLog('preload done (with errors): ' + Object.keys(voiceBuffers).length + ' buffers'); });
 }
 
-function playBufferStore(storeKey){
-  const ctx = ensureAudio();
+async function playBufferStore(storeKey){
+  const ctx = await ensureAudioRunning();
   if (!ctx){ debugLog('playBuffer ' + storeKey + ': no ctx'); return false; }
-  if (ctx.state === 'suspended'){ ctx.resume(); debugLog('playBuffer ' + storeKey + ': ctx suspended, resume() called'); }
   const buf = voiceBuffers[storeKey];
   if (!buf){ debugLog('playBuffer ' + storeKey + ': buffer MISSING (decoded=' + Object.keys(voiceBuffers).length + ')'); return false; }
-  if (ctx.state !== 'running'){ debugLog('playBuffer ' + storeKey + ': ctx NOT running (' + ctx.state + ') -> fall back to <audio>'); return false; }
+  if (ctx.state !== 'running'){ debugLog('playBuffer ' + storeKey + ': ctx still NOT running (' + ctx.state + ') -> fall back to <audio>'); return false; }
   const node = ctx.createBufferSource();
   node.buffer = buf;
   const g = ctx.createGain();
   g.gain.value = 1;
   node.connect(g); g.connect(ctx.destination);
   node.start(0);
-  debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio');
+  debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio (ctx=' + ctx.state + ')');
   return true;
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
@@ -1044,7 +1051,7 @@ const SPOKEN_SAYINGS = {
 
 
 let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
-function speakVaried(key){
+async function speakVaried(key){
   if (!voiceOn) return;
   const list = SPOKEN_SAYINGS[key];
   if (!list || !list.length) return;
@@ -1054,8 +1061,8 @@ function speakVaried(key){
   const text = list[idx];
   const storeKey = key + '-' + (idx + 1);
   debugLog('speak ' + key + ' -> ' + storeKey + ' (voiceOn=' + voiceOn + ')');
-  // 1) decoded buffer — same AudioContext as the chimes, so it's reliable
-  if (playBufferStore(storeKey)) return;
+  // 1) decoded buffer — await the resume so a suspended context actually revives
+  if (await playBufferStore(storeKey)) return;
   // 2) fresh <audio> element — no shared-element .src race
   const a = new Audio('audio/' + storeKey + '.mp3');
   a.volume = 1;
