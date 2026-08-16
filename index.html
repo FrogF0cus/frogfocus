@@ -969,8 +969,9 @@ function preloadVoiceClips(){
   if (voicePreloadStarted) return;
   voicePreloadStarted = true;
   const ctx = ensureAudio();
-  if (!ctx) return;
+  if (!ctx){ debugLog('preload: no AudioContext'); return; }
   if (ctx.state === 'suspended') ctx.resume();
+  debugLog('preload: decoding clips, ctx=' + ctx.state);
   const jobs = [];
   Object.keys(SPOKEN_SAYINGS).forEach(function(key){
     SPOKEN_SAYINGS[key].forEach(function(_, i){
@@ -979,26 +980,27 @@ function preloadVoiceClips(){
         fetch(src)
           .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
           .then(function(buf){ return ctx.decodeAudioData(buf); })
-          .then(function(ab){ voiceBuffers[key + '-' + (i + 1)] = ab; })
-          .catch(function(e){ console.warn('[frog] decode fail', src, e && e.message); })
+          .then(function(ab){ voiceBuffers[key + '-' + (i + 1)] = ab; debugLog('decoded: ' + key + '-' + (i + 1)); })
+          .catch(function(e){ console.warn('[frog] decode fail', src, e && e.message); debugLog('DECODE FAIL ' + src + ': ' + (e && e.message)); })
       );
     });
   });
-  Promise.all(jobs).then(function(){ voiceReady = true; }).catch(function(){ voiceReady = true; });
+  Promise.all(jobs).then(function(){ voiceReady = true; debugLog('preload done: ' + Object.keys(voiceBuffers).length + ' buffers'); }).catch(function(){ voiceReady = true; debugLog('preload done (with errors): ' + Object.keys(voiceBuffers).length + ' buffers'); });
 }
 
 function playBufferStore(storeKey){
   const ctx = ensureAudio();
-  if (!ctx) return false;
-  if (ctx.state === 'suspended') ctx.resume();
+  if (!ctx){ debugLog('playBuffer ' + storeKey + ': no ctx'); return false; }
+  if (ctx.state === 'suspended'){ ctx.resume(); debugLog('playBuffer ' + storeKey + ': ctx was suspended, resumed (may be too late)'); }
   const buf = voiceBuffers[storeKey];
-  if (!buf) return false;
+  if (!buf){ debugLog('playBuffer ' + storeKey + ': buffer MISSING (decoded count=' + Object.keys(voiceBuffers).length + ')'); return false; }
   const node = ctx.createBufferSource();
   node.buffer = buf;
   const g = ctx.createGain();
   g.gain.value = 1;
   node.connect(g); g.connect(ctx.destination);
   node.start(0);
+  debugLog('playBuffer ' + storeKey + ': PLAYING, ctx=' + ctx.state);
   return true;
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
@@ -1050,15 +1052,16 @@ function speakVaried(key){
   LS.set('ff.spokenIdx', spokenIdx);
   const text = list[idx];
   const storeKey = key + '-' + (idx + 1);
+  debugLog('speak ' + key + ' -> ' + storeKey + ' (voiceOn=' + voiceOn + ')');
   // 1) decoded buffer — same AudioContext as the chimes, so it's reliable
   if (playBufferStore(storeKey)) return;
   // 2) fresh <audio> element — no shared-element .src race
   const a = new Audio('audio/' + storeKey + '.mp3');
   a.volume = 1;
   let p = null;
-  try { p = a.play(); } catch(e){}
-  if (p && p.then){ p.then(function(){}).catch(function(){ speakLocal(text); }); }
-  else { speakLocal(text); }
+  try { p = a.play(); } catch(e){ debugLog('fallback audio play() threw: ' + (e && e.message)); }
+  if (p && p.then){ p.then(function(){ debugLog('fallback audio PLAYED: ' + storeKey); }).catch(function(err){ debugLog('fallback audio BLOCKED: ' + storeKey + ' (' + (err && err.message) + ')'); speakLocal(text); }); }
+  else { debugLog('fallback audio: no promise (old browser), TTS'); speakLocal(text); }
 }
 
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
