@@ -925,56 +925,45 @@ function speakLocal(text){
   } catch(e){ /* TTS unavailable */ }
 }
 /* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3).
-   Played through the Web Audio API so timer-triggered phase changes are
-   reliable: the AudioContext is resumed on the first user gesture and then
-   stays unlocked, whereas a fresh HTMLAudioElement gets silently blocked by
-   the browser when started from a timer with no gesture. Falls back to
-   speech synthesis if a clip is missing or fails to decode. */
-const clipBuffers = {};
-const clipLoading = {};
-function decodeAudio(ctx, ab){
-  return new Promise(function(resolve, reject){
-    let done = false;
-    const ok = function(buf){ if (done) return; done = true; resolve(buf); };
-    const bad = function(e){ if (done) return; done = true; reject(e); };
-    try {
-      const p = ctx.decodeAudioData(ab, ok, bad);
-      if (p && typeof p.then === 'function') p.then(ok, bad);
-    } catch(e){ bad(e); }
-  });
+   Played through ONE persistent <audio> element. Browsers tie the autoplay
+   unlock to the element itself, so a single reused element — first played
+   from the Start tap — stays unlocked and keeps working when a phase change
+   fires later from the timer (no user gesture). No manual decode step, so
+   there's nothing to silently fail on a suspended AudioContext. Falls back
+   to speech synthesis if a clip can't play. */
+let voiceEl = null;
+let voicePrimed = false;
+function ensureVoiceEl(){
+  if (!voiceEl){
+    voiceEl = new Audio();
+    voiceEl.preload = 'auto';
+  }
+  return voiceEl;
 }
-function loadClip(src){
-  if (clipBuffers[src]) return Promise.resolve(clipBuffers[src]);
-  if (clipLoading[src]) return clipLoading[src];
-  const ctx = ensureAudio();
-  if (!ctx) return Promise.reject(new Error('no audio context'));
-  clipLoading[src] = fetch(src)
-    .then(function(r){ if (!r.ok) throw new Error('HTTP '+r.status); return r.arrayBuffer(); })
-    .then(function(ab){ return decodeAudio(ctx, ab); })
-    .then(function(buf){ clipBuffers[src] = buf; delete clipLoading[src]; return buf; })
-    .catch(function(e){ delete clipLoading[src]; throw e; });
-  return clipLoading[src];
+/* Unlock the element on the first gesture so timer-triggered clips later
+   are not blocked as "no user activation" autoplay. Plays a muted clip just
+   long enough to satisfy the browser, then resets. */
+function primeVoice(){
+  if (voicePrimed) return;
+  voicePrimed = true;
+  const el = ensureVoiceEl();
+  el.muted = true;
+  el.src = 'audio/short-break-1.mp3';
+  const p = el.play();
+  if (p && p.then) p.then(function(){ el.pause(); el.currentTime = 0; }).catch(function(){});
 }
-function unlockClip(){
-  const ctx = ensureAudio();
-  if (ctx && ctx.state === 'suspended') ctx.resume();
-}
-document.addEventListener('pointerdown', unlockClip, { passive: true });
-document.addEventListener('keydown',    unlockClip, { passive: true });
-document.addEventListener('click',      unlockClip, { passive: true });
+document.addEventListener('pointerdown', primeVoice, { passive: true });
+document.addEventListener('keydown',    primeVoice, { passive: true });
+document.addEventListener('touchstart', primeVoice, { passive: true });
 function playClip(src, fallbackText){
-  const ctx = ensureAudio();
-  if (!ctx){ speakLocal(fallbackText); return; }
-  if (ctx.state === 'suspended') ctx.resume();
-  loadClip(src).then(function(buf){
-    if (ctx.state === 'suspended') ctx.resume();
-    const node = ctx.createBufferSource();
-    node.buffer = buf;
-    const g = ctx.createGain();
-    g.gain.value = 1.0;
-    node.connect(g); g.connect(ctx.destination);
-    node.start(0);
-  }).catch(function(){ speakLocal(fallbackText); });
+  const el = ensureVoiceEl();
+  el.muted = false;
+  el.src = src;
+  el.currentTime = 0;
+  const p = el.play();
+  if (p && p.then){
+    p.catch(function(){ speakLocal(fallbackText); });
+  }
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
    Each line has its own Will clip at audio/<key>-<n>.mp3 (n = 1-based index). */
@@ -1014,13 +1003,8 @@ const SPOKEN_SAYINGS = {
   ]
 };
 
-/* Preload every Will clip into memory so playback is instant and never
-   blocked by a network fetch mid-transition. */
-Object.keys(SPOKEN_SAYINGS).forEach(function(key){
-  SPOKEN_SAYINGS[key].forEach(function(_text, i){
-    loadClip('audio/' + key + '-' + (i + 1) + '.mp3').catch(function(){});
-  });
-});
+/* Voice clips load on demand through the persistent element; preload='auto'
+   means each clip is fetched as soon as its src is set. */
 
 let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
 function speakVaried(key){
