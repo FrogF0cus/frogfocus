@@ -1224,7 +1224,7 @@ function setPhase(p){
   updateAll();
 }
 function start(){
-  ensureAudio();                     // unlock on user gesture
+  unlockAudio();                     // robust unlock on user gesture (silent buffer)
   preloadVoiceClips();               // decode all voice clips once into the AudioContext
   const freshStart = (st.remaining >= totalMs());
   st.running = true;
