@@ -994,7 +994,9 @@ function speakVaried(key){
   const idx = ((spokenIdx[key] == null ? -1 : spokenIdx[key]) + 1) % list.length;
   spokenIdx[key] = idx;
   LS.set('ff.spokenIdx', spokenIdx);
-  speakLocal(list[idx]);
+  const text = list[idx];
+  if (PHRASE_AUDIO[key]) speakPhrase(key, text);   // recorded Will clip (reliable); TTS fallback
+  else speakLocal(text);
 }
 
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
