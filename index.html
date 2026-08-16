@@ -925,7 +925,36 @@ function speakLocal(text){
   } catch(e){ /* TTS unavailable */ }
 }
 /* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3),
-   fall back to speech synthesis when a clip is missing or fails to load. */
+   fall back to speech synthesis when a clip is missing or fails to load.
+   A single persistent Audio element is reused for every clip: browsers tie
+   autoplay permission to the element, so the first clip (played during the
+   Start gesture) unlocks it and keeps timer-triggered phase changes — which
+   have no user gesture — from being silently blocked. */
+let clipEl = null;
+let clipUnlocked = false;
+function ensureClip(){
+  if (!clipEl){
+    clipEl = new Audio();
+    clipEl.preload = 'auto';
+  }
+  return clipEl;
+}
+function unlockClip(){
+  // Prime the element on the first user interaction by playing a muted blip.
+  // Muted autoplay is always permitted and marks the element as "activated"
+  // so later unmuted plays (from timer transitions) are allowed too.
+  if (clipUnlocked) return;
+  clipUnlocked = true;
+  const a = ensureClip();
+  try {
+    a.muted = true;
+    a.src = 'audio/focus-start-1.mp3';
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(function(){});
+  } catch(e){}
+}
+document.addEventListener('pointerdown', unlockClip, { once: true, passive: true });
+document.addEventListener('keydown',    unlockClip, { once: true, passive: true });
 function playClip(src, fallbackText){
   let fellBack = false;
   const doFallback = function(){
@@ -933,8 +962,11 @@ function playClip(src, fallbackText){
     fellBack = true;
     speakLocal(fallbackText);
   };
-  const a = new Audio(src);
+  const a = ensureClip();
+  a.muted = false;
   a.onerror = doFallback;
+  a.src = src;
+  a.load();
   const p = a.play();
   if (p && typeof p.catch === 'function') p.catch(doFallback);
 }
