@@ -302,9 +302,10 @@ html[data-theme="dark"] .cycle-item{color:#FFD98A;background:rgba(255,192,77,.18
   margin:22px auto 8px;gap:clamp(34px,7vw,72px);
 }
 .constellation .dot{
-  display:block;width:8px;height:8px;border-radius:50%;
-  background:#FFC04D;opacity:.9;
-  box-shadow:0 0 6px rgba(255,192,77,.3);
+  display:block;width:var(--s,8px);height:var(--s,8px);min-width:5px;min-height:5px;
+  border-radius:50%;flex-shrink:0;
+  background:var(--d,#FFC04D);opacity:.9;
+  box-shadow:0 0 6px var(--g,rgba(255,192,77,.3));
   animation:dot-twinkle 2.5s ease-in-out infinite;
 }
 @keyframes dot-twinkle{
