@@ -924,51 +924,57 @@ function speakLocal(text){
     window.speechSynthesis.speak(u);
   } catch(e){ /* TTS unavailable */ }
 }
-/* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3),
-   fall back to speech synthesis when a clip is missing or fails to load.
-   A single persistent Audio element is reused for every clip: browsers tie
-   autoplay permission to the element, so the first clip (played during the
-   Start gesture) unlocks it and keeps timer-triggered phase changes — which
-   have no user gesture — from being silently blocked. */
-let clipEl = null;
-let clipUnlocked = false;
-function ensureClip(){
-  if (!clipEl){
-    clipEl = new Audio();
-    clipEl.preload = 'auto';
-  }
-  return clipEl;
+/* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3).
+   Played through the Web Audio API so timer-triggered phase changes are
+   reliable: the AudioContext is resumed on the first user gesture and then
+   stays unlocked, whereas a fresh HTMLAudioElement gets silently blocked by
+   the browser when started from a timer with no gesture. Falls back to
+   speech synthesis if a clip is missing or fails to decode. */
+const clipBuffers = {};
+const clipLoading = {};
+function decodeAudio(ctx, ab){
+  return new Promise(function(resolve, reject){
+    let done = false;
+    const ok = function(buf){ if (done) return; done = true; resolve(buf); };
+    const bad = function(e){ if (done) return; done = true; reject(e); };
+    try {
+      const p = ctx.decodeAudioData(ab, ok, bad);
+      if (p && typeof p.then === 'function') p.then(ok, bad);
+    } catch(e){ bad(e); }
+  });
+}
+function loadClip(src){
+  if (clipBuffers[src]) return Promise.resolve(clipBuffers[src]);
+  if (clipLoading[src]) return clipLoading[src];
+  const ctx = ensureAudio();
+  if (!ctx) return Promise.reject(new Error('no audio context'));
+  clipLoading[src] = fetch(src)
+    .then(function(r){ if (!r.ok) throw new Error('HTTP '+r.status); return r.arrayBuffer(); })
+    .then(function(ab){ return decodeAudio(ctx, ab); })
+    .then(function(buf){ clipBuffers[src] = buf; delete clipLoading[src]; return buf; })
+    .catch(function(e){ delete clipLoading[src]; throw e; });
+  return clipLoading[src];
 }
 function unlockClip(){
-  // Prime the element on the first user interaction by playing a muted blip.
-  // Muted autoplay is always permitted and marks the element as "activated"
-  // so later unmuted plays (from timer transitions) are allowed too.
-  if (clipUnlocked) return;
-  clipUnlocked = true;
-  const a = ensureClip();
-  try {
-    a.muted = true;
-    a.src = 'audio/focus-start-1.mp3';
-    const p = a.play();
-    if (p && typeof p.catch === 'function') p.catch(function(){});
-  } catch(e){}
+  const ctx = ensureAudio();
+  if (ctx && ctx.state === 'suspended') ctx.resume();
 }
-document.addEventListener('pointerdown', unlockClip, { once: true, passive: true });
-document.addEventListener('keydown',    unlockClip, { once: true, passive: true });
+document.addEventListener('pointerdown', unlockClip, { passive: true });
+document.addEventListener('keydown',    unlockClip, { passive: true });
+document.addEventListener('click',      unlockClip, { passive: true });
 function playClip(src, fallbackText){
-  let fellBack = false;
-  const doFallback = function(){
-    if (fellBack) return;
-    fellBack = true;
-    speakLocal(fallbackText);
-  };
-  const a = ensureClip();
-  a.muted = false;
-  a.onerror = doFallback;
-  a.src = src;
-  a.load();
-  const p = a.play();
-  if (p && typeof p.catch === 'function') p.catch(doFallback);
+  const ctx = ensureAudio();
+  if (!ctx){ speakLocal(fallbackText); return; }
+  if (ctx.state === 'suspended') ctx.resume();
+  loadClip(src).then(function(buf){
+    if (ctx.state === 'suspended') ctx.resume();
+    const node = ctx.createBufferSource();
+    node.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.value = 1.0;
+    node.connect(g); g.connect(ctx.destination);
+    node.start(0);
+  }).catch(function(){ speakLocal(fallbackText); });
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
    Each line has its own Will clip at audio/<key>-<n>.mp3 (n = 1-based index). */
@@ -1007,6 +1013,15 @@ const SPOKEN_SAYINGS = {
     'Welcome back, friend. New round, same you — let\'s do this.'
   ]
 };
+
+/* Preload every Will clip into memory so playback is instant and never
+   blocked by a network fetch mid-transition. */
+Object.keys(SPOKEN_SAYINGS).forEach(function(key){
+  SPOKEN_SAYINGS[key].forEach(function(_text, i){
+    loadClip('audio/' + key + '-' + (i + 1) + '.mp3').catch(function(){});
+  });
+});
+
 let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
 function speakVaried(key){
   if (!voiceOn) return;
