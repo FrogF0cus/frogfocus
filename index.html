@@ -954,20 +954,15 @@ function unlockVoice(){
   if (ctx && ctx.state === 'suspended') ctx.resume();
   if (voiceUnlocked) return;
   // A real play() during the Start gesture unlocks this element for timer use.
+  // Muted warm-up + no pause afterward: the real focus-start clip fires right
+  // after this and takes the element over, so we must never pause() in here
+  // (that would race and cut it off).
+  voiceEl.muted = true;
   voiceEl.src = 'audio/focus-start-1.mp3';
-  voiceEl.volume = 0;
   let p;
   try { p = voiceEl.play(); } catch(e){ p = null; }
-  if (p && p.then){
-    p.then(function(){
-      voiceEl.pause();
-      voiceEl.currentTime = 0;
-      voiceEl.volume = 1;
-      voiceUnlocked = true;
-    }).catch(function(){ voiceEl.volume = 1; });
-  } else {
-    voiceUnlocked = true;
-  }
+  const done = function(){ voiceEl.muted = false; voiceEl.volume = 1; voiceUnlocked = true; };
+  if (p && p.then){ p.then(done).catch(done); } else { done(); }
 }
 
 function playClip(src, fallbackText){
