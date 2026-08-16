@@ -1256,12 +1256,21 @@ function reset(){
   announce('Timer reset.');
   saveTimer();
 }
+function speakBreakGreeting(){
+  if (st.phase === 'long'){
+    speakVaried('long-break');
+  } else if (st.phase === 'short'){
+    speakVaried('short-break');
+  }
+}
 function skip(){
   if (st.phase === 'focus'){
     // skipping a focus round still advances the cycle toward the long break
     st.cycleDone += 1;
     const earnedLong = st.cycleDone >= 4;
     setPhase(earnedLong ? 'long' : 'short');
+    unlockAudio();
+    speakBreakGreeting();
     announce(earnedLong ? 'Skipped ahead — long break earned.' : 'Skipped ahead to a short break.');
   } else {
     // skipping a break (short or long) returns you to the next focus round
