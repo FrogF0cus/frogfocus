@@ -864,6 +864,36 @@ function ensureAudio(){
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
+/* Self-diagnostic strip — visible only with ?debug=1 in the URL. */
+let _dbgEl = null;
+function debugLog(s){
+  try {
+    if (!/\bdebug\b/.test(location.search)) return;
+    if (!_dbgEl){
+      _dbgEl = document.createElement('pre');
+      _dbgEl.id = 'ffDebug';
+      _dbgEl.style.cssText = 'position:fixed;left:8px;bottom:8px;right:8px;max-height:34vh;overflow:auto;z-index:99999;background:rgba(21,26,34,.95);color:#EDF8D0;font:11px/1.4 ui-monospace,monospace;padding:8px;border-radius:8px;white-space:pre-wrap';
+      document.body.appendChild(_dbgEl);
+    }
+    _dbgEl.textContent += s + '\n';
+  } catch(e){}
+}
+/* Robust unlock: runs inside the Start tap (a real user gesture). Creates/resumes
+   the context AND plays a silent buffer — the classic trick that forces iOS/Android
+   to mark the context "running" so buffer sources fire reliably from the timer. */
+function unlockAudio(){
+  const ctx = ensureAudio();
+  if (!ctx){ debugLog('unlock: NO AudioContext'); return; }
+  try { if (ctx.state === 'suspended') ctx.resume(); } catch(e){}
+  try {
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+  } catch(e){}
+  debugLog('unlock: silent buffer played, ctx=' + ctx.state);
+}
 function tone(ctx, freq, start, dur, type, vol){
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
