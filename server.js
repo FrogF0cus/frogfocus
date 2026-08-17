@@ -120,6 +120,40 @@ app.post('/api/tts', async function (req, res) {
   }
 });
 
+// ---- Suggestions: write-only, server-side only -----------------------------
+// No public GET exists — submissions are appended to data/suggestions.json and
+// never served back. `data/` is intentionally NOT in the static dirs list above.
+const DATA_DIR       = path.join(__dirname, 'data');
+const SUGGESTIONS_FN = path.join(DATA_DIR, 'suggestions.json');
+
+app.post('/api/suggestions', function (req, res) {
+  const raw = req.body && typeof req.body.suggestion === 'string' ? req.body.suggestion : '';
+  const suggestion = raw.trim();
+  if (!suggestion) return res.status(400).json({ error: 'Suggestion must not be empty' });
+  if (suggestion.length > 500) return res.status(400).json({ error: 'Suggestion must be 500 characters or fewer' });
+
+  const entry = { id: crypto.randomUUID(), suggestion: suggestion, ts: new Date().toISOString() };
+
+  // Read-modify-write the JSON array so no prior entry is ever lost.
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  let entries = [];
+  if (fs.existsSync(SUGGESTIONS_FN)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(SUGGESTIONS_FN, 'utf8'));
+      if (Array.isArray(parsed)) entries = parsed;
+      else throw new Error('suggestions.json is not an array');
+    } catch (e) {
+      // Corrupt/unreadable file: keep it as a timestamped backup, start fresh.
+      try { fs.copyFileSync(SUGGESTIONS_FN, SUGGESTIONS_FN + '.' + Date.now() + '.bak'); } catch (e2) { /* best effort */ }
+      entries = [];
+    }
+  }
+  entries.push(entry);
+  fs.writeFileSync(SUGGESTIONS_FN, JSON.stringify(entries, null, 2) + '\n');
+
+  res.status(201).json(entry);
+});
+
 app.listen(PORT, function () {
   console.log('🐸 Frog Focus TTS backend listening on http://localhost:' + PORT);
   console.log(API_KEY
