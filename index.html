@@ -1342,21 +1342,26 @@ function start(){
   announce(st.phase === 'focus' ? 'Timer started. ' + durations.focus + ' minutes of focus.' : (st.phase === 'short' ? 'Short break started.' : 'Long break started.'));
   updateAll();
   saveTimer();
+  maybeRequestPushPermission();      // ask on the very first Start tap (real user gesture)
+  schedulePhaseEnd();                // server pings the interval end even if the tab closes
 }
 function pause(){
   st.running = false;
   st.endTime = null;
+  cancelPhaseEnd();
   announce('Timer paused.');
   updateAll();
   saveTimer();
 }
 function toggle(){ st.running ? pause() : start(); }
 function reset(){
+  cancelPhaseEnd();
   setPhase(st.phase);
   announce('Timer reset.');
   saveTimer();
 }
 function freshStart(){
+  cancelPhaseEnd();
   // Wipe the persisted timer + cycle state so the next load lands on a true clean start.
   // Keeps preferences (durations, sound, voice, auto-break, theme) and the streak.
   try{
@@ -1380,6 +1385,7 @@ function speakBreakGreeting(){
   }
 }
 function skip(){
+  cancelPhaseEnd();
   if (st.phase === 'focus'){
     // skipping a focus round still advances the cycle toward the long break
     st.cycleDone += 1;
@@ -1483,6 +1489,148 @@ function loadTimer(){
     st.remaining = durations[saved.phase] * 60000;
   }
   updateAll();
+}
+
+/* ---------- web push (server-scheduled — survives a closed tab) ---------- */
+/* The page schedules a one-shot notification for the exact end of the current
+   interval. The SERVER holds it and sends it via the Web Push protocol at the
+   right moment, so "Focus complete" still arrives when the tab is closed or
+   the phone's browser was backgrounded. Pausing/resetting cancels the pending
+   job so you never get a ping for a session you stopped. */
+let pushReg   = null;
+let pushSub   = null;
+let pushJobId = null;
+
+function pushUuid(){
+  try { return crypto.randomUUID(); }
+  catch(e){ return 'j' + Date.now() + '-' + Math.random().toString(36).slice(2); }
+}
+function urlBase64ToUint8Array(base64){
+  const pad = '='.repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = window.atob(b64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+async function ensurePush(){
+  try {
+    if (!pushOn || !('Notification' in window)) return false;
+    if (Notification.permission !== 'granted') return false;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+    if (!pushReg) pushReg = await navigator.serviceWorker.ready;
+    let sub = await pushReg.pushManager.getSubscription();
+    if (!sub){
+      const res = await fetch('/api/push/vapid-key');
+      if (!res.ok){ debugLog('push: vapid-key ' + res.status); return false; }
+      const data = await res.json();
+      sub = await pushReg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(data.publicKey)
+      });
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.toJSON().keys, userAgent: navigator.userAgent })
+      });
+      debugLog('push: subscribed + registered');
+    }
+    pushSub = sub;
+    return true;
+  } catch(e){
+    debugLog('push: ensurePush failed: ' + (e && e.message));
+    return false;
+  }
+}
+
+async function schedulePhaseEnd(){
+  if (!pushOn || !st.running || !st.endTime) return;
+  if (!(await ensurePush())) return;
+  if (!pushSub) return;
+
+  const isFocus  = st.phase === 'focus';
+  const title    = isFocus
+    ? 'Focus session complete — time for a break!'
+    : (st.phase === 'long' ? 'Long break over — ready to focus?' : 'Break over — ready to focus?');
+  const body     = isFocus
+    ? (st.cycleDone + 1 >= 4 ? 'You earned a long break. The frog is proud.' : 'Nice work — hop to your break.')
+    : 'The frog is ready when you are.';
+
+  pushJobId = pushUuid();
+  try {
+    const res = await fetch('/api/push/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jobId: pushJobId, endpoint: pushSub.endpoint,
+        endAt: new Date(st.endTime).toISOString(),
+        title: title, body: body, url: '/'
+      })
+    });
+    if (!res.ok){ debugLog('push: schedule ' + res.status); pushJobId = null; }
+    else debugLog('push: scheduled "' + title + '" @ ' + new Date(st.endTime).toISOString());
+  } catch(e){
+    debugLog('push: schedule failed: ' + (e && e.message));
+    pushJobId = null;
+  }
+}
+
+function cancelPhaseEnd(){
+  if (!pushJobId) return;
+  const id = pushJobId;
+  pushJobId = null;
+  fetch('/api/push/cancel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jobId: id })
+  }).then(function(r){ if (!r.ok) debugLog('push: cancel ' + r.status); })
+    .catch(function(e){ debugLog('push: cancel failed: ' + (e && e.message)); });
+}
+
+function maybeRequestPushPermission(){
+  if (!pushOn || !('Notification' in window)) return;
+  if (Notification.permission !== 'default') return;
+  // Called synchronously inside the Start tap — the only place browsers allow it.
+  Notification.requestPermission().then(function(perm){
+    debugLog('push: permission ' + perm);
+    if (perm === 'granted') schedulePhaseEnd();
+  }).catch(function(e){ debugLog('push: permission error: ' + (e && e.message)); });
+}
+
+function applyPushSetting(){
+  if (pushOn){
+    if ('Notification' in window && Notification.permission === 'default'){
+      Notification.requestPermission().then(function(perm){
+        debugLog('push: permission ' + perm);
+        if (perm === 'granted') schedulePhaseEnd();
+      }).catch(function(e){ debugLog('push: permission error: ' + (e && e.message)); });
+    } else if (st.running && st.endTime){
+      schedulePhaseEnd();
+    }
+  } else {
+    cancelPhaseEnd();
+    // Fully opt out: drop the browser subscription too.
+    if (pushReg){
+      pushReg.pushManager.getSubscription().then(function(sub){
+        if (!sub) return;
+        sub.unsubscribe().catch(function(){});
+        fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: sub.endpoint })
+        }).catch(function(){});
+      }).catch(function(){});
+    }
+  }
+}
+
+/* Register the service worker on load — enables installability + push.
+   Notification permission itself is only requested inside a real Start tap. */
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(function(e){
+    debugLog('push: SW register failed: ' + (e && e.message));
+  });
 }
 
 /* ---------- ticking ---------- */
