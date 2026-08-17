@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Frog Focus audio diag</title>
+<style>body{font-family:monospace;padding:20px;background:#151A22;color:#EDF8D0}pre{white-space:pre-wrap}</style>
+</head><body>
+<h3>Frog Focus — audio diagnostic</h3>
+<pre id="out">running…</pre>
+<script>
+var out = document.getElementById('out');
+function log(s){ out.textContent += s + '\n'; }
+var clips = ['short-break','focus-start','long-break','short-back','long-back'];
+var counts = {'short-break':5,'focus-start':6,'long-break':4,'short-back':4,'long-back':4};
+log('UA: ' + navigator.userAgent);
+log('AudioContext: ' + (window.AudioContext||window.webkitAudioContext ? 'supported' : 'MISSING'));
+var AC = window.AudioContext || window.webkitAudioContext;
+var ctx = new AC();
+log('ctx initial state: ' + ctx.state);
+var jobs = [];
+clips.forEach(function(key){
+  for (var i=1;i<=counts[key];i++){
+    (function(key,i){
+      var src = 'audio/'+key+'-'+i+'.mp3';
+      jobs.push(
+        fetch(src).then(function(r){ return r.arrayBuffer(); })
+        .then(function(buf){
+          return new Promise(function(res){
+            var p = ctx.decodeAudioData(buf, function(ab){ res('OK dur='+ab.duration.toFixed(2)+'s'); },
+              function(err){ res('FAIL '+(err&&err.message||err)); });
+            if (p && p.then) p.then(function(ab){ res('OK dur='+ab.duration.toFixed(2)+'s'); }, function(err){ res('FAIL '+(err&&err.message||err)); });
+          });
+        })
+        .then(function(result){ log(key+'-'+i+': ' + result); })
+        .catch(function(e){ log(key+'-'+i+': FETCH/DECODE ERR ' + (e&&e.message||e)); })
+      );
+    })(key,i);
+  }
+});
+Promise.all(jobs).then(function(){
+  log('--- done ---');
+  log('ctx state now: ' + ctx.state);
+  // also test native <audio> can load each short-break (metadata only, no play)
+  ['short-break-1','short-break-2','short-break-3'].forEach(function(k){
+    var a = new Audio('audio/'+k+'.mp3');
+    a.addEventListener('loadedmetadata', function(){ log('native load '+k+': OK dur='+a.duration.toFixed(2)+'s'); });
+    a.addEventListener('error', function(){ log('native load '+k+': ERROR'); });
+    a.preload='metadata'; a.load();
+  });
+});
+</script>
+</body></html>

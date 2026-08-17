@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frog Focus — your intentional productivity companion</title>
+<meta name="description" content="Frog Focus is a warm, cozy Pomodoro timer. 25 minutes of focused work, 5-minute breaks, and a little frog cheering you on.">
+<meta name="theme-color" content="#FBF6EC">
+<meta property="og:title" content="Frog Focus — your intentional productivity companion">
+<meta property="og:description" content="25 minutes of focused work, a 5-minute breather, and a frog who cheers you on. Free, cozy, no sign-up.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=Karla:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#FBF6EC;
+  --surface:#FFFDF4;
+  --surface-2:#F4ECDB;
+  --ink:#322E22;
+  --ink-soft:#77715F;
+  --accent:#FFC04D;
+  --accent-strong:#E8A52E;
+  --sage:#6C7F6A;
+  --sage-strong:#55664F;
+  --clay:#C55E33;
+  --line:rgba(50,46,34,.13);
+  --ring-bg:rgba(50,46,34,.08);
+  --dot:rgba(108,127,106,.10);
+  --shadow:0 24px 60px -32px rgba(50,46,34,.28);
+  --card-r:26px;
+  --phase-accent:var(--accent);
+  --font-d:"Fraunces",Georgia,serif;
+  --font-b:"Karla",system-ui,-apple-system,sans-serif;
+}
+html[data-theme="dark"]{
+  --bg:#1E2A22;
+  --surface:#2B3B2F;
+  --surface-2:#3A4D3E;
+  --ink:#F5F0E1;
+  --ink-soft:#B9C8B2;
+  --accent:#FFC04D;
+  --accent-strong:#E8A52E;
+  --sage:#A3B896;
+  --sage-strong:#BBCBAF;
+  --clay:#EE8B62;
+  --line:rgba(245,240,225,.16);
+  --ring-bg:rgba(245,240,225,.14);
+  --dot:rgba(255,192,77,.10);
+  --shadow:0 24px 70px -34px rgba(0,0,0,.65);
+}
+html[data-theme="dark"] .site-header{background:rgba(30,42,34,.86)}
+html[data-theme="dark"] .share-band{background:rgb(55,71,57)}
+
+/* ============ BASE ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-b);
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.6;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .4s ease,color .4s ease;
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:-2;
+  background-image:radial-gradient(var(--dot) 1.2px,transparent 1.2px);
+  background-size:26px 26px;
+  pointer-events:none;
+}
+body::after{
+  content:"";
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(640px circle at 88% -6%,rgba(255,192,77,.16),transparent 62%),
+             radial-gradient(560px circle at -8% 108%,rgba(108,127,106,.14),transparent 60%);
+  transition:opacity .4s ease;
+}
+h1,h2,h3{font-family:var(--font-d);font-weight:600;line-height:1.12;letter-spacing:-.01em}
+a{color:inherit}
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer}
+.wrap{width:min(1200px,100% - 40px);margin-inline:auto}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:100;background:var(--accent);color:#322E22;padding:10px 18px;border-radius:0 0 12px 0;font-weight:700}
+.skip-link:focus{left:0}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  border:none;border-radius:12px;padding:14px 26px;
+  font-family:var(--font-b);font-weight:700;font-size:16px;
+  transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s ease,background .18s ease,color .18s ease;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#322E22;box-shadow:0 10px 26px -12px rgba(232,165,46,.75)}
+.btn-primary:hover{background:var(--accent-strong);transform:translateY(-2px);box-shadow:0 14px 30px -12px rgba(232,165,46,.85)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--sage);color:var(--sage-strong);transform:translateY(-2px)}
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);
+  background:transparent;color:var(--ink);
+  transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+.icon-btn:hover{background:var(--surface-2);border-color:var(--sage);transform:translateY(-2px)}
+.icon-btn svg{width:20px;height:20px}
+
+/* ============ HEADER ============ */
+.site-header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(251,246,236,.86);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+.brand{display:flex;align-items:center;gap:6px;text-decoration:none;font-family:var(--font-d);font-size:22px;font-weight:700;letter-spacing:-.01em}
+.brand .frog-mark{width:30px;height:30px;flex:none;color:var(--sage);border-radius:50%;object-fit:cover}
+.brand em{font-style:normal;color:var(--clay)}
+.header-actions{display:flex;align-items:center;gap:10px}
+.streak-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);
+  background:rgba(108,127,106,.12);
+  font-size:14px;font-weight:700;color:var(--sage-strong);
+  white-space:nowrap;
+}
+.streak-badge svg{width:16px;height:16px;color:var(--clay);fill:var(--clay);stroke:none}
+.streak-badge b{color:var(--ink)}
+html[data-theme="dark"] .streak-badge{background:rgba(163,184,150,.16)}
+
+/* ============ HERO ============ */
+.hero{padding:clamp(40px,7vw,84px) 0 0;position:relative}
+.hero-grid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:clamp(28px,5vw,72px);align-items:center}
+.hero-copy{position:relative;z-index:2}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--sage-strong);margin-bottom:20px;
+}
+.eyebrow-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(255,192,77,.25)}
+.hero-title{font-size:clamp(40px,5.4vw,68px);font-weight:600;line-height:1.04}
+.hero-title em{font-style:italic;font-weight:500;color:var(--clay)}
+.hero-lede{margin-top:22px;font-size:clamp(17px,1.6vw,19px);color:var(--ink-soft);max-width:46ch}
+.hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 15px;border-radius:999px;
+  background:var(--sage);border:none;
+  font-size:14px;font-weight:700;color:var(--surface);
+  box-shadow:0 8px 20px -12px rgba(108,127,106,.8);
+}
+.chip svg{width:16px;height:16px;color:var(--surface)}
+html[data-theme="dark"] .chip{color:#2A3526}
+.hero-cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+
+/* ============ TIMER CARD ============ */
+.timer-column{position:relative;z-index:2;display:flex;justify-content:center}
+.timer-card{
+  position:relative;
+  width:min(460px,100%);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:32px;
+  padding:clamp(22px,3.4vw,36px) clamp(20px,3vw,34px) clamp(24px,3vw,32px);
+  box-shadow:var(--shadow);
+  transition:border-color .3s ease,background .4s ease;
+}
+.ring-wrap{
+  --R:140;
+  position:relative;width:min(360px,80vw);aspect-ratio:1/1;margin:0 auto;
+}
+.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.ring circle{fill:none;stroke-width:13;stroke-linecap:round}
+.ring-bg{stroke:var(--ring-bg)}
+.ring-fg{
+  stroke:var(--phase-accent);
+  stroke-dasharray:879.646;
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset .3s linear,stroke .5s ease;
+}
+.timer-card.running .ring-fg{filter:drop-shadow(0 0 7px rgba(255,192,77,.55))}
+.ring-face{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+}
+.mode-pill{
+  font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  padding:7px 16px;border-radius:999px;
+  color:#322E22;
+  background:var(--phase-accent);
+  box-shadow:0 6px 18px -8px rgba(255,192,77,.8);
+}
+.time{
+  margin-top:14px;
+  font-family:var(--font-d);font-weight:600;font-variant-numeric:tabular-nums;
+  font-size:clamp(50px,11.5vw,68px);line-height:1;letter-spacing:-.02em;
+}
+.phase-hint{margin-top:10px;font-size:14px;font-weight:600;color:var(--ink-soft);min-height:1.4em}
+.frog{
+  position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);
+  height:clamp(104px,20vw,132px);width:clamp(104px,20vw,132px);
+  object-fit:contain;z-index:3;
+  filter:drop-shadow(0 14px 22px rgba(50,46,34,.20));
+  animation:frog-in .45s cubic-bezier(.34,1.56,.64,1);
+  user-select:none;-webkit-user-drag:none;
+}
+.frog.celebrate{animation:frog-pop .7s cubic-bezier(.34,1.56,.64,1)}
+@keyframes frog-in{0%{opacity:0;transform:translateX(-50%) translateY(14px) scale(.92)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes frog-pop{0%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.16) rotate(-5deg)}70%{transform:translateX(-50%) scale(.95)}100%{transform:translateX(-50%) scale(1)}}
+
+.controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:clamp(20px,3vw,30px)}
+.btn-start{
+  min-width:170px;
+  padding:16px 30px;font-size:18px;border-radius:14px;
+  background:var(--phase-accent);color:#322E22;
+  border:none;font-weight:800;
+  box-shadow:0 12px 30px -14px rgba(255,192,77,.9);
+  transition:transform .18s cubic-bezier(.16,1,.3,1),filter .18s ease;
+}
+.btn-start:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.btn-start:active{transform:scale(.97)}
+.btn-start svg{width:20px;height:20px;fill:currentColor;stroke:none}
+html[data-theme="dark"] .btn-start{color:#2A3526}
+
+.pads{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px}
+.pad{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--phase-accent);
+  background:transparent;
+  transition:background .3s ease,transform .3s ease;
+}
+.pad.done{background:var(--phase-accent);transform:scale(1.12);box-shadow:0 4px 12px -4px rgba(255,192,77,.7)}
+.pad-label{margin-top:10px;text-align:center;font-size:13.5px;font-weight:700;color:var(--ink-soft)}
+.card-foot{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px}
+.card-foot .fresh-start{color:var(--sage-strong)}
+.card-foot .icon-btn{width:auto;height:auto;padding:9px 14px;font-size:13.5px;font-weight:700;gap:8px;border-radius:10px}
+.card-foot .icon-btn svg{width:15px;height:15px}
+
+/* ============ SECTIONS ============ */
+.section{padding:clamp(72px,10vw,120px) 0;position:relative}
+.section-head{max-width:640px;margin-bottom:clamp(36px,5vw,56px)}
+.section-head .eyebrow{margin-bottom:14px}
+.section-head h2{font-size:clamp(30px,3.8vw,46px)}
+.section-head p{margin-top:14px;color:var(--ink-soft);font-size:17px}
+
+/* Ritual cards */
+.ritual-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.ritual-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:24px;
+  padding:32px 28px;position:relative;overflow:hidden;
+  transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease,border-color .2s ease;
+}
+.ritual-card:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:var(--sage)}
+.ritual-card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--card-accent,var(--accent))}
+.ritual-card:nth-child(1){--card-accent:var(--accent);--card-accent-tint:rgba(255,192,77,.16)}
+.ritual-card:nth-child(2){--card-accent:var(--sage);--card-accent-tint:rgba(108,127,106,.16)}
+.ritual-card:nth-child(3){--card-accent:var(--clay);--card-accent-tint:rgba(197,94,51,.16)}
+.ritual-icon{
+  width:54px;height:54px;border-radius:16px;margin-bottom:20px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--card-accent-tint);
+  color:var(--card-accent);
+}
+.ritual-icon svg{width:26px;height:26px}
+.ritual-card h3{font-size:23px;margin-bottom:10px}
+.ritual-card p{color:var(--ink-soft);font-size:15.5px}
+.ritual-min{
+  display:inline-block;margin-top:18px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--card-accent);
+}
+
+/* cycle strip */
+.cycle-box{
+  margin-top:34px;background:var(--surface);border:1px solid var(--line);border-radius:24px;
+  padding:26px clamp(18px,3vw,32px);overflow-x:auto;
+}
+.cycle-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.cycle-item{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 12px;border-radius:12px;font-size:13px;font-weight:800;white-space:nowrap;
+  background:rgba(255,192,77,.15);color:#8a5b00;
+}
+html[data-theme="dark"] .cycle-item{color:#FFD98A;background:rgba(255,192,77,.18)}
+.cycle-item.break{background:rgba(108,127,106,.16);color:var(--sage-strong)}
+.cycle-item.long{background:rgba(197,94,51,.16);color:var(--clay)}
+.cycle-item .num{
+  width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:12px;background:var(--accent);color:#322E22;
+}
+.cycle-item.break .num{background:var(--sage);color:#FBF6EC}
+.cycle-item.long .num{background:var(--clay);color:#FBF6EC}
+.cycle-arrow{color:var(--ink-soft);flex:none}
+.cycle-arrow svg{width:14px;height:14px;display:block}
+
+/* Constellation divider */
+.constellation{
+  display:flex;align-items:center;justify-content:center;max-width:720px;
+  margin:22px auto 8px;gap:clamp(34px,7vw,72px);
+}
+.constellation .dot{
+  display:block;width:var(--s,8px);height:var(--s,8px);min-width:5px;min-height:5px;
+  border-radius:50%;flex-shrink:0;
+  background:var(--d,#FFC04D);opacity:.9;
+  box-shadow:0 0 6px var(--g,rgba(255,192,77,.3));
+  animation:dot-twinkle 2.5s ease-in-out infinite;
+}
+@keyframes dot-twinkle{
+  0%,100%{opacity:.4;box-shadow:0 0 4px rgba(255,192,77,.15)}
+  12%{opacity:1;box-shadow:0 0 8px rgba(255,255,255,.7),0 0 14px rgba(255,214,140,.35)}
+  24%{opacity:.55;box-shadow:0 0 4px rgba(255,192,77,.15)}
+  38%{opacity:.92;box-shadow:0 0 7px rgba(255,255,255,.55)}
+  52%{opacity:.45;box-shadow:0 0 4px rgba(255,192,77,.15)}
+  70%{opacity:1;box-shadow:0 0 9px rgba(255,255,255,.75),0 0 16px rgba(255,214,140,.4)}
+  86%{opacity:.6;box-shadow:0 0 4px rgba(255,192,77,.15)}
+}
+.constellation .dot:nth-child(1){width:10px;height:10px;background:#6C7F6A;animation-delay:0s;animation-duration:2.6s}
+.constellation .dot:nth-child(2){width:6px;height:6px;background:#FFC04D;animation-delay:-1.3s;animation-duration:2.2s}
+.constellation .dot:nth-child(3){width:8px;height:8px;background:#C55E33;animation-delay:-.6s;animation-duration:2.9s}
+.constellation .dot:nth-child(4){width:5px;height:5px;background:#FFC04D;animation-delay:-1.8s;animation-duration:2.4s}
+.constellation .dot:nth-child(5){width:7px;height:7px;background:#6C7F6A;animation-delay:-.4s;animation-duration:2.1s}
+.constellation .dot:nth-child(6){width:5px;height:5px;background:#C55E33;animation-delay:-1.1s;animation-duration:2.7s}
+.constellation .dot:nth-child(7){width:7px;height:7px;background:#FFC04D;animation-delay:-2.1s;animation-duration:2.3s}
+.constellation .dot:nth-child(8){width:10px;height:10px;background:#6C7F6A;animation-delay:-.2s;animation-duration:2.8s}
+.constellation .dot:nth-child(9){width:7px;height:7px;background:#C55E33;animation-delay:-1.6s;animation-duration:2.5s}
+.constellation .dot:nth-child(10){width:5px;height:5px;background:#6C7F6A;animation-delay:-.9s;animation-duration:2.2s}
+.constellation .dot:nth-child(11){width:8px;height:8px;background:#FFC04D;animation-delay:-1.4s;animation-duration:2.6s}
+.cycle-note{text-align:center;margin-top:16px;font-size:14px;color:var(--ink-soft);font-weight:600}
+
+/* Why frog */
+.why-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(30px,5vw,72px);align-items:center}
+.why-media{
+  position:relative;display:flex;justify-content:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:32px;padding:36px;
+}
+.why-media img{width:min(300px,70%);height:auto;filter:drop-shadow(0 18px 30px rgba(50,46,34,.22))}
+.why-quote{
+  margin-top:26px;padding-top:20px;border-top:1px solid var(--line);
+  font-family:var(--font-d);font-style:italic;font-size:19px;color:var(--ink);
+}
+.why-quote cite{display:block;margin-top:8px;font-family:var(--font-b);font-style:normal;font-size:13.5px;color:var(--ink-soft);font-weight:700}
+.why-body p{margin-bottom:16px;color:var(--ink-soft);font-size:16.5px}
+.why-body p strong{color:var(--ink)}
+.why-list{list-style:none;margin-top:6px}
+.why-list li{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px dashed var(--line);font-size:15.5px}
+.why-list li:last-child{border-bottom:none}
+.why-list svg{width:19px;height:19px;flex:none;color:var(--clay);margin-top:3px}
+
+/* Share band */
+.share-band{
+  background:rgb(240,240,230);
+  border:1px solid var(--line);border-radius:32px;
+  padding:clamp(36px,6vw,64px);text-align:center;position:relative;overflow:hidden;
+}
+.share-band::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(420px circle at 50% -30%,rgba(255,192,77,.22),transparent 65%);
+}
+.share-band h2{font-size:clamp(28px,3.6vw,44px)}
+.share-band p{color:var(--ink-soft);max-width:52ch;margin:14px auto 0;font-size:17px}
+.share-band .streak-line{margin-top:20px;font-weight:800;color:var(--sage-strong);font-size:16px}
+.share-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:30px}
+.share-toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+  background:var(--ink);color:var(--bg);padding:12px 22px;border-radius:999px;
+  font-size:14.5px;font-weight:700;opacity:0;pointer-events:none;
+  transition:opacity .3s ease,transform .3s ease;z-index:80;
+}
+.share-toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ============ FOOTER ============ */
+.site-footer{border-top:1px solid var(--line);padding:44px 0 56px;margin-top:clamp(40px,6vw,80px)}
+.footer-inner{display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between}
+.footer-brand{display:flex;align-items:center;gap:6px;font-family:var(--font-d);font-size:19px;font-weight:700}
+.footer-brand .frog-mark{width:24px;height:24px;color:var(--sage);border-radius:50%;object-fit:cover}
+.footer-links{display:flex;gap:22px;font-size:14.5px;font-weight:700;color:var(--ink-soft)}
+.footer-links a{text-decoration:none}
+.footer-links a:hover{color:var(--clay)}
+.footer-meta{width:100%;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;font-size:13.5px;color:var(--ink-soft);margin-top:8px}
+
+/* ============ DIALOG ============ */
+dialog{
+  border:none;border-radius:26px;background:var(--surface);color:var(--ink);
+  padding:0;width:min(460px,calc(100% - 32px));
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.45);
+}
+dialog::backdrop{background:rgba(35,38,30,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+dialog[open]{animation:dialog-in .25s cubic-bezier(.16,1,.3,1)}
+@keyframes dialog-in{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.dialog-inner{padding:30px}
+.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.dialog-head h2{font-size:26px}
+.dialog-head .icon-btn{width:40px;height:40px}
+.dialog-head .icon-btn svg{width:18px;height:18px}
+.duration-grid{border:none;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.duration-grid legend{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.dur-field{
+  display:flex;flex-direction:column;gap:7px;
+  padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;
+  font-size:13px;font-weight:700;color:var(--ink-soft);
+}
+.dur-field:focus-within{border-color:var(--sage)}
+.dur-field .row{display:flex;align-items:baseline;justify-content:center;gap:6px}
+.dur-field input{
+  width:58px;border:none;background:transparent;color:var(--ink);
+  font-family:var(--font-d);font-size:26px;font-weight:700;text-align:center;padding:0;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.dur-field input::-webkit-outer-spin-button,.dur-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.dur-field input:focus{outline:none}
+.dur-field span{font-size:13px;font-weight:700;color:var(--ink-soft)}
+.field-note{margin-top:10px;font-size:12.5px;color:var(--ink-soft)}
+.toggles{margin-top:24px;display:flex;flex-direction:column;gap:6px}
+.switch-row{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:13px 4px;border-bottom:1px dashed var(--line);cursor:pointer;
+}
+.switch-row:last-child{border-bottom:none}
+.switch-row b{display:block;font-size:15px}
+.switch-row small{display:block;color:var(--ink-soft);font-size:13px;font-weight:500;margin-top:2px}
+.switch{position:relative;width:46px;height:26px;flex:none;-webkit-appearance:none;appearance:none;background:var(--surface-2);border-radius:999px;transition:background .2s ease;border:1.5px solid var(--line);cursor:pointer}
+.switch::after{
+  content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+  background:var(--ink-soft);transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .2s ease;
+}
+.switch:checked{background:var(--sage);border-color:var(--sage)}
+.switch:checked::after{transform:translateX(20px);background:#FBF6EC}
+.dialog-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
+
+/* ============ MISC DECOR ============ */
+.lilypad{position:absolute;z-index:0;opacity:.5;color:var(--sage);animation:lily-float 9s ease-in-out infinite alternate;pointer-events:none}
+.lilypad svg{width:100%;height:100%}
+.lilypad.lp1{top:120px;left:-70px;width:150px;animation-delay:-3s}
+.lilypad.lp2{top:320px;right:-60px;width:110px;animation-delay:-6s}
+.lilypad.lp3{top:640px;left:5%;width:80px;animation-delay:-1.5s}
+@keyframes lily-float{from{transform:translateY(-8px) rotate(-6deg)}to{transform:translateY(10px) rotate(8deg)}}
+
+/* confetti */
+.confetti-piece{position:fixed;top:-14px;z-index:70;pointer-events:none;animation:conf-fall linear forwards}
+@keyframes conf-fall{0%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(108vh) rotate(680deg);opacity:0}}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-copy{text-align:center}
+  .hero-lede{margin-inline:auto}
+  .hero-chips,.hero-cta-row{justify-content:center}
+  .why-grid{grid-template-columns:1fr}
+  .why-media{order:-1}
+  .ritual-grid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .header-inner{padding:12px 0}
+  .brand{font-size:19px}
+  .streak-badge{padding:6px 11px;font-size:12.5px}
+  .header-actions{gap:7px}
+  .icon-btn{width:42px;height:42px}
+  .controls{gap:9px}
+  .btn-start{min-width:140px;padding:15px 22px;font-size:16px}
+  .duration-grid{grid-template-columns:1fr 1fr 1fr}
+  .section{padding:64px 0}
+}
+
+/* ============ MOTION SAFETY ============ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#timerCard">Skip to the timer</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="Frog Focus home">
+      <svg class="frog-mark" viewBox="0 0 48 48" role="img" aria-hidden="true">
+        <circle cx="24" cy="24" r="20" fill="#FBF7F0" stroke="#9CAF88" stroke-width="3"/>
+        <g stroke="#3A3226" stroke-width="3" stroke-linecap="round">
+          <line x1="24" y1="10" x2="24" y2="6"/>
+          <line x1="38" y1="24" x2="42" y2="24"/>
+          <line x1="24" y1="38" x2="24" y2="42"/>
+          <line x1="10" y1="24" x2="6" y2="24"/>
+        </g>
+        <g stroke="#E08A3C" stroke-linecap="round">
+          <line x1="24" y1="24" x2="20.27" y2="15.81" stroke-width="3.5"/>
+          <line x1="24" y1="24" x2="37.70" y2="17.90" stroke-width="2.5"/>
+        </g>
+        <circle cx="24" cy="24" r="2.2" fill="#3A3226"/>
+      </svg>
+      <span>Frog <em>Focus</em></span>
+    </a>
+    <div class="header-actions">
+      <span class="streak-badge" id="streakBadge" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <span><b id="streakCount">0</b>-day streak</span>
+      </span>
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle chime sound" aria-pressed="true" title="Chime on/off">
+        <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        <svg id="soundOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode" title="Day / night">
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO + TIMER -->
+  <section class="hero">
+    <svg class="lilypad lp1" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M50 6a44 44 0 1 0 30 76L50 50 30 82A44 44 0 0 0 50 94 44 44 0 1 0 50 6Z"/></svg>
+    <svg class="lilypad lp2" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M50 6a44 44 0 1 0 30 76L50 50 30 82A44 44 0 0 0 50 94 44 44 0 1 0 50 6Z"/></svg>
+    <svg class="lilypad lp3" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M50 6a44 44 0 1 0 30 76L50 50 30 82A44 44 0 0 0 50 94 44 44 0 1 0 50 6Z"/></svg>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> Your intentional productivity companion</p>
+        <h1 class="hero-title">Slow down.<br>Focus.<br>Get the <em>good stuff</em> done.</h1>
+        <p class="hero-lede">Frog Focus turns the classic 25-minute Pomodoro into a productive tool — focused work, gentle breaks, and a frog friend in your corner the whole way.</p>
+        <div class="hero-chips" aria-label="The ritual at a glance">
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 25 min focus</span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg> 5 min breather</span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg> 15 min recharge</span>
+        </div>
+        <div class="hero-cta-row">
+          <a class="btn btn-primary" href="#timerCard">Start your first pomodoro</a>
+          <a class="btn btn-primary" href="#ritual">How it works</a>
+        </div>
+      </div>
+
+      <div class="timer-column">
+        <div class="timer-card" id="timerCard" style="--phase-accent:var(--accent)">
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 320 320" aria-hidden="true">
+              <circle class="ring-bg" cx="160" cy="160" r="140"/>
+              <circle class="ring-fg" cx="160" cy="160" r="140"/>
+            </svg>
+            <div class="ring-face">
+              <span class="mode-pill" id="modePill">Focus</span>
+              <div class="time" id="timeDisplay" role="timer" aria-live="off">25:00</div>
+              <p class="phase-hint" id="phaseHint"></p>
+              <img class="frog" id="frogImg" src="images/frog-timer.png" alt="A friendly frog with glasses" draggable="false">
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="btn-start" id="startBtn" aria-label="Start the timer">
+              <svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <span id="startLabel">Start</span>
+            </button>
+            <button class="icon-btn" id="resetBtn" aria-label="Reset current interval" title="Reset">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            </button>
+            <button class="icon-btn" id="skipBtn" aria-label="Skip to next phase" title="Skip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+            </button>
+            <button class="icon-btn" id="settingsBtn" aria-label="Timer settings" title="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            </button>
+          </div>
+
+          <div class="pads" aria-hidden="true">
+            <span class="pad"></span><span class="pad"></span><span class="pad"></span><span class="pad"></span>
+          </div>
+          <p class="pad-label" id="padLabel">0 of 4 pomodoros — long break after 4</p>
+          <div class="card-foot">
+            <button class="icon-btn fresh-start" id="freshStartBtn" aria-label="Fresh start — clear saved timer state and start over" title="Fresh start — clear saved timer state">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 7.07 17.07L12 12 4.93 19.07a10 10 0 0 0 7.07 2.93 10 10 0 1 0 0-20Z"/></svg>
+              Fresh start
+            </button>
+            <button class="icon-btn" id="cardSettingsBtn" aria-label="Open timer settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              Timer settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RITUAL -->
+  <section class="section" id="ritual">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> The what</p>
+        <h2>One task or goal at a time.</h2>
+        <p>Pomodoro is a simple rhythm: focus hard for a short stretch, then rest on purpose. Four of those, and you've earned the long break.</p>
+        <p class="history-note"><strong>Pomodoro</strong> is Italian for tomato — the technique is named after the tomato-shaped kitchen timer Francesco Cirillo used as a university student in the 1980s. The tomato was just the timer. It's the <strong>daily practice</strong> that stuck: work deeply for a stretch, rest on purpose, repeat.</p>
+      </div>
+      <div class="ritual-grid">
+        <article class="ritual-card">
+          <div class="ritual-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <h3>Focus</h3>
+          <p>One pomodoro, one task. Close the tabs, silence the phone, and tell the frog what you're working on — saying it out loud counts.</p>
+          <span class="ritual-min">25 minutes</span>
+        </article>
+        <article class="ritual-card">
+          <div class="ritual-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg></div>
+          <h3>Breathe</h3>
+          <p>Step away. Stretch, sip water, look at something far away. The frog will hold your spot — that's what breaks are for.</p>
+          <span class="ritual-min">5 minutes</span>
+        </article>
+        <article class="ritual-card">
+          <div class="ritual-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></div>
+          <h3>Recharge</h3>
+          <p>After four pomodoros, take the long break. Walk, nap, snack — this is where creativity happens. Then start the next round fresh.</p>
+          <span class="ritual-min">15 minutes</span>
+        </article>
+      </div>
+
+      <div class="cycle-box">
+        <div class="cycle-strip" role="img" aria-label="A typical cycle: focus, short break, focus, short break, focus, short break, focus, then a long break">
+          <span class="cycle-item"><span class="num">1</span> Focus</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item break"><span class="num">2</span> Short break</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item"><span class="num">3</span> Focus</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item break"><span class="num">4</span> Short break</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item"><span class="num">5</span> Focus</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item break"><span class="num">6</span> Short break</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item"><span class="num">7</span> Focus</span>
+          <span class="cycle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="cycle-item long"><span class="num">8</span> Long break</span>
+        </div>
+        <p class="cycle-note">Four focused pomodoros, then a long break — the cycle restarts on its own.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="constellation" aria-hidden="true">
+    <span class="dot" style="--d:#6C7F6A;--s:9px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:5px;--g:rgba(255,192,77,.14)"></span>
+    <span class="dot" style="--d:#C55E33;--s:7px;--g:rgba(197,94,51,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:4px;--g:rgba(255,192,77,.14)"></span>
+    <span class="dot" style="--d:#6C7F6A;--s:6px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#C55E33;--s:4px;--g:rgba(197,94,51,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:6px;--g:rgba(255,192,77,.14)"></span>
+    <span class="dot" style="--d:#6C7F6A;--s:9px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#C55E33;--s:6px;--g:rgba(197,94,51,.14)"></span>
+    <span class="dot" style="--d:#6C7F6A;--s:4px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:7px;--g:rgba(255,192,77,.14)"></span>
+  </div>
+
+  <!-- WHY A FROG -->
+  <section class="section" id="why">
+    <div class="wrap why-grid">
+      <div class="why-media">
+        <div>
+          <img src="images/frog-hero.png" alt="The Frog Focus mascot waving">
+          <blockquote class="why-quote">
+            "Pomodoro is the technique. The frog is the friend that helps you get things done."
+            <cite>— the pond, probably</cite>
+          </blockquote>
+        </div>
+      </div>
+      <div class="why-body">
+        <div class="section-head" style="margin-bottom:22px">
+          <p class="eyebrow"><span class="eyebrow-dot"></span> The Why</p>
+          <h2>Because the tomato was never the point.</h2>
+        </div>
+        <p>We kept the daily practice and swapped the timer with a friend with better vibes.</p>
+        <ul class="why-list">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><strong>No guilt.</strong> A miss isn't a failure — the frog is just happy you came back.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><strong>Progress over perfection.</strong> Starting is the win that counts.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><strong>Showing up for yourself.</strong> Each round you begin is a small act that stacks into something real.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="constellation" aria-hidden="true">
+    <span class="dot" style="--d:#6C7F6A;--s:9px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:5px;--g:rgba(255,192,77,.14)"></span>
+    <span class="dot" style="--d:#C55E33;--s:7px;--g:rgba(197,94,51,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:4px;--g:rgba(255,192,77,.14)"></span>
+    <span class="dot" style="--d:#6C7F6A;--s:6px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#C55E33;--s:4px;--g:rgba(197,94,51,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:6px;--g:rgba(255,192,77,.14)"></span>
+    <span class="dot" style="--d:#6C7F6A;--s:9px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#C55E33;--s:6px;--g:rgba(197,94,51,.14)"></span>
+    <span class="dot" style="--d:#6C7F6A;--s:4px;--g:rgba(108,127,106,.14)"></span>
+    <span class="dot" style="--d:#FFC04D;--s:7px;--g:rgba(255,192,77,.14)"></span>
+  </div>
+
+  <!-- SHARE -->
+  <section class="section" id="share">
+    <div class="wrap">
+      <div class="share-band">
+        <h2>Your streak is waiting.</h2>
+        <p>One focused pomodoro a day is enough to start a streak — and a frog who notices. Free, no account, no notifications spam.</p>
+        <p class="streak-line" id="shareStreakLine">Complete your first pomodoro to light up your streak.</p>
+        <div class="share-actions">
+          <button class="btn btn-primary" id="shareBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share Frog Focus
+          </button>
+          <a class="btn btn-ghost" href="#timerCard">Back to the timer</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <svg class="frog-mark" viewBox="0 0 48 48" role="img" aria-hidden="true">
+        <circle cx="24" cy="24" r="20" fill="#FBF7F0" stroke="#9CAF88" stroke-width="3"/>
+        <g stroke="#3A3226" stroke-width="3" stroke-linecap="round">
+          <line x1="24" y1="10" x2="24" y2="6"/>
+          <line x1="38" y1="24" x2="42" y2="24"/>
+          <line x1="24" y1="38" x2="24" y2="42"/>
+          <line x1="10" y1="24" x2="6" y2="24"/>
+        </g>
+        <g stroke="#E08A3C" stroke-linecap="round">
+          <line x1="24" y1="24" x2="20.27" y2="15.81" stroke-width="3.5"/>
+          <line x1="24" y1="24" x2="37.70" y2="17.90" stroke-width="2.5"/>
+        </g>
+        <circle cx="24" cy="24" r="2.2" fill="#3A3226"/>
+      </svg>
+      <span>Frog <em style="font-style:normal;color:var(--clay)">Focus</em></span>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="#timerCard">The Timer</a>
+      <a href="#ritual">The What</a>
+      <a href="#why">The Why</a>
+    </nav>
+    <div class="footer-meta">
+      <span>© <span id="year"></span> Frog Focus · your intentional productivity companion</span>
+      <span>Made with ❤️ in the pond</span>
+    </div>
+  </div>
+</footer>
+
+<!-- live region for screen readers -->
+<div class="sr-only" id="announcer" aria-live="polite" role="status"></div>
+<div class="share-toast" id="toast" role="status"></div>
+
+<!-- SETTINGS DIALOG -->
+<dialog id="settingsDialog" aria-labelledby="settingsTitle">
+  <div class="dialog-inner">
+    <div class="dialog-head">
+      <h2 id="settingsTitle">Timer settings</h2>
+      <button class="icon-btn" id="closeSettingsBtn" aria-label="Close settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="settingsForm">
+      <fieldset class="duration-grid">
+        <legend>Minutes per interval</legend>
+        <label class="dur-field">
+          Focus
+          <span class="row"><input type="number" id="inpFocus" min="1" max="120" step="1" inputmode="numeric" value="25"><span>min</span></span>
+        </label>
+        <label class="dur-field">
+          Short break
+          <span class="row"><input type="number" id="inpShort" min="1" max="30" step="1" inputmode="numeric" value="5"><span>min</span></span>
+        </label>
+        <label class="dur-field">
+          Long break
+          <span class="row"><input type="number" id="inpLong" min="5" max="60" step="1" inputmode="numeric" value="15"><span>min</span></span>
+        </label>
+      </fieldset>
+      <p class="field-note">Saved changes apply to new intervals; the current one restarts at the new length.</p>
+
+      <div class="toggles">
+        <label class="switch-row">
+          <span><b>Chime</b><small>A soft bell when an interval ends</small></span>
+          <input type="checkbox" class="switch" id="inpSound" checked>
+        </label>
+        <label class="switch-row">
+          <span><b>Frog voice</b><small>The frog speaks at interval changes</small></span>
+          <input type="checkbox" class="switch" id="inpVoice" checked>
+        </label>
+        <label class="switch-row">
+          <span><b>Auto-start breaks</b><small>Breaks begin automatically after focus</small></span>
+          <input type="checkbox" class="switch" id="inpAutoBreak" checked>
+        </label>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="resetCycleBtn">Reset cycle</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- helpers ---------- */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- settings (persisted) ---------- */
+let durations = Object.assign({ focus: 25, short: 5, long: 15 }, LS.get('ff.durations', {}));
+let soundOn   = LS.get('ff.sound', true);
+let voiceOn   = LS.get('ff.voice', true);
+let autoBreak = LS.get('ff.autoBreak', true);
+let theme     = LS.get('ff.theme', null) || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'day');
+
+/* ---------- app state ---------- */
+const st = {
+  phase: 'focus',          // focus | short | long
+  running: false,
+  endTime: null,           // epoch ms when the current interval ends
+  remaining: durations.focus * 60000,
+  cycleDone: Math.min(4, LS.get('ff.cycleDone', 0)),
+  saying: ''               // current break saying (rotates each break)
+};
+
+/* ---------- dom refs ---------- */
+const card        = $('#timerCard');
+const timeEl      = $('#timeDisplay');
+const hintEl      = $('#phaseHint');
+const pillEl      = $('#modePill');
+const frogImg     = $('#frogImg');
+const startBtn    = $('#startBtn');
+const startLabel  = $('#startLabel');
+const playIcon    = $('#playIcon');
+const padEls      = $$('.pad');
+const padLabel    = $('#padLabel');
+const announcer   = $('#announcer');
+const streakBadge = $('#streakBadge');
+const streakCount = $('#streakCount');
+const shareLine   = $('#shareStreakLine');
+const ringFg      = $('.ring-fg');
+const RING_C      = 2 * Math.PI * 140;
+
+/* ---------- fallback frog (if a PNG is missing) ---------- */
+const FALLBACK_SVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">' +
+  '<ellipse cx="100" cy="118" rx="74" ry="62" fill="#6C7F6A"/>' +
+  '<ellipse cx="100" cy="142" rx="46" ry="34" fill="#FBF6EC"/>' +
+  '<circle cx="64" cy="62" r="27" fill="#6C7F6A"/><circle cx="136" cy="62" r="27" fill="#6C7F6A"/>' +
+  '<circle cx="68" cy="58" r="13" fill="#FFFDF4"/><circle cx="132" cy="58" r="13" fill="#FFFDF4"/>' +
+  '<circle cx="71" cy="56" r="6" fill="#322E22"/><circle cx="129" cy="56" r="6" fill="#322E22"/>' +
+  '<circle cx="60" cy="62" r="4" fill="#FFC04D"/><circle cx="140" cy="62" r="4" fill="#FFC04D"/>' +
+  '<path d="M78 122 Q100 142 122 122" stroke="#322E22" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+  '<circle cx="52" cy="102" r="9" fill="#C55E33" opacity="0.5"/><circle cx="148" cy="102" r="9" fill="#C55E33" opacity="0.5"/>' +
+  '<path d="M72 26 Q100 2 128 26" stroke="#6C7F6A" stroke-width="9" fill="none" stroke-linecap="round"/>' +
+  '</svg>'
+);
+frogImg.addEventListener('error', function(){
+  if (frogImg.dataset.fbk) return;
+  frogImg.dataset.fbk = '1';
+  frogImg.src = FALLBACK_SVG;
+});
+
+const FROG = {
+  idle:  { src: 'images/frog-timer.png?v=2', alt: 'A friendly frog with glasses' },
+  focus: { src: 'images/frog-focus.png?v=2', alt: 'A friendly frog leaning over a notebook with a pencil, deep in focus' },
+  short: { src: 'images/frog-short.png?v=2', alt: 'A cozy frog with eyes closed, resting during a short break' },
+  long:  { src: 'images/frog-longbreak.png?v=4', alt: 'A cozy frog with arms raised in a quiet victory, celebrating a long break well earned' }
+};
+
+/* ---------- audio ---------- */
+let audioCtx = null;
+function ensureAudio(){
+  if (!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+async function ensureAudioRunning(){
+  const ctx = ensureAudio();
+  if (!ctx) return null;
+  if (ctx.state !== 'running'){
+    try { await ctx.resume(); } catch(e){}
+  }
+  return ctx;
+}
+/* Self-diagnostic strip — visible ONLY when debug is opted in (?debug in the URL or localStorage ff.debug=true). OFF by default so it never shows in production. */
+let _dbgEl = null;
+let _dbgOn = (function(){
+  try {
+    if (location.search.indexOf('debug') !== -1) return true;
+    if (LS.get('ff.debug', false) === true) return true;
+  } catch(e){}
+  return false;
+})();
+function debugLog(s){
+  try {
+    if (window.console && console.log) console.log('[frog] ' + s);
+    if (!_dbgOn) return;
+    if (!_dbgEl){
+      _dbgEl = document.createElement('pre');
+      _dbgEl.id = 'ffDebug';
+      _dbgEl.style.cssText = 'position:fixed;left:8px;bottom:8px;right:8px;max-height:34vh;overflow:auto;z-index:99999;background:rgba(21,26,34,.95);color:#EDF8D0;font:11px/1.4 ui-monospace,monospace;padding:8px;border-radius:8px;white-space:pre-wrap';
+      document.body.appendChild(_dbgEl);
+    }
+    _dbgEl.textContent += s + '\n';
+  } catch(e){}
+}
+/* Robust unlock: runs inside the Start tap (a real user gesture). Creates/resumes
+   the context AND plays a silent buffer — the classic trick that forces iOS/Android
+   to mark the context "running" so buffer sources fire reliably from the timer. */
+function unlockAudio(){
+  const ctx = ensureAudio();
+  if (!ctx){ debugLog('unlock: NO AudioContext'); return; }
+  try { if (ctx.state === 'suspended') ctx.resume(); } catch(e){}
+  try {
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+  } catch(e){}
+  debugLog('unlock: silent buffer played, ctx=' + ctx.state);
+}
+function tone(ctx, freq, start, dur, type, vol){
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.exponentialRampToValueAtTime(vol, start + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(start); osc.stop(start + dur + 0.05);
+}
+async function chimeFocusEnd(){          // gentle two-note bell
+  const ctx = await ensureAudioRunning(); if (!ctx || !soundOn) return;
+  const t = ctx.currentTime;
+  tone(ctx, 587.33, t, 1.4, 'sine', 0.22);
+  tone(ctx, 880.00, t + 0.22, 1.8, 'sine', 0.14);
+  tone(ctx, 1760.0, t + 0.22, 1.4, 'sine', 0.04);
+}
+async function chimeBreakEnd(){          // bright rising arpeggio
+  const ctx = await ensureAudioRunning(); if (!ctx || !soundOn) return;
+  const t = ctx.currentTime;
+  [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => tone(ctx, f, t + i * 0.13, 0.6, 'triangle', 0.16));
+}
+/* ---------- voice (built-in speech synthesis) ---------- */
+/* Single baked-in British English default — no user-facing chooser.
+   Preference order: en-GB (Daniel → Google UK English Female/Male) → any en. */
+let ukVoice = null;
+
+function getVoices(){
+  return ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+}
+function pickUkVoice(){
+  const voices = getVoices();
+  if (!voices.length) return null;
+  const en = voices.filter(function(v){ return /^en/i.test(v.lang || ''); });
+  if (!en.length) return null;
+  const gb = en.filter(function(v){ return /^en[-_]gb/i.test(v.lang || ''); });
+  const pool = gb.length ? gb : en;
+  const named = function(re){ return pool.find(function(v){ return re.test(v.name); }); };
+  return named(/Google UK English Female/i) ||
+         named(/Google UK English Male/i) ||
+         named(/Daniel/i) ||
+         (gb.length ? gb[0] : null) ||
+         en[0];
+}
+function resolveVoice(){
+  if (!ukVoice) ukVoice = pickUkVoice();
+  return ukVoice;
+}
+function speakLocal(text){
+  if (!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = resolveVoice();
+    if (v) u.voice = v;
+    u.rate = 0.88;      // gentle, unhurried
+    u.pitch = 0.85;     // softer, warmer, more reassuring
+    u.volume = 0.95;
+    window.speechSynthesis.speak(u);
+  } catch(e){ /* TTS unavailable */ }
+}
+/* Recorded frog voice — ElevenLabs "Will" clips (audio/<key>-<n>.mp3).
+   Every clip is decoded ONCE into an AudioBuffer and played through the SAME
+   AudioContext as the chimes — the context your Start tap unlocks. This removes
+   the shared <audio> .src-swap race that played the wrong clip on the first
+   break and went silent on later ones. TTS is only a fallback while the very
+   first clip is still decoding (never needed for breaks — those come later). */
+let voicePreloadStarted = false;
+let voicePreloadPromise = null;
+let voiceReady = false;
+const voiceBuffers = {};   // '<key>-<n>' -> AudioBuffer
+
+function preloadVoiceClips(){
+  if (voicePreloadPromise) return voicePreloadPromise;
+  voicePreloadStarted = true;
+  const ctx = ensureAudio();
+  if (!ctx){ debugLog('preload: no AudioContext'); voicePreloadPromise = Promise.resolve(); return voicePreloadPromise; }
+  if (ctx.state === 'suspended') ctx.resume();
+  debugLog('preload: decoding clips, ctx=' + ctx.state);
+  const jobs = [];
+  Object.keys(SPOKEN_SAYINGS).forEach(function(key){
+    SPOKEN_SAYINGS[key].forEach(function(_, i){
+      const src = 'audio/' + key + '-' + (i + 1) + '.mp3';
+      jobs.push(
+        fetch(src)
+          .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+          .then(function(buf){ return ctx.decodeAudioData(buf); })
+          .then(function(ab){ voiceBuffers[key + '-' + (i + 1)] = ab; debugLog('decoded: ' + key + '-' + (i + 1)); })
+          .catch(function(e){ console.warn('[frog] decode fail', src, e && e.message); debugLog('DECODE FAIL ' + src + ': ' + (e && e.message)); })
+      );
+    });
+  });
+  voicePreloadPromise = Promise.all(jobs).then(function(){ voiceReady = true; debugLog('preload done: ' + Object.keys(voiceBuffers).length + ' buffers'); }).catch(function(){ voiceReady = true; debugLog('preload done (with errors): ' + Object.keys(voiceBuffers).length + ' buffers'); });
+  return voicePreloadPromise;
+}
+
+async function playBufferStore(storeKey){
+  const ctx = await ensureAudioRunning();
+  if (!ctx){ debugLog('playBuffer ' + storeKey + ': no ctx'); return false; }
+  const buf = voiceBuffers[storeKey];
+  if (!buf){ debugLog('playBuffer ' + storeKey + ': buffer MISSING (decoded=' + Object.keys(voiceBuffers).length + ')'); return false; }
+  if (ctx.state !== 'running'){ debugLog('playBuffer ' + storeKey + ': ctx still NOT running (' + ctx.state + ') -> fall back to <audio>'); return false; }
+  const node = ctx.createBufferSource();
+  node.buffer = buf;
+  const g = ctx.createGain();
+  g.gain.value = 1;
+  node.connect(g); g.connect(ctx.destination);
+  node.start(0);
+  debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio (ctx=' + ctx.state + ')');
+  return true;
+}
+/* Varied spoken sayings — rotated so each focus / short break opens fresh.
+   Each line has its own Will clip at audio/<key>-<n>.mp3 (n = 1-based index). */
+const SPOKEN_SAYINGS = {
+  'focus-start': [
+    'Here we go. Time to focus — and you\'ve got this. I\'m rooting for you.',
+    'Deep breath. Let\'s make the next focus round count. I\'m right here with you.',
+    'Time to focus, friend. Settle in — I\'ll keep an eye on the clock for you.',
+    'Ready when you are. One good block, together. You\'ve got this.',
+    'Focus time. One thing, get the good stuff done, and I\'m cheering you on.',
+    'Let\'s dive in. You focus, I\'ll watch the lily pads.'
+  ],
+  'short-break': [
+    'Nice work, friend. That was a solid block. Go rest those eyes a moment — you deserve it.',
+    'Good one. Stand up, shake it out, and come back fresh.',
+    'Solid focus. Grab a sip of water and breathe easy for a bit.',
+    'Well done. Roll your shoulders and give those eyes a rest.',
+    'Beautiful. Take a little breather — you\'ve earned it.'
+  ],
+  'long-break': [
+    'Beautiful — you finished the whole round. I\'m proud of you. Go take that long break, you\'ve earned every minute.',
+    'Four rounds done. That\'s a real accomplishment. Now go actually rest — walk, stretch, snack. I\'ll be here.',
+    'A full cycle complete. This is where the good stuff settles in. Enjoy every minute of this long break.',
+    'You did the whole round. I\'m seriously impressed. Give your brain a proper rest now.'
+  ],
+  'short-back': [
+    'Welcome back, friend. Ready to dive in for another one?',
+    'Feeling refreshed? Let\'s make this next block count.',
+    'Good to see you again. One more focused round, together.',
+    'Ready when you are. Let\'s go again.'
+  ],
+  'long-back': [
+    'Welcome back. Feeling good? Let\'s give the next round a go together.',
+    'Nice to have you back. Fresh cycle, fresh start — I\'m with you.',
+    'That long break was well earned. Ready to begin a new round together?',
+    'Welcome back, friend. New round, same you — let\'s do this.'
+  ]
+};
+
+
+let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
+async function speakVaried(key){
+  if (!voiceOn) return;
+  const list = SPOKEN_SAYINGS[key];
+  if (!list || !list.length) return;
+  const idx = ((spokenIdx[key] == null ? -1 : spokenIdx[key]) + 1) % list.length;
+  spokenIdx[key] = idx;
+  LS.set('ff.spokenIdx', spokenIdx);
+  const text = list[idx];
+  const storeKey = key + '-' + (idx + 1);
+  debugLog('speak ' + key + ' -> ' + storeKey + ' (voiceOn=' + voiceOn + ')');
+  // ensure clips are decoded before we try to play (covers skip-to-break before first focus start)
+  try { await preloadVoiceClips(); } catch(e){}
+  // 1) decoded buffer — await the resume so a suspended context actually revives
+  if (await playBufferStore(storeKey)) return;
+  // 2) fresh <audio> element — no shared-element .src race
+  const a = new Audio('audio/' + storeKey + '.mp3');
+  a.volume = 1;
+  a.preload = 'auto';
+  let p = null;
+  try { p = a.play(); } catch(e){ debugLog('fallback audio play() threw: ' + (e && e.message)); }
+  if (p && p.then){ p.then(function(){ debugLog('fallback audio PLAYED: ' + storeKey); }).catch(function(err){ debugLog('fallback audio BLOCKED: ' + storeKey + ' (' + (err && err.message) + ')'); speakLocal(text); }); }
+  else { debugLog('fallback audio: no promise (old browser), TTS'); speakLocal(text); }
+}
+
+/* Voices often load asynchronously after first paint — re-resolve once they arrive. */
+if ('speechSynthesis' in window){
+  window.speechSynthesis.addEventListener('voiceschanged', function(){ ukVoice = pickUkVoice(); });
+}
+
+/* ---------- timing ---------- */
+function totalMs(){ return durations[st.phase] * 60000; }
+function fmt(ms){
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(s / 60), ss = s % 60;
+  return m + ':' + String(ss).padStart(2, '0');
+}
+
+/* ---------- streak ---------- */
+function ymd(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function yesterdayKey(){
+  const d = new Date(); d.setDate(d.getDate() - 1); return ymd(d);
+}
+function todayKey(){ return ymd(new Date()); }
+function recordStreak(){
+  const s = LS.get('ff.streak', { date: '', count: 0 }) || { date: '', count: 0 };
+  const today = todayKey();
+  if (s.date !== today){
+    s.count = (s.date === yesterdayKey()) ? (s.count || 0) + 1 : 1;
+    s.date = today;
+    LS.set('ff.streak', s);
+  }
+}
+function updateStreakUI(){
+  const s = LS.get('ff.streak', null);
+  if (s && s.count > 0){
+    streakBadge.hidden = false;
+    streakCount.textContent = s.count;
+    shareLine.textContent = 'Your streak: ' + s.count + ' day' + (s.count === 1 ? '' : 's') + ' — the frog is impressed. Keep it going!';
+  } else {
+    streakBadge.hidden = true;
+    shareLine.textContent = 'Complete your first pomodoro to light up your streak.';
+  }
+}
+
+/* ---------- UI ---------- */
+function announce(msg){
+  announcer.textContent = '';
+  requestAnimationFrame(function(){ announcer.textContent = msg; });
+}
+function accentFor(){
+  return st.phase === 'focus' ? 'var(--accent)' : st.phase === 'short' ? 'var(--sage)' : 'var(--clay)';
+}
+function frogState(){
+  if (st.phase === 'short') return 'short';
+  if (st.phase === 'long')  return 'long';
+  return st.running ? 'focus' : 'idle';
+}
+function setFrog(){
+  const key = frogState();
+  const entry = FROG[key];
+  if (frogImg.src !== entry.src){
+    frogImg.src = entry.src;
+    frogImg.alt = entry.alt;
+    frogImg.style.animation = 'none';          // restart the intro animation
+    void frogImg.offsetWidth;
+    frogImg.style.animation = '';
+  }
+}
+function celebrateFrog(){
+  frogImg.classList.remove('celebrate');
+  void frogImg.offsetWidth;
+  frogImg.classList.add('celebrate');
+}
+function pillText(){
+  if (st.phase === 'short') return 'Short break';
+  if (st.phase === 'long')  return 'Long break';
+  return st.running ? 'Focus' : 'Focus';
+}
+/* Warm, short frog-themed break sayings — rotated so each break feels fresh. */
+const BREAK_SAYINGS = {
+  short: [
+    'Sip, stretch, breathe',
+    'Roll your shoulders free',
+    'Close your eyes, slow count',
+    'Refill the cup, then back',
+    'Wiggle those toes',
+    'Look far away a moment',
+    'Soft shoulders, slow breath',
+    'Hop up, shake it out'
+  ],
+  long: [
+    'The grand rest — take it',
+    'Big stretch, big smile',
+    'Go wander — the frog has the watch',
+    'Step away and truly rest',
+    'Whole round done. Wow.',
+    'Reboot and come back fresh',
+    'Hop outside if you can',
+    'Four rounds — so proud of you'
+  ]
+};
+let sayingIdx = LS.get('ff.sayingIdx', { short: -1, long: -1 });
+function nextSaying(phase){
+  const list = BREAK_SAYINGS[phase];
+  if (!list) return '';
+  const idx = ((sayingIdx[phase] == null ? -1 : sayingIdx[phase]) + 1) % list.length;
+  sayingIdx[phase] = idx;
+  LS.set('ff.sayingIdx', sayingIdx);
+  return list[idx];
+}
+function hintText(){
+  // Space-press hints are hidden per KR. The space-bar shortcut still works;
+  // only the on-screen prompt text is gone. Break copy stays so the phase isn't bare.
+  if (st.running && (st.phase === 'short' || st.phase === 'long')){
+    if (!st.saying) st.saying = nextSaying(st.phase);
+    return st.saying;
+  }
+  return '';
+}
+function updateTimeUI(){
+  timeEl.textContent = fmt(st.remaining);
+  const total = totalMs();
+  const frac = total > 0 ? Math.max(0, Math.min(1, st.remaining / total)) : 0;
+  ringFg.style.strokeDashoffset = RING_C * (1 - frac);
+  document.title = st.running
+    ? fmt(st.remaining) + ' — Frog Focus'
+    : (st.remaining < totalMs() && st.phase === 'focus' ? fmt(st.remaining) + ' — paused · Frog Focus' : 'Frog Focus — your intentional productivity companion');
+}
+function updateAll(){
+  card.style.setProperty('--phase-accent', accentFor());
+  card.classList.toggle('running', st.running);
+  pillEl.textContent = pillText();
+  hintEl.textContent = hintText();
+  updateTimeUI();
+  setFrog();
+  // start button
+  if (st.running){
+    startLabel.textContent = 'Pause';
+    startBtn.setAttribute('aria-label', 'Pause the timer');
+    playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    startLabel.textContent = (st.remaining >= totalMs()) ? 'Start' : 'Resume';
+    startBtn.setAttribute('aria-label', st.remaining >= totalMs() ? 'Start the timer' : 'Resume the timer');
+    playIcon.innerHTML = '<polygon points="6 3 20 12 6 21 6 3"/>';
+  }
+  // lily pads
+  padEls.forEach(function(p, i){ p.classList.toggle('done', i < st.cycleDone); });
+  padLabel.textContent = st.cycleDone >= 4
+    ? 'Long break earned — round complete!'
+    : st.cycleDone + ' of 4 pomodoros — long break after 4';
+}
+
+/* ---------- phase transitions ---------- */
+function setPhase(p){
+  st.phase = p;
+  st.remaining = durations[p] * 60000;
+  st.endTime = null;
+  st.running = false;
+  if (p === 'focus') st.saying = '';   // clear so the next break picks a fresh saying
+  updateAll();
+}
+function start(){
+  unlockAudio();                     // robust unlock on user gesture (silent buffer)
+  preloadVoiceClips();               // decode all voice clips once into the AudioContext
+  const freshStart = (st.remaining >= totalMs());
+  st.running = true;
+  st.endTime = Date.now() + st.remaining;
+  if (st.phase === 'focus' && freshStart) speakVaried('focus-start');
+  announce(st.phase === 'focus' ? 'Timer started. ' + durations.focus + ' minutes of focus.' : (st.phase === 'short' ? 'Short break started.' : 'Long break started.'));
+  updateAll();
+  saveTimer();
+}
+function pause(){
+  st.running = false;
+  st.endTime = null;
+  announce('Timer paused.');
+  updateAll();
+  saveTimer();
+}
+function toggle(){ st.running ? pause() : start(); }
+function reset(){
+  setPhase(st.phase);
+  announce('Timer reset.');
+  saveTimer();
+}
+function freshStart(){
+  // Wipe the persisted timer + cycle state so the next load lands on a true clean start.
+  // Keeps preferences (durations, sound, voice, auto-break, theme) and the streak.
+  try{
+    localStorage.removeItem('ff.timer');
+    localStorage.removeItem('ff.cycleDone');
+    localStorage.removeItem('ff.sayingIdx');
+  }catch(e){}
+  st.cycleDone = 0;
+  sayingIdx = { short: -1, long: -1 };
+  st.saying = '';
+  setPhase('focus');                 // clean focus screen: paused, full focus duration
+  saveTimer();                       // persist the clean state (fresh 25:00 on next load)
+  announce('Fresh start. ' + durations.focus + ' minutes of focus, ready when you are.');
+  debugLog('fresh start: cleared saved state → phase=' + st.phase + ' remaining=' + fmt(st.remaining));
+}
+function speakBreakGreeting(){
+  if (st.phase === 'long'){
+    speakVaried('long-break');
+  } else if (st.phase === 'short'){
+    speakVaried('short-break');
+  }
+}
+function skip(){
+  if (st.phase === 'focus'){
+    // skipping a focus round still advances the cycle toward the long break
+    st.cycleDone += 1;
+    const earnedLong = st.cycleDone >= 4;
+    setPhase(earnedLong ? 'long' : 'short');
+    unlockAudio();
+    speakBreakGreeting();
+    announce(earnedLong ? 'Skipped ahead — long break earned.' : 'Skipped ahead to a short break.');
+  } else {
+    // skipping a break (short or long) returns you to the next focus round
+    if (st.phase === 'long'){ st.cycleDone = 0; LS.set('ff.cycleDone', 0); }
+    setPhase('focus');
+    announce('Skipped ahead — back to focus.');
+  }
+  saveTimer();
+}
+function completePhase(){
+  const wasFocus = st.phase === 'focus';
+  const earnedLong = wasFocus && st.cycleDone + 1 >= 4;
+  st.running = false;
+  st.endTime = null;
+
+  if (wasFocus){
+    st.cycleDone += 1;
+    recordStreak();
+    updateStreakUI();
+    setPhase(earnedLong ? 'long' : 'short');
+    if (earnedLong){ confetti(); celebrateFrog(); }
+    else { celebrateFrog(); }
+    if (soundOn) chimeFocusEnd();
+    if (earnedLong){
+      speakVaried('long-break');
+      announce('Round complete! Long break earned.');
+    } else {
+      speakVaried('short-break');
+      announce('Focus complete. Time for a short break.');
+    }
+    if (autoBreak) start();
+  } else {
+    const wasLong = st.phase === 'long';
+    if (wasLong){
+      st.cycleDone = 0;
+      LS.set('ff.cycleDone', 0);
+    }
+    setPhase('focus');
+    if (soundOn) chimeBreakEnd();
+    if (wasLong){
+      speakVaried('long-back');
+    } else {
+      speakVaried('short-back');
+    }
+    announce(wasLong ? 'Long break over. New round ready.' : 'Break over. Ready to focus?');
+  }
+  saveTimer();
+}
+function handleCompletion(quiet){
+  /* catch-up completion when the page was closed/backgrounded past an end time */
+  const wasFocus = st.phase === 'focus';
+  st.running = false; st.endTime = null;
+  if (wasFocus){
+    st.cycleDone += 1;
+    recordStreak(); updateStreakUI();
+    if (st.cycleDone >= 4){ st.cycleDone = 0; LS.set('ff.cycleDone', 0); }
+    st.phase = 'short';
+  } else {
+    if (st.phase === 'long'){ st.cycleDone = 0; LS.set('ff.cycleDone', 0); }
+    st.phase = 'focus';
+  }
+  st.remaining = durations[st.phase] * 60000;
+  updateAll();
+  saveTimer();
+  if (!quiet) completePhase();
+}
+
+/* ---------- persistence ---------- */
+let lastSave = 0;
+function saveTimer(){
+  LS.set('ff.timer', { phase: st.phase, running: st.running, endTime: st.endTime, remaining: st.remaining });
+  LS.set('ff.cycleDone', st.cycleDone);
+}
+function saveTimerThrottled(){
+  const now = Date.now();
+  if (now - lastSave < 1500) return;
+  lastSave = now;
+  saveTimer();
+}
+function loadTimer(){
+  const saved = LS.get('ff.timer', null);
+  if (!saved || !saved.phase) return;
+  if (!['focus','short','long'].includes(saved.phase)) return;
+  st.phase = saved.phase;
+  if (saved.running && typeof saved.endTime === 'number'){
+    if (saved.endTime > Date.now()){
+      st.running = true;
+      st.endTime = saved.endTime;
+      st.remaining = saved.endTime - Date.now();
+    } else {
+      handleCompletion(true);
+    }
+  } else {
+    st.remaining = durations[saved.phase] * 60000;
+  }
+  updateAll();
+}
+
+/* ---------- ticking ---------- */
+setInterval(function(){
+  if (!st.running) return;
+  const rem = st.endTime - Date.now();
+  if (rem <= 0){
+    st.remaining = 0;
+    updateTimeUI();
+    completePhase();
+    return;
+  }
+  st.remaining = rem;
+  timeEl.textContent = fmt(st.remaining);
+  const total = totalMs();
+  ringFg.style.strokeDashoffset = RING_C * (1 - Math.max(0, Math.min(1, st.remaining / total)));
+  document.title = fmt(st.remaining) + ' — Frog Focus';
+  saveTimerThrottled();
+}, 250);
+document.addEventListener('visibilitychange', function(){
+  if (!document.hidden){
+    if (st.running) updateTimeUI();
+    // Revive the AudioContext when the tab returns to the foreground — browsers
+    // suspend it while backgrounded, which was silencing the voice at break time.
+    if (audioCtx && audioCtx.state === 'suspended'){
+      audioCtx.resume();
+      debugLog('visibility: resumed suspended ctx, state=' + audioCtx.state);
+    }
+  }
+});
+
+/* ---------- confetti ---------- */
+function confetti(){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#FFC04D', '#6C7F6A', '#C55E33', '#FBF6EC', '#E9C46A'];
+  for (let i = 0; i < 30; i++){
+    const d = document.createElement('i');
+    d.className = 'confetti-piece';
+    const s = 6 + Math.random() * 8;
+    d.style.left = (Math.random() * 100) + '%';
+    d.style.width = s + 'px';
+    d.style.height = (s * (0.5 + Math.random() * 0.6)) + 'px';
+    d.style.background = colors[i % colors.length];
+    d.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    d.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+    d.style.animationDelay = (Math.random() * 0.35) + 's';
+    document.body.appendChild(d);
+    setTimeout(function(){ d.remove(); }, 3400);
+  }
+}
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', theme);
+  $('#sunIcon').hidden = theme === 'dark';
+  $('#moonIcon').hidden = theme === 'day';
+  const meta = $('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#475A44' : '#FBF6EC');
+  LS.set('ff.theme', theme);
+}
+$('#themeBtn').addEventListener('click', function(){
+  theme = theme === 'dark' ? 'day' : 'dark';
+  applyTheme();
+});
+
+/* ---------- sound toggle ---------- */
+function applySoundUI(){
+  $('#soundBtn').setAttribute('aria-pressed', String(soundOn));
+  $('#soundOnIcon').hidden = !soundOn;
+  $('#soundOffIcon').hidden = soundOn;
+  $('#inpSound').checked = soundOn;
+}
+$('#soundBtn').addEventListener('click', function(){
+  soundOn = !soundOn;
+  LS.set('ff.sound', soundOn);
+  applySoundUI();
+  if (soundOn){ ensureAudio(); tone(ensureAudio(), 660, ensureAudio().currentTime, 0.5, 'sine', 0.12); }
+});
+
+/* ---------- settings dialog ---------- */
+const dlg = $('#settingsDialog');
+function openSettings(){
+  $('#inpFocus').value = durations.focus;
+  $('#inpShort').value = durations.short;
+  $('#inpLong').value  = durations.long;
+  $('#inpSound').checked = soundOn;
+  $('#inpVoice').checked = voiceOn;
+  $('#inpAutoBreak').checked = autoBreak;
+  dlg.showModal();
+}
+function closeSettings(){ if (dlg.open) dlg.close(); }
+$('#settingsBtn').addEventListener('click', openSettings);
+$('#cardSettingsBtn').addEventListener('click', openSettings);
+$('#closeSettingsBtn').addEventListener('click', closeSettings);
+dlg.addEventListener('click', function(e){ if (e.target === dlg) closeSettings(); });
+$('#settingsForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const clamp = function(v, lo, hi){ v = parseInt(v, 10); if (isNaN(v)) return lo; return Math.max(lo, Math.min(hi, v)); };
+  durations.focus = clamp($('#inpFocus').value, 1, 120);
+  durations.short = clamp($('#inpShort').value, 1, 30);
+  durations.long  = clamp($('#inpLong').value, 5, 60);
+  LS.set('ff.durations', durations);
+  soundOn   = $('#inpSound').checked;
+  voiceOn   = $('#inpVoice').checked;
+  autoBreak = $('#inpAutoBreak').checked;
+  LS.set('ff.sound', soundOn);
+  LS.set('ff.voice', voiceOn);
+  LS.set('ff.autoBreak', autoBreak);
+  if (!st.running){
+    st.remaining = totalMs();
+    updateAll();
+  }
+  applySoundUI();
+  announce('Settings saved.');
+  closeSettings();
+  saveTimer();
+});
+$('#resetCycleBtn').addEventListener('click', function(){
+  st.cycleDone = 0;
+  LS.set('ff.cycleDone', 0);
+  updateAll();
+  announce('Cycle reset.');
+});
+
+/* ---------- main controls ---------- */
+startBtn.addEventListener('click', toggle);
+$('#resetBtn').addEventListener('click', reset);
+$('#freshStartBtn').addEventListener('click', freshStart);
+$('#skipBtn').addEventListener('click', skip);
+
+document.addEventListener('keydown', function(e){
+  if (e.code === 'Space' && !e.repeat){
+    if (dlg.open) return;
+    const t = e.target;
+    if (t.closest('input, textarea, select, button, [role="button"]')) return;
+    e.preventDefault();
+    toggle();
+  }
+});
+
+/* ---------- share ---------- */
+const toast = $('#toast');
+let toastTimer = null;
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2400);
+}
+$('#shareBtn').addEventListener('click', async function(){
+  const url = location.href;
+  try {
+    if (navigator.share){
+      await navigator.share({ title: 'Frog Focus', text: 'A cozy Pomodoro timer with a frog friend 🐸', url: url });
+    } else if (navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+      showToast('Link copied — share it!');
+    } else {
+      showToast(url);
+    }
+  } catch(e){ /* user cancelled share */ }
+});
+
+/* ---------- init ---------- */
+document.getElementById('year').textContent = new Date().getFullYear();
+applyTheme();
+applySoundUI();
+updateStreakUI();
+loadTimer();
+updateAll();
+saveTimer();
+debugLog('BUILD v5 — phase=' + st.phase + ' voiceOn=' + voiceOn + ' soundOn=' + soundOn);
+})();
+</script>
+</body>
+</html>
