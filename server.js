@@ -154,6 +154,51 @@ app.post('/api/suggestions', function (req, res) {
   res.status(201).json(entry);
 });
 
+// ---- Suggestions: PRIVATE read endpoint (secret-keyed, poll-friendly) ------
+// No public read exists. This endpoint only answers when the caller presents
+// SUGGESTIONS_KEY, so a scheduled checker can poll the inbox without exposing
+// submissions to the world. `since` (ISO timestamp) returns only entries newer
+// than that moment; omitted, it returns the whole (key-held) inbox. The POST
+// endpoint above stays strictly write-only.
+const SUGGESTIONS_KEY = process.env.SUGGESTIONS_KEY || '';
+
+function keyMatches(given) {
+  if (!SUGGESTIONS_KEY || typeof given !== 'string' || given.length === 0) return false;
+  const a = Buffer.from(given, 'utf8');
+  const b = Buffer.from(SUGGESTIONS_KEY, 'utf8');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+app.get('/api/suggestions', function (req, res) {
+  // Refuse loudly if the operator forgot to set a key — a misconfigured server
+  // must never accidentally expose the inbox.
+  if (!SUGGESTIONS_KEY) {
+    return res.status(503).json({ error: 'SUGGESTIONS_KEY is not configured on the server' });
+  }
+  if (!keyMatches(req.query.key)) {
+    return res.status(401).json({ error: 'Unauthorized — valid ?key= required' });
+  }
+
+  let entries = [];
+  if (fs.existsSync(SUGGESTIONS_FN)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(SUGGESTIONS_FN, 'utf8'));
+      if (Array.isArray(parsed)) entries = parsed;
+    } catch (e) { /* corrupt file: treat as empty; POST keeps its own backup logic */ }
+  }
+
+  const since = typeof req.query.since === 'string' ? req.query.since.trim() : '';
+  if (since) {
+    const sinceMs = Date.parse(since);
+    if (isNaN(sinceMs)) return res.status(400).json({ error: '"since" must be an ISO timestamp' });
+    entries = entries.filter(function (e) {
+      return e && typeof e.ts === 'string' && Date.parse(e.ts) > sinceMs;
+    });
+  }
+
+  res.json({ entries: entries, count: entries.length });
+});
+
 app.listen(PORT, function () {
   console.log('🐸 Frog Focus TTS backend listening on http://localhost:' + PORT);
   console.log(API_KEY
