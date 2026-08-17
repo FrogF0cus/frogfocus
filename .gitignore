@@ -7,6 +7,10 @@ node_modules/
 # Synthesized audio cache (regenerates on demand)
 .tts-cache/
 
+# Suggestions inbox — runtime data, never commit submissions
+# (server.js writes it; no public read endpoint exists)
+data/
+
 # Logs / OS cruft
 *.log
 .DS_Store
