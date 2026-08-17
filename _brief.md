@@ -4,91 +4,84 @@
 - Single-page Pomodoro companion — **"Frog Focus — your intentional productivity companion"**; inspired by pomodorokitty.com, not a clone.
 - Frog as a warm **friend/buddy** cheering the user on — the core differentiator.
 - Positioning locked: a **productive tool**, not a toy; tagline "Slow down. Focus. Get the good stuff done."
-- Voice: warm, encouraging American male — **Will (Relaxed Optimist)**, confirmed by KR by ear.
-- Post-launch roadmap (`FROG-FOCUS-ROADMAP.md`): **The Focus Pond**, ambient touches, second frog friend, daily streak, pre-focus checklist.
-- **Active mission: get Frog Focus live.** Two viable routes exist — sandbox VPS (needs GitHub push access) or zip → Netlify Drop/Cloudflare Pages (immediate, hosts under `frogfocus.live`). Feature work declared done, but KR has one more edit queued before publishing.
+- Voice locked: Will (Relaxed Optimist), warm American male.
+- Post-launch roadmap (`FROG-FOCUS-ROADMAP.md`): The Focus Pond, ambient touches, second frog friend, daily streak, pre-focus checklist.
+- **Active mission: get Frog Focus live on `frogfocus.live`** — feature work is done; remaining: the deploy route, final polish.
 
 ## Current Status
-- **KR spotted "one more thing that needs to be edited"** — unspecified as of this brief. CEO is holding ("no zip yet") until KR shares it.
-- **Two deployment routes on the table:**
-  1. **Sandbox VPS** (`frogfocus.vps.empir3.com`): $36/yr paid, credits at $26.64. Blocked on CEO's read-only GitHub access — `repo` scope needed to push files.
-  2. **Zip → Netlify Drop / Cloudflare Pages** (newly explored): CEO zips the folder, KR drags it onto either free host, live under `frogfocus.live` with no code and no GitHub dependency. CEO confirmed "the zip option's always there."
-- **Route decision pending.** KR asked "what if we go another route?"; CEO laid out pros/cons (sandbox = fast, direct hosting but keeps `.vps.` address; own domain = cleaner and permanent, one extra setup step) and recommended starting on the sandbox. KR has not chosen.
-- **GitHub**: one-tap connect card presented to KR. KR likely needs to create a free GitHub account (2 minutes). Only `repo` scope is required — no `workflow`, `admin`, or profile/email access. Token expiration: CEO recommends **no expiration** (90 days absolute minimum, 1 year acceptable).
-- **Sandbox provisioning honestly unconfirmed.** CEO: "I don't have a live status I can honestly report on that server, and I don't want to feed you guesses." A previous Empir3 tooling attempt errored ("work was not marked complete"); the deploy tool CEO can actually drive needs Frog Focus in a GitHub repo.
-- **Credits confirmed at $26.64** — the $36 server charge did go through, so the sandbox likely exists.
-- **Domain `frogfocus.live` owned** and is the eventual target; CEO recommends starting on the sandbox for a one-page site.
-- CEO promised to **ping KR the moment GitHub push access is live** — KR is awaiting that ping.
-- Clock/logo saga closed — hand-built inline SVG @ 11:11 + `images/favicon.svg` live, debug banner stripped, `?v=6` published with KR's approval.
-- Platform 405 issues closed (3 reports); audio saga closed (silent-buffer unlock + `diag.html` shipped, all clips decode clean).
-- **Queued polish (`recommendations_v1`):** KR's Five Page Edits, `frog-face.png` re-encode (JPEG bytes under .png name), timer-face live check.
-- QA gate (KR's mobile + multi-browser round) can run against whichever URL goes live first.
+- ✅ **Frog-drift glitch FIXED, republished, confirmed.** Developer changed `index.html` lines 207–208 from `width:auto` to `width:clamp(104px,20vw,132px);object-fit:contain` — all frogs now render in a consistent square box, intro drift gone. KR confirmed: **"it worked thanks1."**
+- ✅ **No outstanding edit from KR.** The "one more thing" KR flagged WAS the long-break frog glitch — KR described it, CEO + Koba root-caused and fixed the drift (lines 207–208), republished, and KR confirmed **"it worked thanks1."** The later "no not yet. thanks." was KR declining the zip→Netlify packaging offer, not withholding an edit.
+- 🔄 **VPS sync attempted, completion unconfirmed.** KR approved ("Go ahead — you have my approval") and asked CEO to sync the workspace to `frogfocus.vps.empir3.com` and verify the build. CEO committed — "Let me check your server and get this synced" / "I'll let you know the moment it's ready" — but **no completion ping sent.** KR: "i'll wait for your ping."
+- 🚧 **GitHub push access still read-only** (`repo` scope only) — the stated blocker for the full deploy. CEO pings KR the moment the fix lands.
+- ⚠️ **Latent asset issue:** long-break frog is landscape (1504×1108), off-center subject, raised hands touching the top edge of the source art. KR says it doesn't look cropped on their end, but the risk remains. Zara redraw offered, not yet approved.
+- 🗺️ **Two deploy routes:** (1) wait for GitHub push fix → sandbox; (2) zip → Netlify Drop/Cloudflare Pages → `frogfocus.live` (zero GitHub dependency). KR's "Go ahead" signals appetite to go live now; zip route stays open.
+- **Live now:** current build on the free Empir3 link — 11:11 clock, no debug banner, drift fix applied.
+- **Queued polish** (`recommendations_v1`): KR's Five Page Edits (dark mode → frog green, "productive tool" copy, "the what", beverage line, recharge copy); `frog-face.png` re-encode (JPEG bytes under .png name); timer-face live check in Chrome.
 
 ## Files & Structure
-- **Core Page**: `index.html` (75KB) — inline SVG clock @ 11:11, favicon → `images/favicon.svg`, no debug banner, silent-buffer audio unlock, on-screen diagnostics, `PHRASE_AUDIO` on real `.mp3`s, per-state frog images, cycle-pill labels, soft-glow dots.
-- **Images**: `images/` (23 files) — `favicon.svg`, frog-focus-mark variants, hero/timer art. `frog-face.png` still JPEG bytes under a .png name. `uploads/` (27 files, all images).
-- **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy files (Antoni, Josh, earlier Adam, Charlie) awaiting cleanup.
+- **Core Page**: `index.html` (75KB) — inline SVG clock @ 11:11, `favicon.svg`, silent-buffer audio unlock, `PHRASE_AUDIO` MP3s, per-state frogs, cycle pills, glow dots. **Lines 207–208 carry the drift fix.**
+- **Frog Assets**: `images/` — 4 phase frogs; 3 square (1024×1024), long-break landscape (1504×1108, off-center, top-crop risk).
+- **Images**: `images/` (23 files) + `uploads/` (27 files); `frog-face.png` is JPEG bytes under a .png name.
+- **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy (Antoni, Josh, earlier Adam, Charlie) awaiting cleanup.
 - **Diagnostic Harness**: `diag.html` (2KB) — fetch/decode/report page; retention decision open.
-- **Backend**: `server.js` (5KB) static server; `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files).
+- **Backend**: `server.js` (5KB) static server; `package.json` (0KB); `package-lock.json` (29KB); `node_modules/` (71 files).
 - **Scripts**: `scripts/` (5 files) — `generate-will-clips.js` (production), `generate-more-clips.js` (candidate menu), 3 legacy generators.
-- **Screenshots**: `screenshots/` (9 files) — bridge debugging captures.
-- **Docs**: `FROG-FOCUS-ROADMAP.md` (5KB) — post-launch source of truth; `TTS-SETUP.md` (4KB) — stale, rewrite or delete.
-- **Deployment manifest**: `publish_scope_v1` (workspace mode) — exactly 7 items: `index.html`, `audio/`, `images/favicon.svg`, `images/frog-focus-mark-1-1111.png`, `images/frog-focus-mark-1.png`, `images/frog-hero.png`, `images/frog-timer.png`. This is the zip/sync contents.
+- **Screenshots**: `screenshots/` (9 files).
+- **Docs**: `FROG-FOCUS-ROADMAP.md` (5KB, post-launch source of truth); `TTS-SETUP.md` (4KB, stale — rewrite or delete).
+- **Deployment manifest** (`publish_scope_v1`, workspace mode): `index.html`, `audio/`, `images/favicon.svg`, `images/frog-focus-mark-1-1111.png`, `images/frog-focus-mark-1.png`, `images/frog-hero.png`, `images/frog-timer.png` — the zip/sync contents.
 
 ## Key Decisions Made
-- **Alternative hosting route surfaced: zip → Netlify Drop / Cloudflare Pages.** KR asked for alternatives; CEO confirmed the zip option is always available. This route can put `frogfocus.live` live today with zero GitHub dependency — decision is KR's.
-- **Sandbox VPS "frogfocus" previously greenlit** ($36/yr paid, credits ~$26.64) — now one of two live options, blocked on GitHub push access.
-- **GitHub connected, but read-only.** `repo` scope only needed (no `workflow`/`admin`); CEO recommended no-expiry token.
-- **One-tap GitHub connect card presented**; KR may need to create a free GitHub account.
-- **CEO committed to honest status reporting** — no guesses about server state.
-- **Domain locked: `frogfocus.live`** — acquired; `frogfocus.com` unavailable; `frog-focus.com` rejected (hyphen trips spoken sharing).
-- Clock fix: hand-built inline SVG @ 11:11 + `images/favicon.svg`; debug banner stripped; republished with KR's explicit approval (`?v=5` → `?v=6`).
-- Earlier: audio root cause closed; launch-what-we-have scope locked; Will voice locked; publish scope v1 locked; 405s closed; bridge `evaluate` enabled; Zara's deep pass deferred (Grok route down).
+- **Drift fix shipped via CSS, not asset replacement** — square box + `object-fit:contain`; confirmed by KR.
+- **KR approved the sync attempt** ("Go ahead — you have my approval"); CEO committed; completion ping owed.
+- **CEO = Vincent** ("the CEO of this little operation"). KR = user/project owner.
+- **No edit blockers — deploy route is the only gate.** KR's "one more thing" was the frog glitch, now fixed and confirmed.
+- **GitHub token scope is `repo` only** — read-only push is the deploy blocker; zip route is the zero-GitHub alternative.
+- **Long-break frog top-crop is an asset problem**, separate from the drift; Zara redraw proposed, not greenlit.
+- **Domain locked: `frogfocus.live`**; sandbox server paid ($36/yr).
+- Closed: clock/logo saga (inline SVG @ 11:11, `?v=6`), platform 405s (3 reports), audio saga (silent-buffer unlock + `diag.html`), frog-drift glitch (fixed, published, confirmed).
 
 ## Pending Decisions
-- **What is KR's newly spotted edit?** — unspecified; CEO holding until shared.
-- **Route choice: sandbox VPS vs zip → Netlify/Cloudflare.** Zip route could be live under `frogfocus.live` immediately; sandbox route waits on GitHub push access.
-- **KR: create GitHub account (if absent) and grant `repo` scope** — plus confirm token expiration (no-expiry recommended).
-- **Verify sandbox actually provisioned** — CEO honestly can't confirm; prior tooling attempt errored.
-- **When to switch `frogfocus.live` over** — immediately via Netlify/Cloudflare, or after sandbox is stable.
-- **Queued polish timing: launch vs. v1.1?** Five Page Edits + the new edit, `frog-face.png` re-encode, timer-face check.
-- `diag.html` disposition; unify `voiceOn`/`soundOn` flags; Zara QA reschedule; shipping-music decision; cleanup (legacy clips, stale `TTS-SETUP.md`).
+- ~~KR's undisclosed "one more thing"~~ — resolved: it was the frog glitch, fixed + confirmed. No open edit from KR.
+- **Long-break frog asset**: Zara redraw with frog fully in frame vs. crop/recenter to square 1024×1024 vs. leave as-is (CSS masks drift).
+- **Deploy route**: wait for GitHub push fix → sandbox vs. zip → Netlify/Cloudflare now.
+- **VPS sync completion**: confirm `frogfocus.vps.empir3.com` serves the current build (CEO ping pending).
+- **When to flip `frogfocus.live`** — immediately via zip, or after sandbox deploy is stable.
+- **KR: GitHub account (if absent), `repo` scope, token expiration** (no-expiry recommended).
+- **Queued-polish timing**: ship with next publish vs. post-launch (Five Page Edits, `frog-face.png` re-encode, timer-face check).
+- `diag.html` disposition; `voiceOn`/`soundOn` flag unification; Zara QA reschedule; shipping-music decision; cleanup (legacy clips, stale `TTS-SETUP.md`).
 
 ## Tasks
-- [x] Voice pipeline complete: ElevenLabs validated, Will chosen, 5 clips generated, real `.mp3`s served
-- [x] Roadmap written; launch-what-we-have scope locked
+- [x] Voice pipeline complete: ElevenLabs validated, Will locked, 5 production clips
+- [x] Roadmap written; launch scope locked
 - [x] Audio saga closed: root-caused, silent-buffer unlock + diagnostics shipped
-- [x] Hand-built inline SVG clock @ 11:11; `images/favicon.svg`; debug banner stripped
-- [x] KR approval + republish (`?v=6`)
-- [x] Platform 405 issues reported and closed (3 reports)
-- [x] Domain selected and grabbed (`frogfocus.live`)
-- [x] Credits topped up; $36 server charge confirmed (~$26.64 remaining)
-- [x] Alternative route surfaced: zip → Netlify Drop / Cloudflare Pages
-- [x] GitHub connected (read-only) — CEO can't push yet
-- [ ] KR shares the newly spotted edit (CEO holding)
-- [ ] KR decides route: wait for GitHub push fix vs zip → Netlify/Cloudflare now
-- [ ] KR creates GitHub account (if needed) + grants `repo` scope; confirms token expiration
-- [ ] If zip route: CEO zips Frog Focus, KR drops onto Netlify/Cloudflare, verify `frogfocus.live`
-- [ ] If sandbox route: verify provisioning, push files (via GitHub), verify `frogfocus.vps.empir3.com`
-- [ ] KR's mobile + multi-browser test round on whichever URL goes live (audio, SVG clock, layout)
-- [ ] Decide queued-polish timing; brief Koba (Five Page Edits + new edit + `frog-face.png` re-encode + flag unification + `diag.html` disposition)
-- [ ] Re-encode `frog-face.png` to a true PNG
-- [ ] Live check: timer face in ring + cycle-pill wrap (batch with test round)
+- [x] SVG clock @ 11:11 + `favicon.svg`; debug banner stripped; `?v=6` published
+- [x] Platform 405 issues closed (3 reports)
+- [x] Domain acquired (`frogfocus.live`); sandbox charge confirmed
+- [x] GitHub connected (read-only)
+- [x] Frog-drift glitch root-caused (landscape vs. square + off-center subject); fix applied (lines 207–208), republished, KR confirmed ("it worked thanks1")
+- [x] KR's "one more thing" resolved — it was the frog glitch; fixed, republished, confirmed ("it worked thanks1")
+- [ ] CEO complete VPS sync to `frogfocus.vps.empir3.com` + verify deployment; ping KR
+- [ ] Decide long-break frog asset: Zara redraw vs. crop-to-square vs. as-is
+- [ ] KR pick deploy route: GitHub push vs. zip → Netlify/Cloudflare
+- [ ] KR finish GitHub account/token: `repo` scope, expiration set
+- [ ] On push access: create repo, push `publish_scope_v1` files, deploy sandbox, hand over link
+- [ ] KR test round on live URL: audio, clock, layout, frog intro (drift confirmed gone)
+- [ ] Brief Koba: Five Page Edits + asset decision + `frog-face.png` re-encode + flag unification + `diag.html`
+- [ ] Re-encode `frog-face.png` to true PNG
+- [ ] Live check: timer face in ring + cycle-pill wrap
 - [ ] Cleanup: legacy clips, stale `TTS-SETUP.md`, shipping-music decision
-- [ ] Zara design QA deep pass — reschedule when Grok recovers
+- [ ] Zara design QA deep pass (reschedule)
 
 ## Opportunities
-1. **Zip → Netlify Drop puts `frogfocus.live` live today.** Zero GitHub dependency, zero waiting on push access — KR drags the folder onto Netlify/Cloudflare and the site is public. The QA round can run immediately, while GitHub access catches up in the background for the sandbox/iterate loop.
-2. **Grant `repo` scope + no-expiry token in one step.** A single KR action permanently unblocks the GitHub push path — no 30-day reconnect loop, and the sandbox deploy stops being dependent on the direct-sync route. Keeping both routes alive hedges against any single point of failure.
-3. **Fold the new edit into the first publish.** KR's newly spotted edit and the queued Five Page Edits can ship together in one cycle — whether that's Netlify, the sandbox, or both — avoiding a v1.0→v1.1 churn on a single-page site.
+1. **One asset pass clears the entire artifact class.** Crop/recenter the long-break frog to square 1024×1024 — or have Zara redraw it fully in frame. Kills the top-cropped hands and any future framing pop; all four frogs then match in treatment. Ships with the next publish.
+2. **Ship `frogfocus.live` today via the zip route.** The build is proven (drift fix confirmed) and KR has already signaled approval ("Go ahead"). Dragging the 7-item `publish_scope_v1` folder onto Netlify Drop/Cloudflare Pages puts the real domain up immediately with zero GitHub dependency — real-browser QA can start under the final URL now while push access catches up.
+3. **Bundle every remaining edit into one publish cycle.** Five Page Edits + `frog-face.png` re-encode + timer-face check all ship together — one test round, one domain flip, no v1.0→v1.1 churn on a single-page site, and the first public URL represents the final product.
 
 ## Next Steps
-- **KR: describe the newly spotted edit** so it can be folded into the next publish — CEO holding until then.
-- **KR: pick a route** — zip → Netlify/Cloudflare (immediate, hosts `frogfocus.live`) or sandbox via GitHub push (waiting on `repo` scope).
-- **CEO: prepare the zip + exact Netlify Drop/Cloudflare Pages steps** the moment KR decides; keep watching for GitHub push access to ping KR.
-- **KR: create GitHub account + grant `repo` scope in parallel** if the GitHub path is to remain viable.
-- **Run KR's test round on the live URL**: audio, SVG clock, layout across mobile + desktop.
-- Decide queued-polish timing; flip domain officially once QA passes; then Zara's deep pass, cleanup, shipping-music decision.
+- **CEO: finish and confirm the VPS sync** — ping KR when `frogfocus.vps.empir3.com` serves the current build; keep watching for the GitHub push fix.
+- **KR: pick the deploy route** — zip → Netlify/Cloudflare (immediate) vs. sandbox via GitHub push (waiting).
+- **KR: complete GitHub token** (`repo` scope, expiration set) in parallel — removes the last infrastructure blocker.
+- Once the edit lands and the route is chosen: batch all queued polish, publish, run KR's test round on the live URL, flip `frogfocus.live`, run cleanup, and schedule Zara's deep pass.
 
 ---
-*Last updated: 2026-08-16T23:36Z*
+*Last updated: 2026-08-17T05:26Z*
