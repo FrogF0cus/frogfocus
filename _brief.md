@@ -4,106 +4,91 @@
 - Single-page Pomodoro companion — **"Frog Focus — your intentional productivity companion"**; inspired by pomodorokitty.com, not a clone.
 - Frog as a warm **friend/buddy** cheering the user on — the core differentiator.
 - Positioning locked: a **productive tool**, not a toy; tagline "Slow down. Focus. Get the good stuff done."
-- Voice: warm, encouraging, American male — **Will (Relaxed Optimist)**, confirmed by KR by ear.
-- Post-launch roadmap (`FROG-FOCUS-ROADMAP.md`): **The Focus Pond** (lily pads, lotus growth), ambient touches (rain, fireflies), second frog friend, daily streak, pre-focus checklist.
-- **Launch strategy locked: ship the current build first** — roadmap features are update runway.
+- Voice: warm, encouraging American male — **Will (Relaxed Optimist)**, confirmed by KR by ear.
+- Post-launch roadmap (`FROG-FOCUS-ROADMAP.md`): **The Focus Pond**, ambient touches, second frog friend, daily streak, pre-focus checklist.
+- **Active mission: get Frog Focus live.** Two viable routes exist — sandbox VPS (needs GitHub push access) or zip → Netlify Drop/Cloudflare Pages (immediate, hosts under `frogfocus.live`). Feature work declared done, but KR has one more edit queued before publishing.
 
 ## Current Status
-- **Session ACTIVE — final decode/diagnostic test in flight.** KR confirmed "ready"; CEO opened `https://usercontent.empir3.com/p/a3adb503b8/index.html?diag=5` in the bridge window. Results pending.
-- **Audio fix republished to the live link with KR's explicit "go."** Published `index.html` now includes the **silent-buffer unlock** + **on-screen diagnostics**; syntax clean and live bytes confirmed.
-- **Live bridge diagnostics gave hard proof the files were not the problem:** every clip serves HTTP 200 with correct `audio/mpeg`, every clip decodes cleanly in KR's actual browser, and the AudioContext reports `running`. The failure was in timer → speak wiring / autoplay-user-gesture handling, not in assets.
-- **Three prior failed guess-patches are now closed.** Root cause settled as: shared `voiceEl` race (play-before-load) compounded by autoplay-unlock on the real device. Fix shipped and live.
-- **`diag.html` added** as a lightweight diagnostic harness (2KB) in the root workspace.
-- **Zara's design QA pass still down** (Grok route unavailable; `recommendations_v1` failed after 50 messages, fail_ts `1786662085627`). 3 recommendations remain queued: KR's Five Page Edits, `frog-face.png` re-encode, timer-face live check.
-- **Everything else launch-ready:** Will's 5 clips verified, `PHRASE_AUDIO` on real `.mp3` paths, public link live, roadmap written.
+- **KR spotted "one more thing that needs to be edited"** — unspecified as of this brief. CEO is holding ("no zip yet") until KR shares it.
+- **Two deployment routes on the table:**
+  1. **Sandbox VPS** (`frogfocus.vps.empir3.com`): $36/yr paid, credits at $26.64. Blocked on CEO's read-only GitHub access — `repo` scope needed to push files.
+  2. **Zip → Netlify Drop / Cloudflare Pages** (newly explored): CEO zips the folder, KR drags it onto either free host, live under `frogfocus.live` with no code and no GitHub dependency. CEO confirmed "the zip option's always there."
+- **Route decision pending.** KR asked "what if we go another route?"; CEO laid out pros/cons (sandbox = fast, direct hosting but keeps `.vps.` address; own domain = cleaner and permanent, one extra setup step) and recommended starting on the sandbox. KR has not chosen.
+- **GitHub**: one-tap connect card presented to KR. KR likely needs to create a free GitHub account (2 minutes). Only `repo` scope is required — no `workflow`, `admin`, or profile/email access. Token expiration: CEO recommends **no expiration** (90 days absolute minimum, 1 year acceptable).
+- **Sandbox provisioning honestly unconfirmed.** CEO: "I don't have a live status I can honestly report on that server, and I don't want to feed you guesses." A previous Empir3 tooling attempt errored ("work was not marked complete"); the deploy tool CEO can actually drive needs Frog Focus in a GitHub repo.
+- **Credits confirmed at $26.64** — the $36 server charge did go through, so the sandbox likely exists.
+- **Domain `frogfocus.live` owned** and is the eventual target; CEO recommends starting on the sandbox for a one-page site.
+- CEO promised to **ping KR the moment GitHub push access is live** — KR is awaiting that ping.
+- Clock/logo saga closed — hand-built inline SVG @ 11:11 + `images/favicon.svg` live, debug banner stripped, `?v=6` published with KR's approval.
+- Platform 405 issues closed (3 reports); audio saga closed (silent-buffer unlock + `diag.html` shipped, all clips decode clean).
+- **Queued polish (`recommendations_v1`):** KR's Five Page Edits, `frog-face.png` re-encode (JPEG bytes under .png name), timer-face live check.
+- QA gate (KR's mobile + multi-browser round) can run against whichever URL goes live first.
 
 ## Files & Structure
-- **Core Page**: `index.html` (73KB) — "Frog Focus — your intentional productivity companion"; now includes `unlockAudio()` in `start()`, silent-buffer unlock, on-screen diagnostics, play-after-load race fix, `PHRASE_AUDIO` → real `.mp3` paths, per-state frog image wiring, cycle-pill labels, soft-glow dots. References `audio/`, `images/`, `uploads/` as external paths.
-- **Diagnostic Harness**: `diag.html` (2KB) — "Frog Focus audio diag"; fetch/decode/report page used from the bridge window; likely removable or fold-back into support tooling before final polish.
-- **Backend**: `server.js` (5KB) — statically serves `audio/`, `images/`, `uploads/`; `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files).
-- **Scripts** (`scripts/`, 5 files): `generate-will-clips.js` — production track (the 5 shipped Will clips); `generate-more-clips.js` — vetted candidate voice menu; 3 pre-existing clip-generation scripts.
-- **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy files (Antoni, Josh, earlier Adam, Charlie) awaiting cleanup. All 29 files hash-unique.
-- **Images**: `images/` (8 files — `frog-face.png` is JPEG bytes under a .png name, queued for re-encode); `uploads/` (21 files, all images — confirms MIME-level upload filter).
-- **Screenshots**: `screenshots/` (9 files) — bridge-window debugging captures (login wall, hero, dot section, audio checks).
+- **Core Page**: `index.html` (75KB) — inline SVG clock @ 11:11, favicon → `images/favicon.svg`, no debug banner, silent-buffer audio unlock, on-screen diagnostics, `PHRASE_AUDIO` on real `.mp3`s, per-state frog images, cycle-pill labels, soft-glow dots.
+- **Images**: `images/` (23 files) — `favicon.svg`, frog-focus-mark variants, hero/timer art. `frog-face.png` still JPEG bytes under a .png name. `uploads/` (27 files, all images).
+- **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy files (Antoni, Josh, earlier Adam, Charlie) awaiting cleanup.
+- **Diagnostic Harness**: `diag.html` (2KB) — fetch/decode/report page; retention decision open.
+- **Backend**: `server.js` (5KB) static server; `package.json` (0KB), `package-lock.json` (29KB), `node_modules/` (71 files).
+- **Scripts**: `scripts/` (5 files) — `generate-will-clips.js` (production), `generate-more-clips.js` (candidate menu), 3 legacy generators.
+- **Screenshots**: `screenshots/` (9 files) — bridge debugging captures.
 - **Docs**: `FROG-FOCUS-ROADMAP.md` (5KB) — post-launch source of truth; `TTS-SETUP.md` (4KB) — stale, rewrite or delete.
+- **Deployment manifest**: `publish_scope_v1` (workspace mode) — exactly 7 items: `index.html`, `audio/`, `images/favicon.svg`, `images/frog-focus-mark-1-1111.png`, `images/frog-focus-mark-1.png`, `images/frog-hero.png`, `images/frog-timer.png`. This is the zip/sync contents.
 
 ## Key Decisions Made
-- **KR gave explicit "go" to republish the audio fix** — the live link is now running the new code.
-- **Audio fix shipped live includes the unlock path:** `unlockAudio()` now runs from the real click gesture in `start()`, plus silent-buffer unlock and on-screen diagnostics.
-- **Audio root cause is confirmed and closed:** not files, not decode, not serving — shared `voiceEl` race + autoplay-user-gesture gap. Play-after-load and unlock are live.
-- **`Evaluate JS` enabled in Bridge** — live in-browser diagnostics now possible; the decode question was settled in one live test instead of file-format forensics.
-- **Audio file-content integrity confirmed by hash audit** — all 29 files unique; no mislabeled-clip bug.
-- **`?fresh=N` cache-busting adopted as the publish-verify workflow** — now proven multiple times (dot fix, voice fix, race fix, audio fix).
-- **Public link confirmed live:** `https://usercontent.empir3.com/p/a3adb503b8/index.html` serves the fixed file.
-- Earlier (unchanged): bridge login wall diagnosed as Empir3-side 405 (ref **b004e7eb**, logged with admin); sequencing locked (aesthetic changes → Koba's single combined pass); voice locked (Will, `.mp3`); scope locked (ship current build); shipping-music first track delivered to admin.
+- **Alternative hosting route surfaced: zip → Netlify Drop / Cloudflare Pages.** KR asked for alternatives; CEO confirmed the zip option is always available. This route can put `frogfocus.live` live today with zero GitHub dependency — decision is KR's.
+- **Sandbox VPS "frogfocus" previously greenlit** ($36/yr paid, credits ~$26.64) — now one of two live options, blocked on GitHub push access.
+- **GitHub connected, but read-only.** `repo` scope only needed (no `workflow`/`admin`); CEO recommended no-expiry token.
+- **One-tap GitHub connect card presented**; KR may need to create a free GitHub account.
+- **CEO committed to honest status reporting** — no guesses about server state.
+- **Domain locked: `frogfocus.live`** — acquired; `frogfocus.com` unavailable; `frog-focus.com` rejected (hyphen trips spoken sharing).
+- Clock fix: hand-built inline SVG @ 11:11 + `images/favicon.svg`; debug banner stripped; republished with KR's explicit approval (`?v=5` → `?v=6`).
+- Earlier: audio root cause closed; launch-what-we-have scope locked; Will voice locked; publish scope v1 locked; 405s closed; bridge `evaluate` enabled; Zara's deep pass deferred (Grok route down).
 
 ## Pending Decisions
-- **Decode/diagnostic result** — `?diag=5` test is running in the bridge window; interpret the output to close the audio saga.
-- **KR's fresh-load confirmation** — one full-cycle listen: focus intro, first short break, later short breaks all audible and correct. This is the gate before the aesthetic pass.
-- **Public link = launch or staging?** The URL is live and shareable; KR's call on whether that *is* the official launch or a pre-launch preview.
-- **KR's Five Page Edits** (`recommendations_v1`): dark mode → frog green, "productive tool" copy, "the what" section, beverage line, recharge copy — queued to brief Koba once details are confirmed.
-- **`frog-face.png` re-encode** to a real PNG before publish.
-- **Timer face in ring + cycle-pill wrap live checks** — not yet confirmed; batch into the next bridge window.
-- **Unify `voiceOn`/`soundOn` flags** — code-quality cleanup to fold into Koba's pass.
-- **`diag.html` disposition** — keep as a reusable diagnostic or remove from the public root before final launch.
-- **Zara's design QA deep pass** — reschedule when the Grok route recovers; no further retry attempts until then.
-- **Shipping-music playlist** — whether to formalize a rotating playlist is unpicked.
-- Minor cleanup: confirm/drop Adam from backup menu; delete legacy preview clips; rewrite or delete `TTS-SETUP.md`.
+- **What is KR's newly spotted edit?** — unspecified; CEO holding until shared.
+- **Route choice: sandbox VPS vs zip → Netlify/Cloudflare.** Zip route could be live under `frogfocus.live` immediately; sandbox route waits on GitHub push access.
+- **KR: create GitHub account (if absent) and grant `repo` scope** — plus confirm token expiration (no-expiry recommended).
+- **Verify sandbox actually provisioned** — CEO honestly can't confirm; prior tooling attempt errored.
+- **When to switch `frogfocus.live` over** — immediately via Netlify/Cloudflare, or after sandbox is stable.
+- **Queued polish timing: launch vs. v1.1?** Five Page Edits + the new edit, `frog-face.png` re-encode, timer-face check.
+- `diag.html` disposition; unify `voiceOn`/`soundOn` flags; Zara QA reschedule; shipping-music decision; cleanup (legacy clips, stale `TTS-SETUP.md`).
 
 ## Tasks
-- [x] Validate ElevenLabs key (clean 200, full voice library)
-- [x] Generate and verify candidate clips (Will, Brian, Eric, Adam, Charlie, +3 American males)
-- [x] Audit accents — Charlie flagged Australian and removed
-- [x] **KR picks Will**
-- [x] Write `scripts/generate-will-clips.js`; generate the 5 phrase clips with Will
-- [x] **Update `server.js`** to statically serve `audio/`
-- [x] **Update `PHRASE_AUDIO` in `index.html`** from `.mp4` → real `.mp3` paths
-- [x] **Live audio verification** — KR confirms Will's voice plays
-- [x] **Answer KR's publish pros/cons question** — both options laid out; asset references audited
-- [x] Write/save `FROG-FOCUS-ROADMAP.md`; lock launch-what-we-have strategy
-- [x] **Lock sequencing with KR** — aesthetics first, then one final Koba technical/UX pass
-- [x] **Retry Zara's pass at KR's request** — route still down; logged, no further loops
-- [x] **Publish to public link and open in bridge** — URL live and accessible
-- [x] **Root-cause dot rendering** — hard-spread box-shadows; fix shipped as soft circular glows
-- [x] **KR live audio test** — audio audible, but wrong clip on first short break + silence on later breaks reported
-- [x] **Hash-audit all audio files** — all 29 unique; mislabeled-clip theory disproven
-- [x] **Root-cause remaining audio bugs after 3 failed patches** — shared `voiceEl` race + autoplay-unlock gap
-- [x] **Ship final voice fix (play-after-load)** — published, live bytes verified
-- [x] **KR enables `Evaluate JS` in Bridge** — confirmed "done"; live JS diagnostics now possible
-- [x] **KR approves republishing the audio fix** — explicit "go"; `index.html` republished live
-- [x] **Ship silent-buffer unlock + on-screen diagnostics** — live on the public link; syntax clean
-- [x] **Create `diag.html` diagnostic harness** — fetch/decode/report utility in the workspace
-- [x] **Verify audio serving live** — HTTP 200, correct `audio/mpeg`, correct sizes
-- [x] **Verify decode in KR's actual bridge browser** — every clip decodes `OK`, AudioContext `running`
-- [ ] **Complete decode/diagnostic test** — interpret `?diag=5` output in the bridge window
-- [ ] **KR's fresh-load, full-cycle confirmation** — first short break plays the correct clip; later breaks play their clips; no silence
-- [ ] **KR's final timer-cycle run-through** — verify phase/off-beat behavior end to end
-- [ ] **KR's go → official launch** — public link live; final step is KR's call
-- [ ] Apply KR's Five Page Edits: dark mode → frog green, "productive tool" copy, "the what" section, beverage line, recharge copy
-- [ ] Re-encode `frog-face.png` to a real PNG
-- [ ] Live Chrome check: timer face sits right in the ring (batch with bridge session)
-- [ ] Verify cycle-strip pills wrap correctly (batch with bridge session)
-- [ ] Decide `diag.html` removal/retention before launch
-- [ ] Unify `voiceOn`/`soundOn` toggle flags (fold into Koba's pass)
-- [ ] **Koba's single final pass** — implement `recommendations_v1` edits + technical/UX together; queued until KR's aesthetic changes are defined
+- [x] Voice pipeline complete: ElevenLabs validated, Will chosen, 5 clips generated, real `.mp3`s served
+- [x] Roadmap written; launch-what-we-have scope locked
+- [x] Audio saga closed: root-caused, silent-buffer unlock + diagnostics shipped
+- [x] Hand-built inline SVG clock @ 11:11; `images/favicon.svg`; debug banner stripped
+- [x] KR approval + republish (`?v=6`)
+- [x] Platform 405 issues reported and closed (3 reports)
+- [x] Domain selected and grabbed (`frogfocus.live`)
+- [x] Credits topped up; $36 server charge confirmed (~$26.64 remaining)
+- [x] Alternative route surfaced: zip → Netlify Drop / Cloudflare Pages
+- [x] GitHub connected (read-only) — CEO can't push yet
+- [ ] KR shares the newly spotted edit (CEO holding)
+- [ ] KR decides route: wait for GitHub push fix vs zip → Netlify/Cloudflare now
+- [ ] KR creates GitHub account (if needed) + grants `repo` scope; confirms token expiration
+- [ ] If zip route: CEO zips Frog Focus, KR drops onto Netlify/Cloudflare, verify `frogfocus.live`
+- [ ] If sandbox route: verify provisioning, push files (via GitHub), verify `frogfocus.vps.empir3.com`
+- [ ] KR's mobile + multi-browser test round on whichever URL goes live (audio, SVG clock, layout)
+- [ ] Decide queued-polish timing; brief Koba (Five Page Edits + new edit + `frog-face.png` re-encode + flag unification + `diag.html` disposition)
+- [ ] Re-encode `frog-face.png` to a true PNG
+- [ ] Live check: timer face in ring + cycle-pill wrap (batch with test round)
+- [ ] Cleanup: legacy clips, stale `TTS-SETUP.md`, shipping-music decision
 - [ ] Zara design QA deep pass — reschedule when Grok recovers
-- [ ] Coordinate with Empir3 admin on the 405 fix (b004e7eb)
-- [ ] Rewrite or delete stale `TTS-SETUP.md`
-- [ ] Clean up legacy preview clips (Antoni, Josh, Charlie, earlier Adam)
-- [ ] Decide whether to formalize the "shipping music" playlist for Koba
 
 ## Opportunities
-1. **Codify the live-diagnostic playbook now that `evaluate` is enabled.** The decode question that previously required file-format forensics is now a 30-second live test. Pair live `evaluate` with the proven `?fresh=N` publish-verify workflow into a standard Empir3 debugging loop — it eliminates the "is it live or cached / is it the file or the code" class of bugs that cost three failed patches this session. `diag.html` already works as a reusable harness; formalize it.
-2. **Close the last functional gate with one fresh load.** The decode test is minutes from settling the audio question definitively. The moment it passes, ask KR for exactly one full-cycle listen — if the five Will clips rotate correctly, every functional issue is closed and the aesthetic pass can begin immediately. This is the single highest-leverage ask available.
-3. **Package all mechanical cleanup into Koba's single pass.** `voiceOn`/`soundOn` flag unification, `frog-face.png` re-encode, legacy clip removal, stale `TTS-SETUP.md` rewrite, and `diag.html` retention/removal all ride along with the Five Page Edits — one briefing to Koba, one pass, no serial round-trips. Get KR to lock the Five Page Edits details while the diagnostic runs so nothing blocks the aesthetic phase.
+1. **Zip → Netlify Drop puts `frogfocus.live` live today.** Zero GitHub dependency, zero waiting on push access — KR drags the folder onto Netlify/Cloudflare and the site is public. The QA round can run immediately, while GitHub access catches up in the background for the sandbox/iterate loop.
+2. **Grant `repo` scope + no-expiry token in one step.** A single KR action permanently unblocks the GitHub push path — no 30-day reconnect loop, and the sandbox deploy stops being dependent on the direct-sync route. Keeping both routes alive hedges against any single point of failure.
+3. **Fold the new edit into the first publish.** KR's newly spotted edit and the queued Five Page Edits can ship together in one cycle — whether that's Netlify, the sandbox, or both — avoiding a v1.0→v1.1 churn on a single-page site.
 
 ## Next Steps
-- **Interpret the `?diag=5` result** (running live in the bridge window now); if clean, immediately request KR's fresh-load full-cycle listen — the gate that unlocks the aesthetic pass.
-- **Ask KR for the official launch call** once the full-cycle listen passes. The public link is already live; the "go" is now a one-word decision with zero wait.
-- **Present `recommendations_v1` to KR** to lock the Five Page Edits; on sign-off, brief Koba for the combined aesthetic + technical/UX pass (include `frog-face.png` re-encode, flag unification, and `diag.html` disposition).
-- **Batch remaining live checks into the next bridge window:** timer face in the ring, cycle-pill wrap, dot-section screenshot for the record.
-- **Coordinate the Empir3 405 fix (b004e7eb) in parallel** — affects other bridge workflows beyond Frog Focus.
-- Post-launch: reschedule Zara's deep pass when Grok recovers; cleanup pass (legacy clips, stale `TTS-SETUP.md`); decide on the shipping-music playlist.
+- **KR: describe the newly spotted edit** so it can be folded into the next publish — CEO holding until then.
+- **KR: pick a route** — zip → Netlify/Cloudflare (immediate, hosts `frogfocus.live`) or sandbox via GitHub push (waiting on `repo` scope).
+- **CEO: prepare the zip + exact Netlify Drop/Cloudflare Pages steps** the moment KR decides; keep watching for GitHub push access to ping KR.
+- **KR: create GitHub account + grant `repo` scope in parallel** if the GitHub path is to remain viable.
+- **Run KR's test round on the live URL**: audio, SVG clock, layout across mobile + desktop.
+- Decide queued-polish timing; flip domain officially once QA passes; then Zara's deep pass, cleanup, shipping-music decision.
 
 ---
-*Last updated: 2026-08-16T16:39Z*
+*Last updated: 2026-08-16T23:36Z*

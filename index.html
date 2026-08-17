@@ -204,7 +204,8 @@ html[data-theme="dark"] .chip{color:#2A3526}
 .phase-hint{margin-top:10px;font-size:14px;font-weight:600;color:var(--ink-soft);min-height:1.4em}
 .frog{
   position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);
-  height:clamp(104px,20vw,132px);width:auto;z-index:3;
+  height:clamp(104px,20vw,132px);width:clamp(104px,20vw,132px);
+  object-fit:contain;z-index:3;
   filter:drop-shadow(0 14px 22px rgba(50,46,34,.20));
   animation:frog-in .45s cubic-bezier(.34,1.56,.64,1);
   user-select:none;-webkit-user-drag:none;
