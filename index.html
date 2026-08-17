@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Frog Focus — your intentional productivity companion</title>
 <meta name="description" content="Frog Focus is a warm, cozy Pomodoro timer. 25 minutes of focused work, 5-minute breaks, and a little frog cheering you on.">
-<meta name="theme-color" content="#FBF6EC">
+<meta name="theme-color" content="#FBF7F0">
 <meta property="og:title" content="Frog Focus — your intentional productivity companion">
 <meta property="og:description" content="25 minutes of focused work, a 5-minute breather, and a frog who cheers you on. Free, cozy, no sign-up.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=Karla:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
@@ -823,6 +825,10 @@ dialog[open]{animation:dialog-in .25s cubic-bezier(.16,1,.3,1)}
           <span><b>Auto-start breaks</b><small>Breaks begin automatically after focus</small></span>
           <input type="checkbox" class="switch" id="inpAutoBreak" checked>
         </label>
+        <label class="switch-row">
+          <span><b>Notifications</b><small>Ping you even when the tab is closed — intervals finish on time, no matter what</small></span>
+          <input type="checkbox" class="switch" id="inpPush" checked>
+        </label>
       </div>
 
       <div class="dialog-actions">
@@ -877,6 +883,7 @@ let durations = Object.assign({ focus: 25, short: 5, long: 15 }, LS.get('ff.dura
 let soundOn   = LS.get('ff.sound', true);
 let voiceOn   = LS.get('ff.voice', true);
 let autoBreak = LS.get('ff.autoBreak', true);
+let pushOn    = LS.get('ff.push', true);   // web-push notifications (survive closed tab)
 let theme     = LS.get('ff.theme', null) || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'day');
 
 /* ---------- app state ---------- */
@@ -1533,7 +1540,7 @@ function applyTheme(){
   $('#sunIcon').hidden = theme === 'dark';
   $('#moonIcon').hidden = theme === 'day';
   const meta = $('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#475A44' : '#FBF6EC');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#475A44' : '#FBF7F0');
   LS.set('ff.theme', theme);
 }
 $('#themeBtn').addEventListener('click', function(){
@@ -1564,6 +1571,7 @@ function openSettings(){
   $('#inpSound').checked = soundOn;
   $('#inpVoice').checked = voiceOn;
   $('#inpAutoBreak').checked = autoBreak;
+  $('#inpPush').checked = pushOn;
   dlg.showModal();
 }
 function closeSettings(){ if (dlg.open) dlg.close(); }
@@ -1581,9 +1589,12 @@ $('#settingsForm').addEventListener('submit', function(e){
   soundOn   = $('#inpSound').checked;
   voiceOn   = $('#inpVoice').checked;
   autoBreak = $('#inpAutoBreak').checked;
+  pushOn    = $('#inpPush').checked;
   LS.set('ff.sound', soundOn);
   LS.set('ff.voice', voiceOn);
   LS.set('ff.autoBreak', autoBreak);
+  LS.set('ff.push', pushOn);
+  applyPushSetting();
   if (!st.running){
     st.remaining = totalMs();
     updateAll();
