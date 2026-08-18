@@ -9,7 +9,14 @@
      { title, body, icon, url, tag, badge }
    ============================================================================ */
 
+// Version marker — bump whenever static assets change so browsers fetch the
+// updated service worker. (This SW does not runtime-cache the app shell, so
+// there is no CACHE_NAME to bust; the byte change alone triggers the browser's
+// SW update check and clients re-fetch assets — including the PWA icons.)
+const SW_VERSION = 2; // 2026-08-18: PWA icon refresh → approved frog-face artwork
+
 self.addEventListener('install', function (event) {
+  console.log('[Frog Focus] service worker v' + SW_VERSION);
   self.skipWaiting();
 });
 
