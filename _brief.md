@@ -2,94 +2,78 @@
 
 ## Vision & Goals
 - Single-page Pomodoro companion — **"Frog Focus — your intentional productivity companion"**; inspired by pomodorokitty.com, not a clone.
-- Frog as a warm **friend/buddy** cheering the user on — the core differentiator.
-- Positioned as a **productive tool**, not a toy; tagline "Slow down. Focus. Get the good stuff done."
+- Frog as a warm **friend/buddy** cheering the user on — the core differentiator. Positioned as a **productive tool**, not a toy; tagline "Slow down. Focus. Get the good stuff done."
 - Voice locked: Will (Relaxed Optimist), warm American male.
-- Post-launch roadmap (`FROG-FOCUS-ROADMAP.md`): The Focus Pond, ambient touches, second frog friend, daily streak, pre-focus checklist.
-- **Active mission: finish the TTS loop and flip `frogfocus.live`** — sandbox is up on `frogfocus.vps.empir3.com`; last blocker is a valid ElevenLabs key.
+- Launch state now achieved: live app with PWA install, push notifications, and suggestions inbox. Post-launch roadmap lives in `FROG-FOCUS-ROADMAP.md`.
 
 ## Current Status
-- ⚠️ **TTS key is the current blocker.** The value pasted earlier was the API key **ID**, not the secret (real keys start with `sk_`) — ElevenLabs rejects it. KR is fetching the real key ("working on the actual key so brb").
-- 🚀 **VPS deploy largely complete.** `ELEVENLABS_API_KEY` written to `/home/empir3/apps/frogfocus/.env` (64 chars, ownership `empir3`), service `empir3-frogfocus` active and restarted, `GET /api/tts/health` reports `configured: true` (503 gone). Voice/model IDs preserved as-is.
-- 🔍 **First synthesis attempt hit a 502 upstream error** — dev was pulling the error body and service log to confirm the exact rejection. Route contract confirmed: `POST /api/tts` → 200 `audio/mpeg` when working, 503 when unconfigured.
-- 🐛 **New platform bug logged: 475faf69** — chat search pulls up results but clicking one doesn't open it. Queued to the admin/platform review log (CEO can't message the platform team directly).
-- ✅ **Fresh-start reset SHIPPED and published.** Lily pad button (flat, filled, inline SVG) beside "Timer settings"; clears `ff.timer`, `ff.cycleDone`, `ff.sayingIdx`; keeps settings + `ff.streak`. Live at **https://usercontent.empir3.com/p/a3adb503b8/index.html**. Test protocol: pomodoro → reload → resumes; Fresh start → snaps to 25:00, zero pads, stays fresh on reload.
-- ✅ **Timer-resume question closed** — localStorage save/restore of `ff.timer` is a feature, now with a control.
-- ✅ **Frog-drift glitch fixed** (`index.html` lines 207–208), republished, KR confirmed.
-- ✅ **GitHub token access confirmed** — `repo` scope checked; `write:packages` not needed. Local repo still has **no remote**.
-- ⚠️ **Long-break frog** still landscape (1504×1108), off-center subject, top-crop risk; Zara redraw offered, not approved.
-- **Queued polish** (`recommendations_v1`): KR's Five Page Edits (dark mode → frog green, "productive tool" copy, "the what", beverage line, recharge copy); `frog-face.png` re-encode (JPEG bytes under a .png name); timer-face live check in Chrome.
-- **Publish manifest locked** (`publish_scope_v1`, workspace mode): `index.html`, `audio/`, `images/favicon.svg`, `images/frog-focus-mark-1-1111.png`, `images/frog-focus-mark-1.png`, `images/frog-hero.png`, `images/frog-timer.png`.
+- 🟢 **LIVE and externally verified at `frogfocus.vps.empir3.com`.** Checks confirm: PWA manifest + service worker serve, VAPID push keys active, and the suggestions inbox correctly blocks keyless access.
+- ✅ **Deploy consolidated onto `master`** — the active dev line (170 commits ahead of `main`, adds web-push). Service `empir3-frogfocus` active on port 8787, returns 200.
+- ✅ **Push notifications shipped.** `web-push` installed; VAPID keys auto-generated into `.env` on first boot.
+- ✅ **GitHub remote established:** `github.com/FrogF0cus/frogfocus` — deploy record points at it.
+- ✅ **`.env` complete:** ElevenLabs key + `SUGGESTIONS_KEY` present; inbox live behind auth.
+- ✅ **Daily 7am check scheduled** on the VPS — pings only when something new lands.
+- ⚠️ **Last open thread: the ElevenLabs TTS loop** (per CEO). Health reports `configured: true`; the first synthesis attempt hit a 502 upstream error — end-to-end `POST /api/tts` → 200 `audio/mpeg` is still unverified.
+- 🅿️ **`frogfocus.live` stays parked** — KR's call.
+- 🎯 **Queued polish** (`recommendations_v1`): KR's Five Page Edits (dark mode → frog green, "productive tool" copy, "the what", beverage line, recharge copy); `frog-face.png` re-encode; timer-face live check in Chrome.
 
 ## Files & Structure
-- **Core Page**: `index.html` (76KB) — inline SVG clock @ 11:11, `favicon.svg`, silent-buffer audio unlock, `PHRASE_AUDIO` MP3s, per-state frogs, cycle pills, glow dots, `ff.timer` localStorage resume, fresh-start lily pad button. Lines 207–208 = drift fix.
-- **Frog Assets**: `images/` (23 files) — 4 phase frogs; 3 square (1024×1024), long-break landscape (1504×1108, top-crop risk); `frog-face.png` is JPEG bytes under a .png name.
-- **Images & Media**: `uploads/` (31 files); `screenshots/` (15 files — grew from 9, likely fresh-start test captures).
-- **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy (Antoni, Josh, earlier Adam, Charlie) awaiting cleanup.
-- **Diagnostic Harness**: `diag.html` (2KB) — fetch/decode/report audio page; retention decision open.
-- **Backend**: `server.js` (5KB) static server with optional ElevenLabs TTS + caching; `package.json` (0KB); `package-lock.json` (29KB); `node_modules/` (71 files).
-- **VPS (frogfocus.vps.empir3.com)**: app at `/home/empir3/apps/frogfocus/` — `.env` (key names in place), `server.js`, systemd unit `empir3-frogfocus`, deploy helper `empir3-deploy`.
-- **Scripts**: `scripts/` (5 files) — `generate-will-clips.js` (production), `generate-more-clips.js` (candidate menu), 3 legacy generators.
+- **Core App** (single-page, no templates): `index.html` (88KB) — inline SVG clock @ 11:11, per-state frogs, cycle pills, `ff.timer` localStorage resume, fresh-start lily pad, silent-buffer audio unlock; `manifest.json` (1KB, PWA); `sw.js` (2KB, service worker caching the app shell).
+- **Backend**: `server.js` (18KB) — static serving + ElevenLabs TTS proxy (server-side key, on-disk audio cache) + suggestions inbox + push-key handling; `package.json`; `package-lock.json` (35KB); `node_modules/` (83 files, incl. `web-push`).
+- **Frog Assets**: `images/` (27 files) — phase frogs (3 square 1024×1024, long-break landscape 1504×1108 with top-crop risk), marks, hero, timer face, `favicon.svg`. `frog-face.png` is JPEG bytes under a .png name.
+- **Audio**: `audio/` (29 files) — 5 production Will clips + candidate/legacy (Antoni, Josh, early Adam, Charlie) awaiting cleanup; generated by `scripts/` (6 files).
+- **Media/Staging**: `uploads/` (31 files); `screenshots/` (16 files); `data/` (0 files).
+- **Diagnostic Harness**: `diag.html` (2KB) — audio fetch/decode/report page; retention decision open.
 - **Docs**: `FROG-FOCUS-ROADMAP.md` (5KB, post-launch source of truth); `TTS-SETUP.md` (4KB, stale — rewrite or delete).
-- **VCS**: Local git repo present, **no remote configured**.
+- **VPS (frogfocus.vps.empir3.com)**: app at `/home/empir3/apps/frogfocus/` — `.env` (ElevenLabs + `SUGGESTIONS_KEY` + auto-generated VAPID), systemd unit `empir3-frogfocus` (port 8787), deploy helper `empir3-deploy`, recorded to `github.com/FrogF0cus/frogfocus`.
+- **VCS**: Git repo with remote; `master` = deployed dev line, `main` = legacy (170 behind).
 
 ## Key Decisions Made
-- **KR approved the direct VPS install**; deployed without GitHub — GitHub no longer on the critical path.
-- **ElevenLabs key rule**: the secret must be the `sk_` key, not the key ID; key value never echoed/printed during setup.
-- **Voice/model config is sacred** — `ELEVENLABS_VOICE_ID` and `ELEVENLABS_MODEL_ID` kept intact in `.env`.
-- **TTS route contract locked**: `GET /api/tts/health` → `configured`; `POST /api/tts` → 200 `audio/mpeg` (or 503 when unconfigured).
-- **Chat-search bug queued via admin review log** — issue **475faf69**; CEO has no direct chat path to the platform team.
-- **Fresh-start shipped as a lily pad button** (per KR's explicit ask), clearing timer/cycle/saying state while preserving settings + streak.
-- **Timer resume is a feature, not a bug** — localStorage save/restore of `ff.timer`.
-- **Emporium: explore only, don't publish yet**; shareable link is the available asset.
-- **Drift fix shipped via CSS**, not asset replacement; confirmed by KR.
-- **CEO = Vincent** (project manager); KR = project owner; Koba = developer.
-- **Domain locked: `frogfocus.live`**; sandbox server paid ($36/yr).
-- Closed: clock/logo saga, platform 405s, audio saga, frog-drift glitch, timer-resume question.
+- **`master` is the production branch**; `main` is legacy (in sync with origin but not deployed).
+- **Real keys live in `.env`** (ElevenLabs + `SUGGESTIONS_KEY`); keys never echoed during setup.
+- **Push notifications shipped** with on-boot VAPID auto-generation; **suggestions inbox shipped** behind auth (keyless access blocked, verified externally).
+- **PWA build verified from outside** — manifest, service worker, push keys all serving.
+- **`frogfocus.live` stays parked** (KR); sandbox URL is the public home for now.
+- **TTS route contract locked**: `GET /api/tts/health` → `configured`; `POST /api/tts` → 200 `audio/mpeg` (503 when unconfigured).
+- **Publish scope locked** (`publish_scope_v1`, workspace mode): `index.html`, `audio/`, `images/favicon.svg`, `images/frog-focus-mark-1-1111.png`, `images/frog-focus-mark-1.png`, `images/frog-hero.png`, `images/frog-timer.png`.
+- Fresh-start lily pad button shipped (clears timer/cycle/saying, keeps settings + streak); timer resume via localStorage is a feature, now controlled.
+- Roles: CEO = Vincent (PM); KR = project owner; Koba = developer.
+- Platform chat-search bug **475faf69** logged to the admin review queue.
 
 ## Pending Decisions
-- **Real ElevenLabs key delivery**: KR to supply the `sk_` secret; whether it clears the 502 is unverified.
-- **`frogfocus.live` flip timing**: after TTS synthesis verifies end-to-end on the sandbox.
+- **ElevenLabs TTS loop closure** — what exactly remains after the first 502; confirm end-to-end 200 `audio/mpeg` + in-app playback.
 - **Long-break frog asset**: Zara redraw vs. crop-to-square 1024×1024 vs. leave as-is (CSS masks drift).
-- **GitHub repo creation**: optional parallel move now that direct deploy works (token is `repo`-scoped and ready).
 - **Queued-polish timing**: ship Five Page Edits + PNG re-encode + timer-face check with next publish vs. post-launch.
-- `diag.html` disposition; `voiceOn`/`soundOn` flag unification; Zara QA reschedule; cleanup (legacy clips, stale `TTS-SETUP.md`, shipping-music decision).
+- **Branch consolidation**: archive/merge `main` or leave as-is.
+- Cleanup: `diag.html` disposition, `voiceOn`/`soundOn` flag unification, legacy audio clips, stale `TTS-SETUP.md`, shipping-music decision, Zara design QA reschedule.
 
 ## Tasks
-- [x] Voice pipeline complete: ElevenLabs validated, Will locked, 5 production clips
-- [x] Roadmap written; launch scope locked
-- [x] Audio saga closed: root-caused, silent-buffer unlock + diagnostics shipped
-- [x] SVG clock @ 11:11 + `favicon.svg`; debug banner stripped; `?v=6` published
-- [x] Platform 405 issues closed (3 reports)
-- [x] Domain acquired (`frogfocus.live`); sandbox charge confirmed
-- [x] Frog-drift glitch fixed (lines 207–208), republished, KR confirmed
-- [x] Timer-resume question answered (localStorage feature, not cache)
-- [x] Emporium feasibility checked; not pursued per KR
-- [x] Shipping-music attribution corrected
-- [x] Fresh-start lily pad button built, published, KR-approved
-- [x] GitHub token access confirmed — `repo` scope; `write:packages` not needed
-- [x] VPS service up: `.env` written, `empir3-frogfocus` active, health `configured: true`
-- [ ] KR: provide the real ElevenLabs key (starts with `sk_`)
-- [ ] Dev: swap real key into `.env`, restart service, verify `POST /api/tts` returns 200 `audio/mpeg` (no 502)
-- [ ] CEO: confirm sandbox serves the current build (incl. fresh-start); ping KR; flip `frogfocus.live` once TTS verifies
-- [ ] Platform team: fix chat search bug **475faf69**
-- [ ] Brief Koba: Five Page Edits + asset decision + `frog-face.png` re-encode + flag unification + `diag.html`
-- [ ] Re-encode `frog-face.png` to true PNG
-- [ ] Live check: timer face in ring + cycle-pill wrap (Chrome)
-- [ ] Optional: create GitHub repo (unblocks standard push path)
-- [ ] Cleanup: legacy clips, stale `TTS-SETUP.md`, shipping-music decision
+- [x] Full build deployed to VPS and externally verified (PWA, push, inbox)
+- [x] Deploy branch switched to `master`; `web-push` installed; service restarted, serving 200
+- [x] VAPID keys auto-generated; `.env` complete (ElevenLabs + `SUGGESTIONS_KEY`)
+- [x] Daily 7am check scheduled — pings only on new activity
+- [x] GitHub remote recorded (`FrogF0cus/frogfocus`); deploy record set
+- [x] Voice pipeline: ElevenLabs validated, Will locked, 5 production clips
+- [x] Fresh-start lily pad built and KR-approved; timer-resume question closed
+- [x] Frog-drift glitch fixed; platform 405s closed; domain acquired; roadmap written
+- [ ] Complete the ElevenLabs TTS loop — verify `POST /api/tts` returns 200 `audio/mpeg` (no 502); confirm audio plays in the live app
+- [ ] Execute queued polish: KR's Five Page Edits, `frog-face.png` re-encode, timer-face live check
+- [ ] Confirm `frogfocus.live` stays parked (no flip without KR)
+- [ ] Resolve long-break frog asset decision
+- [ ] Decide `main` branch disposition (archive/merge/leave)
+- [ ] Platform team: fix chat-search bug **475faf69**
+- [ ] Cleanup: legacy clips, stale `TTS-SETUP.md`, shipping-music decision, `diag.html`, flag unification
 - [ ] Zara design QA deep pass (reschedule)
 
 ## Opportunities
-1. **Close the TTS loop the moment KR returns.** The service is up and healthy; the only missing piece is the real `sk_` key. One `.env` swap + restart + a single `curl POST /api/tts` verification turns a 502 into 200 `audio/mpeg` and removes the last blocker before the `frogfocus.live` flip — finish it in this session.
-2. **One publish cycle ships the polish bundle with the launch flip.** KR's Five Page Edits, the `frog-face.png` re-encode, and the timer-face live check are already queued (`recommendations_v1`) and the manifest is locked (`publish_scope_v1`) — fold them into the same round as the domain flip to avoid v1.0→v1.1 churn.
-3. **Create the GitHub repo in parallel while the key lands.** The `repo`-scope token is confirmed; making a remote now restores the standard deploy path for future changes and permanently removes the "no remote" blocker — cheap insurance while the direct deploy proceeds.
+1. **Close the TTS loop this session — the last open thread.** The key is in `.env`, the service is healthy, and the route contract is known. One `curl POST /api/tts` verification (expect 200 `audio/mpeg`) plus a quick in-app playback check turns the only remaining launch thread into a closed item.
+2. **Ship the queued polish in a single publish cycle.** KR's Five Page Edits, the `frog-face.png` re-encode, and the timer-face live check are queued (`recommendations_v1`) and the publish manifest is locked — batch them into one publish to avoid version churn while the app is fresh.
+3. **Consolidate the branch story and turn the 7am check into a watchdog.** Archiving `main` removes deploy confusion (170-commit drift). The existing daily check can be extended to probe `/api/tts/health` and the inbox endpoint — turning the deploy into a self-monitoring loop for zero extra infra.
 
 ## Next Steps
-- **KR:** provide the real ElevenLabs key (`sk_...`); confirm the long-break frog decision; run the fresh-start test protocol on the public link.
-- **Dev (Koba):** drop the real key into `/home/empir3/apps/frogfocus/.env`, restart `empir3-frogfocus`, verify `POST /api/tts` returns 200 `audio/mpeg`; then execute the queued polish (Five Page Edits, PNG re-encode, timer-face live check).
-- **CEO (Vincent):** complete TTS verification with the dev, ping KR, flip `frogfocus.live` once synthesized audio is confirmed; optionally create the GitHub repo; keep an eye on platform-team fix for **475faf69**.
-- **Post-launch:** revisit Emporium listing, cleanup (legacy clips, stale `TTS-SETUP.md`, shipping-music decision), and Zara's deep design QA pass.
+- **Dev (Koba):** complete TTS end-to-end verification (`POST /api/tts` → 200 `audio/mpeg`, no 502); then execute the queued polish bundle and live-check the timer face in Chrome.
+- **CEO (Vincent):** confirm TTS audio on a PWA-installed device; keep `frogfocus.live` parked; watch the 7am check; track platform fix **475faf69**; optionally drive branch consolidation.
+- **KR:** confirm the TTS loop outcome and long-break frog decision; review/approve the Five Page Edits when implemented.
 
 ---
-*Last updated: 2026-08-17T16:56Z*
+*Last updated: 2026-08-17T18:04Z*
