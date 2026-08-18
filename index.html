@@ -1014,6 +1014,27 @@ function unlockAudio(){
     src.connect(ctx.destination);
     src.start(0);
   } catch(e){}
+  // iOS requires a media <audio> element to be STARTED inside a real user
+  // gesture, or every later play() is rejected (NotAllowedError). Unlock THE
+  // ONE persistent element synchronously inside this tap: point it at a silent
+  // WAV and play(). From then on every phrase (recorded clip or TTS) reuses
+  // this same element, so nothing ever creates an Audio outside a gesture.
+  try {
+    if (!primaryVoiceAudio){
+      primaryVoiceAudio = new Audio();
+      primaryVoiceAudio.preload = 'auto';
+      primaryVoiceAudio.volume = 1;
+    }
+    if (!primarySilentUrl) primarySilentUrl = silentWavUrl();
+    try { primaryVoiceAudio.pause(); } catch(e){}
+    try { primaryVoiceAudio.removeAttribute('src'); primaryVoiceAudio.load(); } catch(e){}
+    primaryVoiceAudio.src = primarySilentUrl;
+    const p = primaryVoiceAudio.play();
+    if (p && p.catch) p.catch(function(){ /* rejected — push notification still covers the phase end */ });
+    debugLog('unlock: primary media element unlocked with silent WAV');
+  } catch(e){
+    debugLog('unlock: media unlock failed ' + (e && e.message));
+  }
   debugLog('unlock: silent buffer played, ctx=' + ctx.state);
 }
 function tone(ctx, freq, start, dur, type, vol){
@@ -1119,7 +1140,12 @@ function preloadVoiceClips(){
    break-end voice can never overlap the next focus-start in the same context. */
 let currentVoiceSource = null;
 let currentVoiceGain = null;
-let fallbackAudio = null;
+/* THE ONE persistent media element. Created + gesture-unlocked inside the Start
+   tap (unlockAudio) — or lazily ONCE on desktop when a mid-session load needs
+   it — then every recorded clip and every TTS phrase plays through it, so
+   nothing ever constructs an Audio outside a user gesture (iOS rejects those). */
+let primaryVoiceAudio = null;
+let primarySilentUrl = null;   // cached silent-WAV blob URL used to unlock it
 
 async function playBufferStore(storeKey){
   const ctx = await ensureAudioRunning();
@@ -1177,7 +1203,7 @@ function stopAllAudio(){
       masterGain = null;
     }
     stopBgSustain();   // background silent loop (page is going away/frozen)
-    stopVoice();   // recorded clip + shared TTS <audio> + speechSynthesis
+    stopVoice();   // WebAudio buffer + the one media element (clip/TTS) + speechSynthesis
     if (audioCtx){
       try { audioCtx.suspend(); } catch(e){}   // stop the audio thread cleanly first
       try { audioCtx.close(); } catch(e){}
@@ -1242,8 +1268,9 @@ async function speakVaried(key){
 
   // Backgrounded tab: Chrome suspends WebAudio and hard-stops speechSynthesis,
   // so the ONLY thing that keeps talking is an <audio> element. Play the
-  // recorded Will clip straight through a media element; if the browser blocks
-  // it, ttsSpeak() renders the same line via /api/tts into the shared <audio>.
+  // recorded Will clip straight through the persistent media element; if the
+  // browser blocks it, ttsSpeak() renders the same line via /api/tts into that
+  // same unlocked element.
   if (document.hidden){
     playRecordedViaAudio(storeKey, text);
     return;
@@ -1256,18 +1283,34 @@ async function speakVaried(key){
   // <audio> element for the recorded clip; TTS/speechSynthesis only if blocked.
   playRecordedViaAudio(storeKey, text);
 }
-/* Play a recorded Will clip through a fresh <audio> element (no shared-element
-   .src race). If the browser blocks it, fall through to the ElevenLabs TTS path
-   (shared <audio>), which keeps playing in background tabs. */
+/* Play a recorded Will clip through THE ONE persistent media element (unlocked
+   inside the Start tap — never construct a new Audio per phrase, iOS rejects
+   play() on any element not started within a user gesture). If the browser
+   blocks play(), fall through to the ElevenLabs TTS path, which renders the
+   same line into the same element. */
 function playRecordedViaAudio(storeKey, text){
-  if (fallbackAudio){
-    try { fallbackAudio.pause(); } catch(e){}
-    fallbackAudio = null;
+  if (!primaryVoiceAudio){
+    // No gesture-unlocked element (page loaded mid-session without a Start tap).
+    // Desktop/Android tolerate an Audio created outside a gesture — lazily
+    // create THE persistent element ONCE here rather than per phrase, so every
+    // later phrase reuses it. On iOS this path stays blocked (honest platform
+    // limit); the scheduled web push still covers the phase end.
+    try {
+      primaryVoiceAudio = new Audio();
+      primaryVoiceAudio.preload = 'auto';
+      primaryVoiceAudio.volume = 1;
+    } catch(e){
+      debugLog('fallback audio: create failed -> TTS');
+      ttsSpeak(text);
+      return;
+    }
   }
-  const a = new Audio('audio/' + storeKey + '.mp3');
-  fallbackAudio = a;
+  const a = primaryVoiceAudio;
+  try { a.pause(); } catch(e){}
+  try { a.removeAttribute('src'); a.load(); } catch(e){}
   a.volume = 1;
   a.preload = 'auto';
+  a.src = 'audio/' + storeKey + '.mp3';
   let p = null;
   try { p = a.play(); } catch(e){ debugLog('fallback audio play() threw: ' + (e && e.message)); }
   if (p && p.then){
@@ -1282,13 +1325,14 @@ function playRecordedViaAudio(storeKey, text){
   }
 }
 
-/* ---------- voice (ElevenLabs TTS -> ONE shared <audio>) ---------- */
+/* ---------- voice (ElevenLabs TTS -> the one persistent <audio>) ---------- */
 /* Chrome hard-stops speechSynthesis and suspends WebAudio the moment the tab is
    hidden, so those only ever work in the foreground. <audio> elements are exempt
    from background throttling, so the durable voice path renders each phrase via
    /api/tts (ElevenLabs — synthesized once, cached server-side) and plays the
-   blob URL through ONE shared <audio> that keeps talking in other tabs. */
-let sharedTtsAudio = null;     // ONE shared <audio> — every TTS phrase plays here
+   blob URL through primaryVoiceAudio — the single element unlocked inside the
+   Start tap — which keeps talking in other tabs AND on iOS (which only allows
+   play() on elements started within a user gesture). */
 let ttsObjectUrl = null;       // current blob URL (revoked on replace/stop)
 let ttsSeq = 0;                // stale-fetch guard for the shared element
 let ttsHealthState = null;     // null = unknown, true = configured, false = not
@@ -1314,18 +1358,11 @@ function ttsVoiceId(){
   return (typeof window.__FF_VOICE_ID === 'string' && window.__FF_VOICE_ID)
     ? window.__FF_VOICE_ID.trim() : '';
 }
-function ensureSharedTtsAudio(){
-  if (!sharedTtsAudio){
-    sharedTtsAudio = new Audio();
-    sharedTtsAudio.preload = 'auto';
-    sharedTtsAudio.volume = 1;
-  }
-  return sharedTtsAudio;
-}
-/* Pause + clear the shared TTS <audio> and release its blob URL — the silence
+/* Pause + clear primaryVoiceAudio — THE one persistent element shared by the
+   recorded-clip path and the TTS path — and release its blob URL. The silence
    kill for TTS (called from stopVoice/stopAllAudio and before a new phrase). */
 function stopSharedTts(){
-  const a = sharedTtsAudio;
+  const a = primaryVoiceAudio;
   if (a){
     try { a.pause(); } catch(e){}
     try { if (a.src){ a.removeAttribute('src'); a.load(); } } catch(e){}
@@ -1345,15 +1382,17 @@ function checkTtsHealth(){
     .then(function(ok){ ttsHealthState = ok; ttsHealthPromise = null; return ok; });
   return ttsHealthPromise;
 }
-/* Speak via /api/tts: POST {voice_id, text} -> audio/mpeg blob -> shared
-   <audio>. speechSynthesis is the LAST resort and only when the TTS service is
-   unconfigured or the request fails — Chrome stops it the moment the tab is
-   hidden, so it cannot carry the background voice. */
+/* Speak via /api/tts: POST {voice_id, text} -> audio/mpeg blob ->
+   primaryVoiceAudio (the one unlocked element). speechSynthesis is the LAST
+   resort and only when the TTS service is unconfigured or the request fails —
+   Chrome stops it the moment the tab is hidden, so it cannot carry the
+   background voice. */
 function ttsSpeak(text){
   if (!text) return Promise.resolve(false);
   const mySeq = ++ttsSeq;
   stopSharedTts();
-  const audio = ensureSharedTtsAudio();
+  const audio = primaryVoiceAudio;
+  if (!audio){ console.warn('[ff-tts] no primaryVoiceAudio — falling back to speechSynthesis'); return speakLocal(text); }
   return checkTtsHealth().then(function(configured){
     if (!configured){
       console.warn('[ff-tts] /api/tts/health reports TTS unconfigured — falling back to speechSynthesis, which Chrome silences when the tab is hidden');
@@ -1401,13 +1440,12 @@ function stopVoice(){
     try { src.disconnect(); } catch(e){}
     try { if (g) g.disconnect(); } catch(e){}
   }
-  if (fallbackAudio){
-    try { fallbackAudio.pause(); } catch(e){}
+  if (primaryVoiceAudio){
+    try { primaryVoiceAudio.pause(); } catch(e){}
     // Fully detach from the media session so a backgrounded pause can't revive.
-    try { fallbackAudio.removeAttribute('src'); fallbackAudio.load(); } catch(e){}
-    fallbackAudio = null;
+    try { primaryVoiceAudio.removeAttribute('src'); primaryVoiceAudio.load(); } catch(e){}
   }
-  stopSharedTts();
+  stopSharedTts();   // releases the TTS blob URL (element already silenced above)
   if ('speechSynthesis' in window){
     try { window.speechSynthesis.pause(); } catch(e){}  // iOS stuck-speech workaround
     try { window.speechSynthesis.cancel(); } catch(e){}
@@ -1420,7 +1458,10 @@ function stopVoice(){
    While a timer runs and the tab is hidden, loop a silent track through a media
    element so Chrome counts the page as "playing audio" — the tab stays unfrozen,
    the 250ms tick keeps running (throttled to ~1/sec), and the phase-end voice
-   fires and plays through the media element for real in the background. */
+   fires and plays through the media element for real in the background.
+   NOTE: iOS Safari detects the silence and suspends the tab regardless — this
+   loop is desktop/Android-only insurance; on iPhone the scheduled web push is
+   the durable path. */
 let bgSustainAudio = null;
 let bgSustainUrl = null;
 function silentWavUrl(){
