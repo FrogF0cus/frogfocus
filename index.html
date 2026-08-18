@@ -943,6 +943,7 @@ const FROG = {
 
 /* ---------- audio ---------- */
 let audioCtx = null;
+let masterGain = null;    // master output bus — one kill silences ALL WebAudio instantly
 let voiceCtxRef = null;   // AudioContext the decoded voice buffers were created on
 function ensureAudio(){
   if (document.hidden){ return null; }
@@ -950,6 +951,9 @@ function ensureAudio(){
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     audioCtx = new AC();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(audioCtx.destination);
     if (voiceCtxRef !== audioCtx){
       // Fresh context (e.g. after stopAllAudio closed the old one): AudioBuffers
       // decoded on the old context are invalid here (cross-context playback can
@@ -1019,7 +1023,7 @@ function tone(ctx, freq, start, dur, type, vol){
   g.gain.setValueAtTime(0.0001, start);
   g.gain.exponentialRampToValueAtTime(vol, start + 0.03);
   g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-  osc.connect(g); g.connect(ctx.destination);
+  osc.connect(g); g.connect(masterGain);
   osc.start(start); osc.stop(start + dur + 0.05);
 }
 async function chimeFocusEnd(){          // gentle two-note bell
@@ -1135,7 +1139,7 @@ async function playBufferStore(storeKey){
     node.buffer = buf;
     g = ctx.createGain();
     g.gain.value = 1;
-    node.connect(g); g.connect(ctx.destination);
+    node.connect(g); g.connect(masterGain);
     node.onended = function(){ if (currentVoiceSource === node){ currentVoiceSource = null; currentVoiceGain = null; } };
     currentVoiceSource = node;
     currentVoiceGain = g;
@@ -1164,6 +1168,14 @@ async function playBufferStore(storeKey){
    source can ever revive. */
 function stopAllAudio(){
   try {
+    // FIRST: rip the master bus out of the destination. Once disconnected, not
+    // even a suspended audio thread can reach the speakers — zero the gain and
+    // remove the node before any source cleanup below.
+    if (masterGain){
+      try { masterGain.gain.cancelScheduledValues(0); masterGain.gain.setValueAtTime(0, audioCtx ? audioCtx.currentTime : 0); } catch(e){}
+      try { masterGain.disconnect(); } catch(e){}
+      masterGain = null;
+    }
     if (currentVoiceSource){
       const src = currentVoiceSource;
       const g = currentVoiceGain;
@@ -1177,16 +1189,20 @@ function stopAllAudio(){
     }
     if (fallbackAudio){
       try { fallbackAudio.pause(); } catch(e){}
+      // Fully detach from the media session so a backgrounded pause can't revive.
+      try { fallbackAudio.removeAttribute('src'); fallbackAudio.load(); } catch(e){}
       fallbackAudio = null;
     }
     if ('speechSynthesis' in window){
+      try { window.speechSynthesis.pause(); } catch(e){}  // iOS stuck-speech workaround
       try { window.speechSynthesis.cancel(); } catch(e){}
     }
     if (audioCtx){
+      try { audioCtx.suspend(); } catch(e){}   // stop the audio thread cleanly first
       try { audioCtx.close(); } catch(e){}
       audioCtx = null;
     }
-    debugLog('stopAllAudio: all audio killed, ctx closed');
+    debugLog('stopAllAudio: master bus silenced + ctx closed');
   } catch(e){
     debugLog('stopAllAudio: error ' + (e && e.message));
   }
