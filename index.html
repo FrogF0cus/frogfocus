@@ -943,11 +943,24 @@ const FROG = {
 
 /* ---------- audio ---------- */
 let audioCtx = null;
+let voiceCtxRef = null;   // AudioContext the decoded voice buffers were created on
 function ensureAudio(){
   if (!audioCtx){
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     audioCtx = new AC();
+    if (voiceCtxRef !== audioCtx){
+      // Fresh context (e.g. after stopAllAudio closed the old one): AudioBuffers
+      // decoded on the old context are invalid here (cross-context playback can
+      // throw, especially iOS/Safari) — drop them so speakVaried re-decodes on
+      // the new context.
+      Object.keys(voiceBuffers).forEach(function(k){ delete voiceBuffers[k]; });
+      voicePreloadStarted = false;
+      voicePreloadPromise = null;
+      voiceReady = false;
+      voiceCtxRef = audioCtx;
+      debugLog('ensureAudio: new ctx, voice buffers cleared');
+    }
   }
   if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
@@ -1110,24 +1123,40 @@ async function playBufferStore(storeKey){
     try { currentVoiceSource.stop(); } catch(e){}
     currentVoiceSource = null;
   }
-  const node = ctx.createBufferSource();
-  node.buffer = buf;
-  const g = ctx.createGain();
-  g.gain.value = 1;
-  node.connect(g); g.connect(ctx.destination);
-  node.onended = function(){ if (currentVoiceSource === node){ currentVoiceSource = null; currentVoiceGain = null; } };
-  currentVoiceSource = node;
-  currentVoiceGain = g;
-  node.start(0);
-  debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio (ctx=' + ctx.state + ')');
-  return true;
+  let node = null;
+  let g = null;
+  try {
+    node = ctx.createBufferSource();
+    node.buffer = buf;
+    g = ctx.createGain();
+    g.gain.value = 1;
+    node.connect(g); g.connect(ctx.destination);
+    node.onended = function(){ if (currentVoiceSource === node){ currentVoiceSource = null; currentVoiceGain = null; } };
+    currentVoiceSource = node;
+    currentVoiceGain = g;
+    node.start(0);
+    debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio (ctx=' + ctx.state + ')');
+    return true;
+  } catch(e){
+    debugLog('playBuffer ' + storeKey + ': create/start threw (' + (e && e.message) + ') -> clean up, fall back to <audio>');
+    if (currentVoiceSource === node){ currentVoiceSource = null; currentVoiceGain = null; }
+    if (node){
+      try { node.onended = null; node.stop(); } catch(e2){}
+      try { node.disconnect(); } catch(e3){}
+    }
+    if (g){
+      try { g.disconnect(); } catch(e4){}
+    }
+    return false;
+  }
 }
 
-/* Stop any in-flight voice playback immediately: ramp the gain down to avoid a
-   click, stop the source ~50ms later, kill the fallback <audio>, cancel TTS,
-   and suspend the context so nothing is left mid-buffer (fixes the garbled
-   noise burst when the tab is backgrounded mid-voice and the suspended
-   AudioContext revives mid-buffer). */
+/* Stop any in-flight voice playback immediately and NUCLEAR: null the live refs
+   first, zero the gain instantly, detach onended, stop + disconnect the source
+   with NO scheduled window (a stop() scheduled 50ms out survives a
+   backgrounded-tab suspend and revives garbled on foreground), kill the
+   fallback <audio> and TTS, then CLOSE the AudioContext so no stuck/suspended
+   source can ever revive. */
 function stopAllAudio(){
   try {
     if (currentVoiceSource){
@@ -1135,15 +1164,11 @@ function stopAllAudio(){
       const g = currentVoiceGain;
       currentVoiceSource = null;
       currentVoiceGain = null;
-      try {
-        const t = audioCtx.currentTime;
-        g.gain.cancelScheduledValues(t);
-        g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
-        try { src.stop(audioCtx.currentTime + 0.05); } catch(e){ try { src.stop(); } catch(e2){} }
-      } catch(e){
-        try { src.stop(); } catch(e2){}
-      }
+      try { g.gain.setValueAtTime(0, audioCtx ? audioCtx.currentTime : 0); } catch(e){}
+      try { src.onended = null; } catch(e){}
+      try { src.stop(); } catch(e){}
+      try { src.disconnect(); } catch(e){}
+      try { g.disconnect(); } catch(e){}
     }
     if (fallbackAudio){
       try { fallbackAudio.pause(); } catch(e){}
@@ -1152,10 +1177,11 @@ function stopAllAudio(){
     if ('speechSynthesis' in window){
       try { window.speechSynthesis.cancel(); } catch(e){}
     }
-    if (audioCtx && audioCtx.state === 'running'){
-      try { audioCtx.suspend(); } catch(e){}
+    if (audioCtx){
+      try { audioCtx.close(); } catch(e){}
+      audioCtx = null;
     }
-    debugLog('stopAllAudio: voice stopped, ctx=' + (audioCtx ? audioCtx.state : 'none'));
+    debugLog('stopAllAudio: all audio killed, ctx closed');
   } catch(e){
     debugLog('stopAllAudio: error ' + (e && e.message));
   }
@@ -1724,6 +1750,13 @@ document.addEventListener('visibilitychange', function(){
 window.addEventListener('pagehide', function(){
   stopAllAudio();
   debugLog('pagehide: stopped page audio');
+});
+
+/* Frozen backgrounded pages (page lifecycle) may be discarded without firing
+   pagehide — kill audio BEFORE the freeze so nothing revives garbled. */
+window.addEventListener('freeze', function(){
+  stopAllAudio();
+  debugLog('freeze: stopped page audio');
 });
 
 /* ---------- confetti ---------- */
