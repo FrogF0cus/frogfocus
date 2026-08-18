@@ -1709,9 +1709,20 @@ function applyPushSetting(){
 }
 
 /* Register the service worker on load — enables installability + push.
-   Notification permission itself is only requested inside a real Start tap. */
+   Notification permission itself is only requested inside a real Start tap.
+   When a NEW service worker takes control (fresh deploy), reload once so the
+   page always runs the latest code — otherwise an open/installed app can keep
+   running an old JS build silently. */
 if ('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(function(e){
+  navigator.serviceWorker.register('/sw.js').then(function(reg){
+    let selfUpdated = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if (selfUpdated) return;
+      selfUpdated = true;
+      debugLog('sw: new build activated — reloading to pick it up');
+      window.location.reload();
+    });
+  }).catch(function(e){
     debugLog('push: SW register failed: ' + (e && e.message));
   });
 }
