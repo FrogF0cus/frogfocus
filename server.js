@@ -75,8 +75,8 @@ app.get('/manifest.json', function (req, res) { res.sendFile(path.join(__dirname
 app.get('/sw.js', function (req, res) { res.sendFile(path.join(__dirname, 'sw.js')); });
 
 // ---- Cache helpers ---------------------------------------------------------
-function cacheFileFor(text) {
-  const hash = crypto.createHash('sha256').update(VOICE_ID + '::' + text).digest('hex');
+function cacheFileFor(text, voiceId) {
+  const hash = crypto.createHash('sha256').update(voiceId + '::' + text).digest('hex');
   return path.join(CACHE_DIR, hash + '.mp3');
 }
 
@@ -91,7 +91,14 @@ app.post('/api/tts', async function (req, res) {
   if (!text) return res.status(400).json({ error: 'Missing "text"' });
   if (!API_KEY) return res.status(503).json({ error: 'ELEVENLABS_API_KEY not configured on the server' });
 
-  const file = cacheFileFor(text);
+  // Optional per-request voice override: the client POSTs {voice_id, text} so a
+  // deployment can switch voices without touching server env. Any malformed or
+  // absent voice_id falls back to the server default (ELEVENLABS_VOICE_ID). The
+  // cache key includes the effective voice so different voices never collide.
+  const asked = (req.body && typeof req.body.voice_id === 'string') ? req.body.voice_id.trim() : '';
+  const voiceId = /^[A-Za-z0-9_-]{1,64}$/.test(asked) ? asked : VOICE_ID;
+
+  const file = cacheFileFor(text, voiceId);
 
   // Serve the cached mp3 if this exact phrase was already synthesized.
   if (fs.existsSync(file)) {
@@ -102,7 +109,7 @@ app.post('/api/tts', async function (req, res) {
 
   try {
     const upstream = await fetch(
-      'https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(VOICE_ID),
+      'https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voiceId),
       {
         method: 'POST',
         headers: {
@@ -115,9 +122,17 @@ app.post('/api/tts', async function (req, res) {
     );
 
     if (!upstream.ok) {
-      const errText = await upstream.text().catch(function () { return ''; });
-      console.error('[tts] ElevenLabs error', upstream.status, errText.slice(0, 300));
-      return res.status(502).json({ error: 'ElevenLabs upstream error', status: upstream.status });
+      let errText = '';
+      try { errText = await upstream.text(); } catch (e) { /* ignore */ }
+      let detail = errText.slice(0, 300);
+      try {
+        const j = JSON.parse(errText);
+        if (j && j.error){
+          detail = (typeof j.error === 'string' ? j.error : (j.error.message || JSON.stringify(j.error))).slice(0, 300);
+        }
+      } catch (e) { /* non-JSON body — keep raw text */ }
+      console.error('[tts] ElevenLabs error', upstream.status, detail);
+      return res.status(502).json({ error: 'ElevenLabs upstream error', status: upstream.status, detail: detail });
     }
 
     const buf = Buffer.from(await upstream.arrayBuffer());

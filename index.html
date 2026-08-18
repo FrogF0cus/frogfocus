@@ -1176,27 +1176,7 @@ function stopAllAudio(){
       try { masterGain.disconnect(); } catch(e){}
       masterGain = null;
     }
-    if (currentVoiceSource){
-      const src = currentVoiceSource;
-      const g = currentVoiceGain;
-      currentVoiceSource = null;
-      currentVoiceGain = null;
-      try { g.gain.setValueAtTime(0, audioCtx ? audioCtx.currentTime : 0); } catch(e){}
-      try { src.onended = null; } catch(e){}
-      try { src.stop(); } catch(e){}
-      try { src.disconnect(); } catch(e){}
-      try { g.disconnect(); } catch(e){}
-    }
-    if (fallbackAudio){
-      try { fallbackAudio.pause(); } catch(e){}
-      // Fully detach from the media session so a backgrounded pause can't revive.
-      try { fallbackAudio.removeAttribute('src'); fallbackAudio.load(); } catch(e){}
-      fallbackAudio = null;
-    }
-    if ('speechSynthesis' in window){
-      try { window.speechSynthesis.pause(); } catch(e){}  // iOS stuck-speech workaround
-      try { window.speechSynthesis.cancel(); } catch(e){}
-    }
+    stopVoice();   // recorded clip + shared TTS <audio> + speechSynthesis
     if (audioCtx){
       try { audioCtx.suspend(); } catch(e){}   // stop the audio thread cleanly first
       try { audioCtx.close(); } catch(e){}
@@ -1248,8 +1228,8 @@ const SPOKEN_SAYINGS = {
 
 let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
 async function speakVaried(key){
-  if (document.hidden) return;
   if (!voiceOn) return;
+  stopVoice();                       // exclusive: every new phrase silences the last
   const list = SPOKEN_SAYINGS[key];
   if (!list || !list.length) return;
   const idx = ((spokenIdx[key] == null ? -1 : spokenIdx[key]) + 1) % list.length;
@@ -1257,26 +1237,180 @@ async function speakVaried(key){
   LS.set('ff.spokenIdx', spokenIdx);
   const text = list[idx];
   const storeKey = key + '-' + (idx + 1);
-  debugLog('speak ' + key + ' -> ' + storeKey + ' (voiceOn=' + voiceOn + ')');
-  // ensure clips are decoded before we try to play (covers skip-to-break before first focus start)
+  debugLog('speak ' + key + ' -> ' + storeKey + ' (voiceOn=' + voiceOn + ', hidden=' + document.hidden + ')');
+
+  // Backgrounded tab: Chrome suspends WebAudio and hard-stops speechSynthesis,
+  // so the ONLY thing that keeps talking is an <audio> element. Play the
+  // recorded Will clip straight through a media element; if the browser blocks
+  // it, ttsSpeak() renders the same line via /api/tts into the shared <audio>.
+  if (document.hidden){
+    playRecordedViaAudio(storeKey, text);
+    return;
+  }
+
+  // Foreground: prefer the decoded buffer (exclusive, no element race).
   try { await preloadVoiceClips(); } catch(e){}
-  if (document.hidden){ debugLog('speak ' + key + ': hidden after preload -> skip'); return; }
-  // 1) decoded buffer — await the resume so a suspended context actually revives
+  if (document.hidden){ playRecordedViaAudio(storeKey, text); return; }
   if (await playBufferStore(storeKey)) return;
-  // 2) fresh <audio> element — no shared-element .src race
+  // <audio> element for the recorded clip; TTS/speechSynthesis only if blocked.
+  playRecordedViaAudio(storeKey, text);
+}
+/* Play a recorded Will clip through a fresh <audio> element (no shared-element
+   .src race). If the browser blocks it, fall through to the ElevenLabs TTS path
+   (shared <audio>), which keeps playing in background tabs. */
+function playRecordedViaAudio(storeKey, text){
   if (fallbackAudio){
     try { fallbackAudio.pause(); } catch(e){}
     fallbackAudio = null;
   }
-  if (document.hidden){ debugLog('speak ' + key + ': hidden -> skip fallback'); return; }
   const a = new Audio('audio/' + storeKey + '.mp3');
   fallbackAudio = a;
   a.volume = 1;
   a.preload = 'auto';
   let p = null;
   try { p = a.play(); } catch(e){ debugLog('fallback audio play() threw: ' + (e && e.message)); }
-  if (p && p.then){ p.then(function(){ debugLog('fallback audio PLAYED: ' + storeKey); }).catch(function(err){ debugLog('fallback audio BLOCKED: ' + storeKey + ' (' + (err && err.message) + ')'); speakLocal(text); }); }
-  else { debugLog('fallback audio: no promise (old browser), TTS'); speakLocal(text); }
+  if (p && p.then){
+    p.then(function(){ debugLog('fallback audio PLAYED: ' + storeKey); })
+     .catch(function(err){
+       debugLog('fallback audio BLOCKED: ' + storeKey + ' (' + (err && err.message) + ')');
+       ttsSpeak(text);
+     });
+  } else {
+    debugLog('fallback audio: no promise (old browser), TTS');
+    ttsSpeak(text);
+  }
+}
+
+/* ---------- voice (ElevenLabs TTS -> ONE shared <audio>) ---------- */
+/* Chrome hard-stops speechSynthesis and suspends WebAudio the moment the tab is
+   hidden, so those only ever work in the foreground. <audio> elements are exempt
+   from background throttling, so the durable voice path renders each phrase via
+   /api/tts (ElevenLabs — synthesized once, cached server-side) and plays the
+   blob URL through ONE shared <audio> that keeps talking in other tabs. */
+let sharedTtsAudio = null;     // ONE shared <audio> — every TTS phrase plays here
+let ttsObjectUrl = null;       // current blob URL (revoked on replace/stop)
+let ttsSeq = 0;                // stale-fetch guard for the shared element
+let ttsHealthState = null;     // null = unknown, true = configured, false = not
+let ttsHealthPromise = null;   // in-flight health check (dedupe)
+
+function ttsBase(){
+  const b = (typeof window.__FF_TTS_BASE === 'string' && window.__FF_TTS_BASE)
+    ? window.__FF_TTS_BASE.trim().replace(/\/+$/, '') : '';
+  return b;
+}
+function ttsEndpoint(){
+  const b = ttsBase();
+  if (!b) return '/api/tts';
+  return /\/api\/tts$/i.test(b) ? b : b + '/api/tts';
+}
+function ttsHealthUrl(){
+  const b = ttsBase();
+  if (!b) return '/api/tts/health';
+  if (/\/api\/tts\/health$/i.test(b)) return b;
+  return /\/api\/tts$/i.test(b) ? b + '/health' : b + '/api/tts/health';
+}
+function ttsVoiceId(){
+  return (typeof window.__FF_VOICE_ID === 'string' && window.__FF_VOICE_ID)
+    ? window.__FF_VOICE_ID.trim() : '';
+}
+function ensureSharedTtsAudio(){
+  if (!sharedTtsAudio){
+    sharedTtsAudio = new Audio();
+    sharedTtsAudio.preload = 'auto';
+    sharedTtsAudio.volume = 1;
+  }
+  return sharedTtsAudio;
+}
+/* Pause + clear the shared TTS <audio> and release its blob URL — the silence
+   kill for TTS (called from stopVoice/stopAllAudio and before a new phrase). */
+function stopSharedTts(){
+  const a = sharedTtsAudio;
+  if (a){
+    try { a.pause(); } catch(e){}
+    try { if (a.src){ a.removeAttribute('src'); a.load(); } } catch(e){}
+  }
+  if (ttsObjectUrl){
+    try { URL.revokeObjectURL(ttsObjectUrl); } catch(e){}
+    ttsObjectUrl = null;
+  }
+}
+function checkTtsHealth(){
+  if (ttsHealthState === true) return Promise.resolve(true);
+  if (ttsHealthPromise) return ttsHealthPromise;
+  ttsHealthPromise = fetch(ttsHealthUrl(), { method: 'GET' })
+    .then(function(r){ if (!r.ok) return false; return r.json(); })
+    .then(function(j){ return !!(j && j.configured); })
+    .catch(function(){ return false; })
+    .then(function(ok){ ttsHealthState = ok; ttsHealthPromise = null; return ok; });
+  return ttsHealthPromise;
+}
+/* Speak via /api/tts: POST {voice_id, text} -> audio/mpeg blob -> shared
+   <audio>. speechSynthesis is the LAST resort and only when the TTS service is
+   unconfigured or the request fails — Chrome stops it the moment the tab is
+   hidden, so it cannot carry the background voice. */
+function ttsSpeak(text){
+  if (!text) return Promise.resolve(false);
+  const mySeq = ++ttsSeq;
+  stopSharedTts();
+  const audio = ensureSharedTtsAudio();
+  return checkTtsHealth().then(function(configured){
+    if (!configured){
+      console.warn('[ff-tts] /api/tts/health reports TTS unconfigured — falling back to speechSynthesis, which Chrome silences when the tab is hidden');
+      return speakLocal(text);
+    }
+    return fetch(ttsEndpoint(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ voice_id: ttsVoiceId(), text: text })
+    }).then(function(res){
+      if (!res.ok) throw new Error('TTS HTTP ' + res.status);
+      return res.blob();
+    }).then(function(blob){
+      if (mySeq !== ttsSeq) return false;             // superseded by a newer phrase
+      const url = URL.createObjectURL(blob);
+      if (ttsObjectUrl){ try { URL.revokeObjectURL(ttsObjectUrl); } catch(e){} }
+      ttsObjectUrl = url;
+      audio.src = url;
+      const p = audio.play();
+      if (p && p.then){
+        return p.then(function(){ debugLog('tts PLAYED: ' + text.slice(0, 40)); return true; });
+      }
+      debugLog('tts PLAYED (no promise): ' + text.slice(0, 40));
+      return true;
+    }).catch(function(err){
+      if (mySeq !== ttsSeq) return false;
+      console.warn('[ff-tts] TTS playback failed (' + (err && err.message) + ') — falling back to speechSynthesis, which Chrome silences when the tab is hidden');
+      return speakLocal(text);
+    });
+  });
+}
+/* Stop whatever voice is currently playing (recorded clip, shared TTS <audio>,
+   or speechSynthesis) WITHOUT nuking the AudioContext — used by pause/reset/
+   skip/freshStart and folded into stopAllAudio for the full silence kill. */
+function stopVoice(){
+  ttsSeq++;                        // invalidate any in-flight TTS fetch
+  if (currentVoiceSource){
+    const src = currentVoiceSource;
+    const g = currentVoiceGain;
+    currentVoiceSource = null;
+    currentVoiceGain = null;
+    try { if (g) g.gain.setValueAtTime(0, audioCtx ? audioCtx.currentTime : 0); } catch(e){}
+    try { src.onended = null; } catch(e){}
+    try { src.stop(); } catch(e){}
+    try { src.disconnect(); } catch(e){}
+    try { if (g) g.disconnect(); } catch(e){}
+  }
+  if (fallbackAudio){
+    try { fallbackAudio.pause(); } catch(e){}
+    // Fully detach from the media session so a backgrounded pause can't revive.
+    try { fallbackAudio.removeAttribute('src'); fallbackAudio.load(); } catch(e){}
+    fallbackAudio = null;
+  }
+  stopSharedTts();
+  if ('speechSynthesis' in window){
+    try { window.speechSynthesis.pause(); } catch(e){}  // iOS stuck-speech workaround
+    try { window.speechSynthesis.cancel(); } catch(e){}
+  }
 }
 
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
@@ -1455,6 +1589,7 @@ function pause(){
   st.running = false;
   st.endTime = null;
   cancelPhaseEnd();
+  stopVoice();          // silence any in-flight voice when the timer pauses
   announce('Timer paused.');
   updateAll();
   saveTimer();
@@ -1462,12 +1597,14 @@ function pause(){
 function toggle(){ st.running ? pause() : start(); }
 function reset(){
   cancelPhaseEnd();
+  stopVoice();          // stop button — silence the voice too
   setPhase(st.phase);
   announce('Timer reset.');
   saveTimer();
 }
 function freshStart(){
   cancelPhaseEnd();
+  stopVoice();          // hard reset — cut any in-flight voice
   // Wipe the persisted timer + cycle state so the next load lands on a true clean start.
   // Keeps preferences (durations, sound, voice, auto-break, theme) and the streak.
   try{
@@ -1492,6 +1629,7 @@ function speakBreakGreeting(){
 }
 function skip(){
   cancelPhaseEnd();
+  stopVoice();          // cancel path — the next greeting re-speaks on its own
   if (st.phase === 'focus'){
     // skipping a focus round still advances the cycle toward the long break
     st.cycleDone += 1;
@@ -1867,6 +2005,7 @@ $('#settingsForm').addEventListener('submit', function(e){
   LS.set('ff.durations', durations);
   soundOn   = $('#inpSound').checked;
   voiceOn   = $('#inpVoice').checked;
+  if (!voiceOn) stopVoice();   // turning voice off cuts anything still speaking
   autoBreak = $('#inpAutoBreak').checked;
   pushOn    = $('#inpPush').checked;
   LS.set('ff.sound', soundOn);
