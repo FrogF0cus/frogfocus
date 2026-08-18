@@ -40,11 +40,19 @@ self.addEventListener('notificationclick', function (event) {
   const target = (event.notification.data && event.notification.data.url) || '/';
 
   event.waitUntil((async function () {
+    const resolvedTarget = new URL(target, self.registration.scope);
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of all) {
       if ('focus' in client) {
         await client.focus();
-        try { await client.navigate(target); } catch (err) { /* same-origin navigate can throw on about:blank */ }
+        // Only navigate when the client is NOT already on the target URL.
+        // A navigate() to the current URL forces a full page reload, which
+        // tears down the AudioContext mid-playback and cuts the voice off
+        // the instant the app opens. If it already matches, just focus it.
+        const clientUrl = new URL(client.url);
+        if (clientUrl.pathname !== resolvedTarget.pathname || clientUrl.search !== resolvedTarget.search) {
+          try { await client.navigate(target); } catch (err) { /* same-origin navigate can throw on about:blank */ }
+        }
         return;
       }
     }
