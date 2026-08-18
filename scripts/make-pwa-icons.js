@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 // ============================================================================
-// Frog Focus — generate PWA/app icons from the existing mascot artwork
+// Frog Focus — generate PWA/app icons from the approved mascot artwork
 // ----------------------------------------------------------------------------
-// Source: images/frog-focus-logo-a.png (1024×1024, centered frog face on warm
-// cream). We bilinear-resize it to the standard PWA sizes and composite onto
-// the locked brand cream (#FBF7F0) so every icon is full-bleed and cozy — the
-// same cream works as the maskable safe-zone background.
+// Source: images/frog-face.png (1024×1024, approved frog mascot — dark-green
+// frog with blush, cream belly, gold-rimmed glasses; RGBA with transparent
+// background). We bilinear-resize it to the standard PWA sizes and composite
+// onto pure white (#FFFFFF) so the icons render as the approved "frog on
+// white" look — NOT the cream (#FBF7F0) background of the old sage-on-beige
+// design. The maskable icon additionally shrinks the whole image so the
+// artwork stays fully inside the center ~80% safe circle (radius 0.38 × size)
+// and pads the remainder with white, so maskable masks never clip the frog.
 //
 // Outputs:
 //   images/icon-192.png            (192×192, purpose: any)
@@ -20,18 +24,18 @@ const fs   = require('fs');
 const path = require('path');
 const { PNG } = require('pngjs');
 
-const SRC      = path.join(__dirname, '..', 'images', 'frog-focus-logo-a.png');
-const CREAM    = { r: 0xFB, g: 0xF7, b: 0xF0 };   // locked brand cream #FBF7F0
+const SRC      = path.join(__dirname, '..', 'images', 'frog-face.png');
+const WHITE    = { r: 0xFF, g: 0xFF, b: 0xFF };   // approved "on white" background
+const SAFE_R   = 0.38;                            // maskable safe radius, fraction of canvas
 
 const SIZES = [
   { file: 'images/icon-192.png',          size: 192 },
   { file: 'images/icon-512.png',          size: 512 },
-  { file: 'images/icon-maskable-512.png', size: 512 },
+  { file: 'images/icon-maskable-512.png', size: 512, maskable: true },
   { file: 'images/apple-touch-icon.png',  size: 180 }
 ];
 
 function bilinear(src, sx, sy) {
-  // Clamp into [0, srcW-1]
   const w = src.width, h = src.height;
   sx = Math.max(0, Math.min(w - 1, sx));
   sy = Math.max(0, Math.min(h - 1, sy));
@@ -52,27 +56,72 @@ function bilinear(src, sx, sy) {
   return out;
 }
 
+// Bounding box of opaque artwork (alpha > 0).
+function contentBounds(src) {
+  let l = src.width, u = src.height, r = -1, d = -1;
+  for (let y = 0; y < src.height; y++) {
+    for (let x = 0; x < src.width; x++) {
+      if (src.data[(y * src.width + x) * 4 + 3] > 0) {
+        if (x < l) l = x;
+        if (x > r) r = x;
+        if (y < u) u = y;
+        if (y > d) d = y;
+      }
+    }
+  }
+  return { l, u, r, d, found: r >= 0 };
+}
+
 const src = PNG.sync.read(fs.readFileSync(SRC));
 console.log('source:', SRC, src.width + 'x' + src.height);
+
+// Maskable scale: shrink whole image so the artwork bbox (with its offset
+// from the source center) stays inside the safe circle of radius SAFE_R*n.
+function maskableShrink(src, n) {
+  const bb = contentBounds(src);
+  if (!bb.found) return 1;
+  const aw = bb.r - bb.l, ah = bb.d - bb.u;
+  const ox = (bb.l + bb.r) / 2 - src.width / 2;
+  const oy = (bb.u + bb.d) / 2 - src.height / 2;
+  const dist = Math.hypot(aw / 2 + Math.abs(ox), ah / 2 + Math.abs(oy));
+  return Math.min(1, (SAFE_R * n) / dist);
+}
 
 for (const spec of SIZES) {
   const n = spec.size;
   const out = new PNG({ width: n, height: n });
-  const scale = src.width / n;
+  // Fill white background first.
+  for (let i = 0; i < n * n; i++) {
+    out.data[i * 4]     = WHITE.r;
+    out.data[i * 4 + 1] = WHITE.g;
+    out.data[i * 4 + 2] = WHITE.b;
+    out.data[i * 4 + 3] = 255;
+  }
+
+  let offX = 0, offY = 0, smallW = src.width, smallH = src.height;
+  if (spec.maskable) {
+    const shrink = maskableShrink(src, n);
+    smallW = Math.max(1, Math.round(src.width * shrink));
+    smallH = Math.max(1, Math.round(src.height * shrink));
+    offX = Math.floor((n - smallW) / 2);
+    offY = Math.floor((n - smallH) / 2);
+    console.log('  maskable: artwork scaled', shrink.toFixed(3), '-> small canvas', smallW + 'x' + smallH, 'centered');
+  }
+  const scaleX = src.width / smallW;
+  const scaleY = src.height / smallH;
 
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
-      const p = bilinear(src, x * scale, y * scale);
-      const a = p[3] / 255;
-      // Composite source (with alpha) over the cream background.
-      const r = Math.round(p[0] * a + CREAM.r * (1 - a));
-      const g = Math.round(p[1] * a + CREAM.g * (1 - a));
-      const b = Math.round(p[2] * a + CREAM.b * (1 - a));
-      const i = (y * n + x) * 4;
-      out.data[i]     = r;
-      out.data[i + 1] = g;
-      out.data[i + 2] = b;
-      out.data[i + 3] = 255;   // fully opaque, full-bleed
+      const ix = x - offX, iy = y - offY;
+      if (ix >= 0 && ix < smallW && iy >= 0 && iy < smallH) {
+        const p = bilinear(src, ix * scaleX, iy * scaleY);
+        const a = p[3] / 255;
+        const i = (y * n + x) * 4;
+        out.data[i]     = Math.round(p[0] * a + WHITE.r * (1 - a));
+        out.data[i + 1] = Math.round(p[1] * a + WHITE.g * (1 - a));
+        out.data[i + 2] = Math.round(p[2] * a + WHITE.b * (1 - a));
+        // alpha stays 255 (white filled above)
+      }
     }
   }
 
