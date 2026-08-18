@@ -1097,6 +1097,7 @@ function preloadVoiceClips(){
 /* Exclusive voice playback: a new clip always stops the previous one, so a
    break-end voice can never overlap the next focus-start in the same context. */
 let currentVoiceSource = null;
+let currentVoiceGain = null;
 let fallbackAudio = null;
 
 async function playBufferStore(storeKey){
@@ -1114,11 +1115,50 @@ async function playBufferStore(storeKey){
   const g = ctx.createGain();
   g.gain.value = 1;
   node.connect(g); g.connect(ctx.destination);
-  node.onended = function(){ if (currentVoiceSource === node) currentVoiceSource = null; };
+  node.onended = function(){ if (currentVoiceSource === node){ currentVoiceSource = null; currentVoiceGain = null; } };
   currentVoiceSource = node;
+  currentVoiceGain = g;
   node.start(0);
   debugLog('playBuffer ' + storeKey + ': PLAYING via WebAudio (ctx=' + ctx.state + ')');
   return true;
+}
+
+/* Stop any in-flight voice playback immediately: ramp the gain down to avoid a
+   click, stop the source ~50ms later, kill the fallback <audio>, cancel TTS,
+   and suspend the context so nothing is left mid-buffer (fixes the garbled
+   noise burst when the tab is backgrounded mid-voice and the suspended
+   AudioContext revives mid-buffer). */
+function stopAllAudio(){
+  try {
+    if (currentVoiceSource){
+      const src = currentVoiceSource;
+      const g = currentVoiceGain;
+      currentVoiceSource = null;
+      currentVoiceGain = null;
+      try {
+        const t = audioCtx.currentTime;
+        g.gain.cancelScheduledValues(t);
+        g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+        try { src.stop(audioCtx.currentTime + 0.05); } catch(e){ try { src.stop(); } catch(e2){} }
+      } catch(e){
+        try { src.stop(); } catch(e2){}
+      }
+    }
+    if (fallbackAudio){
+      try { fallbackAudio.pause(); } catch(e){}
+      fallbackAudio = null;
+    }
+    if ('speechSynthesis' in window){
+      try { window.speechSynthesis.cancel(); } catch(e){}
+    }
+    if (audioCtx && audioCtx.state === 'running'){
+      try { audioCtx.suspend(); } catch(e){}
+    }
+    debugLog('stopAllAudio: voice stopped, ctx=' + (audioCtx ? audioCtx.state : 'none'));
+  } catch(e){
+    debugLog('stopAllAudio: error ' + (e && e.message));
+  }
 }
 /* Varied spoken sayings — rotated so each focus / short break opens fresh.
    Each line has its own Will clip at audio/<key>-<n>.mp3 (n = 1-based index). */
@@ -1161,6 +1201,7 @@ const SPOKEN_SAYINGS = {
 
 let spokenIdx = LS.get('ff.spokenIdx', { 'focus-start': -1, 'short-break': -1, 'long-break': -1, 'short-back': -1, 'long-back': -1 });
 async function speakVaried(key){
+  if (document.hidden) return;
   if (!voiceOn) return;
   const list = SPOKEN_SAYINGS[key];
   if (!list || !list.length) return;
@@ -1667,15 +1708,22 @@ setInterval(function(){
   saveTimerThrottled();
 }, 250);
 document.addEventListener('visibilitychange', function(){
-  if (!document.hidden){
-    if (st.running) updateTimeUI();
-    // Revive the AudioContext when the tab returns to the foreground — browsers
-    // suspend it while backgrounded, which was silencing the voice at break time.
-    if (audioCtx && audioCtx.state === 'suspended'){
-      audioCtx.resume();
-      debugLog('visibility: resumed suspended ctx, state=' + audioCtx.state);
-    }
+  if (document.hidden){
+    stopAllAudio();
+    return;
   }
+  if (st.running) updateTimeUI();
+  // Revive the AudioContext when the tab returns to the foreground — browsers
+  // suspend it while backgrounded, which was silencing the voice at break time.
+  if (audioCtx && audioCtx.state === 'suspended'){
+    audioCtx.resume();
+    debugLog('visibility: resumed suspended ctx, state=' + audioCtx.state);
+  }
+});
+
+window.addEventListener('pagehide', function(){
+  stopAllAudio();
+  debugLog('pagehide: stopped page audio');
 });
 
 /* ---------- confetti ---------- */
