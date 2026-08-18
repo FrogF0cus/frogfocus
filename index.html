@@ -1176,6 +1176,7 @@ function stopAllAudio(){
       try { masterGain.disconnect(); } catch(e){}
       masterGain = null;
     }
+    stopBgSustain();   // background silent loop (page is going away/frozen)
     stopVoice();   // recorded clip + shared TTS <audio> + speechSynthesis
     if (audioCtx){
       try { audioCtx.suspend(); } catch(e){}   // stop the audio thread cleanly first
@@ -1413,6 +1414,58 @@ function stopVoice(){
   }
 }
 
+/* ---------- background sustain ---------- */
+/* Chrome freezes hidden tabs that aren't playing audio: timers stop, so the
+   phase-end never fires and the voice can't play while you work in another tab.
+   While a timer runs and the tab is hidden, loop a silent track through a media
+   element so Chrome counts the page as "playing audio" — the tab stays unfrozen,
+   the 250ms tick keeps running (throttled to ~1/sec), and the phase-end voice
+   fires and plays through the media element for real in the background. */
+let bgSustainAudio = null;
+let bgSustainUrl = null;
+function silentWavUrl(){
+  const sampleRate = 8000, secs = 1, n = sampleRate * secs;
+  const buf = new ArrayBuffer(44 + n);
+  const dv = new DataView(buf);
+  const ws = function(off, str){ for (let i = 0; i < str.length; i++) dv.setUint8(off + i, str.charCodeAt(i)); };
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + n, true); ws(8, 'WAVE');
+  ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, sampleRate, true); dv.setUint32(28, sampleRate, true); dv.setUint16(32, 1, true); dv.setUint16(34, 8, true);
+  ws(36, 'data'); dv.setUint32(40, n, true);
+  for (let i = 44; i < 44 + n; i++) dv.setUint8(i, 128);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+function startBgSustain(){
+  if (!st.running || !document.hidden) return;
+  if (bgSustainAudio) return;              // already sustaining
+  try {
+    const a = new Audio();
+    a.loop = true;
+    a.volume = 0.0001;                     // track is digital silence anyway
+    a.preload = 'auto';
+    bgSustainUrl = silentWavUrl();
+    a.src = bgSustainUrl;
+    bgSustainAudio = a;
+    const p = a.play();
+    if (p && p.catch) p.catch(function(){ /* blocked — push notification still covers the phase end */ });
+    debugLog('bg sustain: silent loop started (tab stays alive in background)');
+  } catch(e){
+    debugLog('bg sustain: start failed ' + (e && e.message));
+  }
+}
+function stopBgSustain(){
+  const a = bgSustainAudio;
+  bgSustainAudio = null;
+  if (a){
+    try { a.pause(); } catch(e){}
+    try { a.removeAttribute('src'); a.load(); } catch(e){}
+  }
+  if (bgSustainUrl){
+    try { URL.revokeObjectURL(bgSustainUrl); } catch(e){}
+    bgSustainUrl = null;
+  }
+}
+
 /* Voices often load asynchronously after first paint — re-resolve once they arrive. */
 if ('speechSynthesis' in window){
   window.speechSynthesis.addEventListener('voiceschanged', function(){ ukVoice = pickUkVoice(); });
@@ -1590,6 +1643,7 @@ function pause(){
   st.endTime = null;
   cancelPhaseEnd();
   stopVoice();          // silence any in-flight voice when the timer pauses
+  stopBgSustain();      // timer no longer running — drop the silent sustain
   announce('Timer paused.');
   updateAll();
   saveTimer();
@@ -1598,6 +1652,7 @@ function toggle(){ st.running ? pause() : start(); }
 function reset(){
   cancelPhaseEnd();
   stopVoice();          // stop button — silence the voice too
+  stopBgSustain();
   setPhase(st.phase);
   announce('Timer reset.');
   saveTimer();
@@ -1605,6 +1660,7 @@ function reset(){
 function freshStart(){
   cancelPhaseEnd();
   stopVoice();          // hard reset — cut any in-flight voice
+  stopBgSustain();
   // Wipe the persisted timer + cycle state so the next load lands on a true clean start.
   // Keeps preferences (durations, sound, voice, auto-break, theme) and the streak.
   try{
@@ -1630,6 +1686,7 @@ function speakBreakGreeting(){
 function skip(){
   cancelPhaseEnd();
   stopVoice();          // cancel path — the next greeting re-speaks on its own
+  stopBgSustain();
   if (st.phase === 'focus'){
     // skipping a focus round still advances the cycle toward the long break
     st.cycleDone += 1;
@@ -1667,6 +1724,7 @@ function completePhase(){
       speakVaried('short-break');
       announce('Focus complete. Time for a short break.');
     }
+    if (!autoBreak) stopBgSustain();   // timer stopped — no need to keep the tab alive
     if (autoBreak) start(true);   // break-end voice already announced this transition
   } else {
     const wasLong = st.phase === 'long';
@@ -1891,6 +1949,7 @@ if ('serviceWorker' in navigator){
 /* ---------- ticking ---------- */
 setInterval(function(){
   if (!st.running) return;
+  if (document.hidden) startBgSustain();   // keep the tab alive so the phase-end fires
   const rem = st.endTime - Date.now();
   if (rem <= 0){
     st.remaining = 0;
@@ -1907,7 +1966,11 @@ setInterval(function(){
 }, 250);
 document.addEventListener('visibilitychange', function(){
   if (document.hidden){
-    stopAllAudio();
+    // Don't nuclear-kill on hide — in-flight voice keeps playing (media + WebAudio
+    // continue in background tabs), and the silent sustain keeps the page counted
+    // as "playing audio" so Chrome doesn't freeze the tab: the 250ms tick keeps
+    // running and the phase-end voice actually fires and plays in other tabs.
+    startBgSustain();
     return;
   }
   if (st.running) updateTimeUI();
