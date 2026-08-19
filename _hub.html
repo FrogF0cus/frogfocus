@@ -355,9 +355,9 @@
           <h3>🖥 Live Preview</h3>
           
           <div class="preview-tabs">
-            <button class="preview-tab active" onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('_hub.html', this)">_hub.html</button><button class="preview-tab " onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('diag.html', this)">diag.html</button>
+            <button class="preview-tab active" onclick="switchPreview('_hub.html', this)">_hub.html</button><button class="preview-tab " onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('diag.html', this)">diag.html</button>
           </div>
-          <iframe id="preview-iframe" class="preview-frame" src="_portal.html"></iframe>
+          <iframe id="preview-iframe" class="preview-frame" src="_hub.html"></iframe>
         </div>
         
 
@@ -370,16 +370,16 @@
         <h3>📄 Pages</h3>
         <div class="file-grid">
           
+            <a href="_hub.html" class="file-card" target="_blank">
+              <span class="file-icon">📄</span>
+              <span class="file-name">_hub.html</span>
+              <span class="file-meta">55.4 KB</span>
+            </a>
+          
             <a href="_portal.html" class="file-card" target="_blank">
               <span class="file-icon">📄</span>
               <span class="file-name">_portal.html</span>
               <span class="file-meta">52.0 KB</span>
-            </a>
-          
-            <a href="_hub.html" class="file-card" target="_blank">
-              <span class="file-icon">📄</span>
-              <span class="file-name">_hub.html</span>
-              <span class="file-meta">55.5 KB</span>
             </a>
           
             <a href="index.html" class="file-card" target="_blank">
@@ -403,6 +403,18 @@
         <h3>⚡ Code</h3>
         <div class="file-grid">
           
+            <a href="package-lock.json" class="file-card" target="_blank">
+              <span class="file-icon">📋</span>
+              <span class="file-name">package-lock.json</span>
+              <span class="file-meta">53.5 KB</span>
+            </a>
+          
+            <a href="package.json" class="file-card" target="_blank">
+              <span class="file-icon">📋</span>
+              <span class="file-name">package.json</span>
+              <span class="file-meta">425 B</span>
+            </a>
+          
             <a href="server.js" class="file-card" target="_blank">
               <span class="file-icon">⚡</span>
               <span class="file-name">server.js</span>
@@ -419,18 +431,6 @@
               <span class="file-icon">⚡</span>
               <span class="file-name">sw.js</span>
               <span class="file-meta">2.9 KB</span>
-            </a>
-          
-            <a href="package-lock.json" class="file-card" target="_blank">
-              <span class="file-icon">📋</span>
-              <span class="file-name">package-lock.json</span>
-              <span class="file-meta">34.7 KB</span>
-            </a>
-          
-            <a href="package.json" class="file-card" target="_blank">
-              <span class="file-icon">📋</span>
-              <span class="file-name">package.json</span>
-              <span class="file-meta">401 B</span>
             </a>
           
             <a href="manifest.json" class="file-card" target="_blank">
@@ -499,6 +499,12 @@
         <h3>📁 Other Files</h3>
         <div class="file-grid">
           
+            <a href="scripts/decode_icon.py" class="file-card" target="_blank">
+              <span class="file-icon">📁</span>
+              <span class="file-name">scripts/decode_icon.py</span>
+              <span class="file-meta">3.5 KB</span>
+            </a>
+          
             <a href="uploads/pasted-image-1787102047782.png" class="file-card" target="_blank">
               <span class="file-icon">🖼️</span>
               <span class="file-name">uploads/pasted-image-1787102047782.png</span>
@@ -553,14 +559,8 @@
               <span class="file-meta">2.3 KB</span>
             </a>
           
-            <a href="uploads/pasted-image-1786986272346.png" class="file-card" target="_blank">
-              <span class="file-icon">🖼️</span>
-              <span class="file-name">uploads/pasted-image-1786986272346.png</span>
-              <span class="file-meta">512.6 KB</span>
-            </a>
-          
         </div>
-        <p class="more-files">+110 more files</p>
+        <p class="more-files">+111 more files</p>
       </div>
     
 
@@ -603,7 +603,7 @@
         <div class="sidebar-panel">
           <h3>📊 Quick Stats</h3>
           <div class="quick-stat-grid">
-            <div class="qs-card"><div class="qs-val">139</div><div class="qs-label">Files</div></div>
+            <div class="qs-card"><div class="qs-val">140</div><div class="qs-label">Files</div></div>
             <div class="qs-card"><div class="qs-val">4</div><div class="qs-label">Pages</div></div>
             <div class="qs-card"><div class="qs-val">12</div><div class="qs-label">Code</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Decisions</div></div>
@@ -615,6 +615,30 @@
         <div class="sidebar-panel" style="margin-top:1rem;">
           <h3>📁 All Files</h3>
           <ul class="all-files-list">
+            
+              <li>
+                <span>📁</span>
+                <a href="scripts/decode_icon.py" target="_blank">scripts/decode_icon.py</a>
+                <span class="file-size">3.5 KB</span>
+              </li>
+            
+              <li>
+                <span>📋</span>
+                <a href="package-lock.json" target="_blank">package-lock.json</a>
+                <span class="file-size">53.5 KB</span>
+              </li>
+            
+              <li>
+                <span>📋</span>
+                <a href="package.json" target="_blank">package.json</a>
+                <span class="file-size">425 B</span>
+              </li>
+            
+              <li>
+                <span>📄</span>
+                <a href="_hub.html" target="_blank">_hub.html</a>
+                <span class="file-size">55.4 KB</span>
+              </li>
             
               <li>
                 <span>📄</span>
@@ -632,12 +656,6 @@
                 <span>🖼️</span>
                 <a href="images/apple-touch-icon.png" target="_blank">images/apple-touch-icon.png</a>
                 <span class="file-size">52.6 KB</span>
-              </li>
-            
-              <li>
-                <span>📄</span>
-                <a href="_hub.html" target="_blank">_hub.html</a>
-                <span class="file-size">55.5 KB</span>
               </li>
             
               <li>
@@ -707,21 +725,9 @@
               </li>
             
               <li>
-                <span>📋</span>
-                <a href="package-lock.json" target="_blank">package-lock.json</a>
-                <span class="file-size">34.7 KB</span>
-              </li>
-            
-              <li>
                 <span>📁</span>
                 <a href=".env.example" target="_blank">.env.example</a>
                 <span class="file-size">2.3 KB</span>
-              </li>
-            
-              <li>
-                <span>📋</span>
-                <a href="package.json" target="_blank">package.json</a>
-                <span class="file-size">401 B</span>
               </li>
             
               <li>
