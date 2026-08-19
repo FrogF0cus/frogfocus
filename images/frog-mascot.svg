@@ -9,7 +9,7 @@
        belly shade  #E7DBC3  (inner shadow line, sampled #E3D7BD family)
        lens cream   #F8D798  (eye white through the glass, sampled)
        rim gold     #D9A441  (warm ochre-gold, sampled #D59B42/#C7A346 family)
-       pupil        #3A3226  (deep charcoal-brown, brand)
+       pupil        #2B251F  (deep warm near-black, brand charcoal-brown)
        blush        #EFC0AC  (soft dusty pink, sampled blend #DEA690/#E8B6A9)
        ========================================================================================= -->
 
@@ -17,10 +17,10 @@
     <path id="belly"
       d="M 306 570
          Q 512 616 718 570
-         C 726 690, 724 810, 716 872
-         C 708 902, 632 918, 512 914
-         C 392 918, 316 902, 308 872
-         C 300 810, 298 690, 306 570
+         C 726 686, 722 800, 704 862
+         C 694 894, 620 918, 512 914
+         C 404 918, 330 894, 320 862
+         C 302 800, 298 686, 306 570
          Z"/>
     <clipPath id="bellyClip">
       <use href="#belly"/>
@@ -35,16 +35,16 @@
     d="M 512 428
        C 504 362, 448 326, 348 330
        C 296 332, 268 368, 262 420
-       C 256 490, 234 600, 196 706
-       C 172 770, 216 784, 256 784
-       C 262 784, 250 826, 238 856
-       C 230 888, 252 916, 292 920
+       C 256 492, 234 600, 198 706
+       C 186 768, 222 784, 262 790
+       C 268 792, 258 828, 248 858
+       C 240 888, 256 914, 292 920
        C 352 924, 432 934, 512 934
        C 592 934, 672 924, 732 920
-       C 772 916, 794 888, 786 856
-       C 774 826, 762 784, 768 784
-       C 808 784, 852 770, 828 706
-       C 790 600, 768 490, 762 420
+       C 768 914, 784 888, 776 858
+       C 766 828, 756 792, 762 790
+       C 802 784, 838 768, 826 706
+       C 790 600, 768 492, 762 420
        C 756 368, 728 332, 676 330
        C 576 326, 520 362, 512 428
        Z"
@@ -69,12 +69,14 @@
   <circle cx="672" cy="440" r="82" fill="#F8D798"/>
 
   <!-- pupils (slightly lower-inner) -->
-  <ellipse cx="360" cy="454" rx="38" ry="34" fill="#3A3226"/>
-  <ellipse cx="664" cy="454" rx="38" ry="34" fill="#3A3226"/>
+  <ellipse cx="360" cy="454" rx="38" ry="34" fill="#2B251F"/>
+  <ellipse cx="664" cy="454" rx="38" ry="34" fill="#2B251F"/>
 
-  <!-- eye glints (upper-outer) -->
-  <ellipse cx="342" cy="432" rx="14" ry="9" fill="#FFFFFF" transform="rotate(-18 342 432)"/>
-  <ellipse cx="682" cy="432" rx="14" ry="9" fill="#FFFFFF" transform="rotate(18 682 432)"/>
+  <!-- eye glints (primary upper-outer, tiny secondary sparkle) -->
+  <ellipse cx="342" cy="432" rx="18" ry="12" fill="#FFFFFF" transform="rotate(-18 342 432)"/>
+  <ellipse cx="682" cy="432" rx="18" ry="12" fill="#FFFFFF" transform="rotate(18 682 432)"/>
+  <circle cx="372" cy="470" r="6" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="652" cy="470" r="6" fill="#FFFFFF" opacity="0.9"/>
 
   <!-- warm gold-rimmed round glasses -->
   <circle cx="352" cy="440" r="82" fill="none" stroke="#D9A441" stroke-width="16"/>
@@ -88,7 +90,7 @@
   <path d="M 756 438 L 788 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
 
   <!-- gentle smile (wide, shallow, corners up) on the chin -->
-  <path d="M 406 536 Q 512 562 618 536" fill="none" stroke="#403A34" stroke-width="18" stroke-linecap="round"/>
+  <path d="M 406 536 Q 512 574 618 536" fill="none" stroke="#403A34" stroke-width="18" stroke-linecap="round"/>
 
   <!-- short content line below the smile, on the belly -->
   <path d="M 486 646 L 538 646" fill="none" stroke="#403A34" stroke-width="8" stroke-linecap="round"/>
