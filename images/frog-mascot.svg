@@ -15,13 +15,13 @@
 
   <defs>
     <path id="belly"
-      d="M 286 596
-         C 300 572, 384 566, 512 636
-         C 640 566, 724 572, 738 596
-         C 750 700, 752 800, 742 868
-         C 734 900, 642 918, 512 912
-         C 382 918, 290 900, 282 868
-         C 272 800, 274 700, 286 596
+      d="M 310 572
+         C 306 552, 392 546, 512 620
+         C 632 546, 718 552, 714 572
+         C 728 690, 730 810, 720 872
+         C 712 902, 634 916, 512 912
+         C 390 916, 312 902, 304 872
+         C 294 810, 296 690, 310 572
          Z"/>
     <clipPath id="bellyClip">
       <use href="#belly"/>
@@ -33,64 +33,64 @@
 
   <!-- frog silhouette: head + chest from the chest up, two eye-dome bumps on top -->
   <path
-    d="M 512 424
-       C 502 368, 442 350, 348 350
-       C 292 350, 262 384, 256 436
-       C 250 500, 224 620, 180 760
-       C 152 830, 210 838, 258 830
-       C 268 826, 252 862, 238 884
-       C 222 906, 228 926, 280 928
-       C 348 932, 436 940, 512 940
-       C 588 940, 676 932, 744 928
-       C 796 926, 802 906, 786 884
-       C 772 862, 756 826, 766 830
-       C 814 838, 872 830, 844 760
-       C 800 620, 774 500, 768 436
-       C 762 384, 732 350, 676 350
-       C 582 350, 522 368, 512 424
+    d="M 512 410
+       C 502 356, 442 330, 348 330
+       C 294 330, 266 366, 260 420
+       C 254 490, 232 600, 196 706
+       C 172 770, 216 784, 256 784
+       C 262 784, 250 826, 238 856
+       C 230 888, 252 916, 292 920
+       C 352 924, 432 934, 512 934
+       C 592 934, 672 924, 732 920
+       C 772 916, 794 888, 786 856
+       C 774 826, 762 784, 768 784
+       C 808 784, 852 770, 828 706
+       C 792 600, 770 490, 764 420
+       C 758 366, 730 330, 676 330
+       C 582 330, 522 356, 512 410
        Z"
     fill="#5C8A6E"
     stroke="#403A34"
-    stroke-width="14"
+    stroke-width="11"
     stroke-linejoin="round"/>
 
   <!-- cream belly (chest patch) -->
   <use href="#belly" fill="#F9EDD5"/>
   <!-- soft inner shadow line where the belly meets the green -->
   <g clip-path="url(#bellyClip)">
-    <use href="#belly" fill="none" stroke="#E7DBC3" stroke-width="14" opacity="0.9"/>
+    <use href="#belly" fill="none" stroke="#E7DBC3" stroke-width="12" opacity="0.9"/>
   </g>
 
   <!-- subtle pink blush cheeks -->
-  <ellipse cx="298" cy="522" rx="42" ry="28" fill="#EFC0AC" transform="rotate(-12 298 522)"/>
-  <ellipse cx="726" cy="522" rx="42" ry="28" fill="#EFC0AC" transform="rotate(12 726 522)"/>
+  <ellipse cx="298" cy="530" rx="36" ry="24" fill="#EFC0AC" transform="rotate(-12 298 530)"/>
+  <ellipse cx="726" cy="530" rx="36" ry="24" fill="#EFC0AC" transform="rotate(12 726 530)"/>
 
   <!-- eye whites visible through the glasses -->
-  <circle cx="352" cy="440" r="88" fill="#F8D798"/>
-  <circle cx="672" cy="440" r="88" fill="#F8D798"/>
+  <circle cx="352" cy="440" r="82" fill="#F8D798"/>
+  <circle cx="672" cy="440" r="82" fill="#F8D798"/>
 
   <!-- pupils (slightly lower-inner) -->
-  <ellipse cx="360" cy="454" rx="42" ry="38" fill="#3A3226"/>
-  <ellipse cx="664" cy="454" rx="42" ry="38" fill="#3A3226"/>
+  <ellipse cx="360" cy="454" rx="38" ry="34" fill="#3A3226"/>
+  <ellipse cx="664" cy="454" rx="38" ry="34" fill="#3A3226"/>
 
   <!-- eye glints (upper-outer) -->
-  <ellipse cx="340" cy="430" rx="15" ry="10" fill="#FFFFFF" transform="rotate(-18 340 430)"/>
-  <ellipse cx="684" cy="430" rx="15" ry="10" fill="#FFFFFF" transform="rotate(18 684 430)"/>
+  <ellipse cx="342" cy="432" rx="14" ry="9" fill="#FFFFFF" transform="rotate(-18 342 432)"/>
+  <ellipse cx="682" cy="432" rx="14" ry="9" fill="#FFFFFF" transform="rotate(18 682 432)"/>
 
   <!-- warm gold-rimmed round glasses -->
-  <circle cx="352" cy="440" r="88" fill="none" stroke="#D9A441" stroke-width="17"/>
-  <circle cx="672" cy="440" r="88" fill="none" stroke="#D9A441" stroke-width="17"/>
+  <circle cx="352" cy="440" r="82" fill="none" stroke="#D9A441" stroke-width="16"/>
+  <circle cx="672" cy="440" r="82" fill="none" stroke="#D9A441" stroke-width="16"/>
 
-  <!-- bridge between the lenses -->
-  <path d="M 440 462 Q 512 474 584 462" fill="none" stroke="#D9A441" stroke-width="11" stroke-linecap="round"/>
+  <!-- straight bridge between the lenses -->
+  <path d="M 436 462 L 588 462" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
 
   <!-- temple arms -->
-  <path d="M 262 438 L 224 430" fill="none" stroke="#D9A441" stroke-width="11" stroke-linecap="round"/>
-  <path d="M 762 438 L 800 430" fill="none" stroke="#D9A441" stroke-width="11" stroke-linecap="round"/>
+  <path d="M 268 438 L 234 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 756 438 L 790 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
 
   <!-- gentle smile (wide, shallow, corners up) on the chin -->
-  <path d="M 414 570 Q 512 598 610 570" fill="none" stroke="#403A34" stroke-width="20" stroke-linecap="round"/>
+  <path d="M 404 552 Q 512 580 620 552" fill="none" stroke="#403A34" stroke-width="18" stroke-linecap="round"/>
 
   <!-- short content line below the smile, on the belly -->
-  <path d="M 480 660 L 544 660" fill="none" stroke="#403A34" stroke-width="11" stroke-linecap="round"/>
+  <path d="M 484 648 L 540 648" fill="none" stroke="#403A34" stroke-width="9" stroke-linecap="round"/>
 </svg>
