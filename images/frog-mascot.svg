@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Frog Focus mascot</title>
+  <desc>Hand-built flat vector frog mascot: sage green head and chest, gold-rimmed glasses, cream belly, subtle blush, gentle smile. Built from clean beziers, circles and ellipses — mathematically smooth at any size.</desc>
+
+  <!-- ============ PALETTE (sampled from images/icon-512.png + apple-touch-icon.png) ============
+       body green   #5C8A6E  (sampled #5B886D family)
+       outline      #403A34  (dark warm contour, sampled #40373A family)
+       belly cream  #F9EDD5  (sampled)
+       belly shade  #E7DBC3  (inner shadow line, sampled #E3D7BD family)
+       lens cream   #F8D798  (eye white through the glass, sampled)
+       rim gold     #D9A441  (warm ochre-gold, sampled #D59B42/#C7A346 family)
+       pupil        #3A3226  (deep charcoal-brown, brand)
+       blush        #EFC0AC  (soft dusty pink, sampled blend #DEA690/#E8B6A9)
+       ========================================================================================= -->
+
+  <defs>
+    <path id="belly"
+      d="M 302 568
+         C 290 540, 384 528, 512 596
+         C 640 528, 734 540, 722 568
+         C 742 680, 748 800, 734 856
+         C 726 894, 640 906, 512 900
+         C 384 906, 298 894, 290 856
+         C 276 800, 282 680, 302 568
+         Z"/>
+    <clipPath id="bellyClip">
+      <use href="#belly"/>
+    </clipPath>
+  </defs>
+
+  <!-- full-bleed white background -->
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+
+  <!-- frog silhouette: head + chest from the chest up, two eye-dome bumps on top -->
+  <path
+    d="M 512 252
+       C 498 186, 440 148, 348 148
+       C 292 148, 260 184, 254 238
+       C 248 296, 222 360, 198 428
+       C 180 486, 220 528, 250 580
+       C 260 608, 240 660, 218 724
+       C 200 786, 204 860, 258 888
+       C 322 918, 426 912, 512 906
+       C 598 912, 702 918, 766 888
+       C 820 860, 824 786, 806 724
+       C 784 660, 764 608, 774 580
+       C 804 528, 844 486, 826 428
+       C 802 360, 776 296, 770 238
+       C 764 184, 732 148, 676 148
+       C 584 148, 526 186, 512 252
+       Z"
+    fill="#5C8A6E"
+    stroke="#403A34"
+    stroke-width="14"
+    stroke-linejoin="round"/>
+
+  <!-- cream belly (chest patch) -->
+  <use href="#belly" fill="#F9EDD5"/>
+  <!-- soft inner shadow line where the belly meets the green -->
+  <g clip-path="url(#bellyClip)">
+    <use href="#belly" fill="none" stroke="#E7DBC3" stroke-width="14" opacity="0.9"/>
+  </g>
+
+  <!-- subtle pink blush cheeks -->
+  <ellipse cx="298" cy="396" rx="44" ry="28" fill="#EFC0AC" transform="rotate(-12 298 396)"/>
+  <ellipse cx="726" cy="396" rx="44" ry="28" fill="#EFC0AC" transform="rotate(12 726 396)"/>
+
+  <!-- eye whites visible through the glasses -->
+  <circle cx="352" cy="268" r="88" fill="#F8D798"/>
+  <circle cx="672" cy="268" r="88" fill="#F8D798"/>
+
+  <!-- pupils (slightly lower-inner) -->
+  <ellipse cx="360" cy="282" rx="46" ry="42" fill="#3A3226"/>
+  <ellipse cx="664" cy="282" rx="46" ry="42" fill="#3A3226"/>
+
+  <!-- eye glints (upper-outer) -->
+  <ellipse cx="338" cy="252" rx="17" ry="11" fill="#FFFFFF" transform="rotate(-18 338 252)"/>
+  <ellipse cx="686" cy="252" rx="17" ry="11" fill="#FFFFFF" transform="rotate(18 686 252)"/>
+
+  <!-- warm gold-rimmed round glasses -->
+  <circle cx="352" cy="268" r="88" fill="none" stroke="#D9A441" stroke-width="18"/>
+  <circle cx="672" cy="268" r="88" fill="none" stroke="#D9A441" stroke-width="18"/>
+
+  <!-- bridge between the lenses -->
+  <path d="M 440 292 Q 512 308 584 292" fill="none" stroke="#D9A441" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- temple arms -->
+  <path d="M 264 268 L 222 262" fill="none" stroke="#D9A441" stroke-width="13" stroke-linecap="round"/>
+  <path d="M 760 268 L 802 262" fill="none" stroke="#D9A441" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- gentle smile (wide, shallow, corners up) on the chin -->
+  <path d="M 420 516 Q 512 548 604 516" fill="none" stroke="#403A34" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- short content line below the smile, on the belly -->
+  <path d="M 480 640 L 544 640" fill="none" stroke="#403A34" stroke-width="12" stroke-linecap="round"/>
+</svg>
