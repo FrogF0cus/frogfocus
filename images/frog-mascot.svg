@@ -15,13 +15,12 @@
 
   <defs>
     <path id="belly"
-      d="M 310 572
-         C 306 552, 392 546, 512 620
-         C 632 546, 718 552, 714 572
-         C 728 690, 730 810, 720 872
-         C 712 902, 634 916, 512 912
-         C 390 916, 312 902, 304 872
-         C 294 810, 296 690, 310 572
+      d="M 306 570
+         Q 512 616 718 570
+         C 726 690, 724 810, 716 872
+         C 708 902, 632 918, 512 914
+         C 392 918, 316 902, 308 872
+         C 300 810, 298 690, 306 570
          Z"/>
     <clipPath id="bellyClip">
       <use href="#belly"/>
@@ -33,10 +32,10 @@
 
   <!-- frog silhouette: head + chest from the chest up, two eye-dome bumps on top -->
   <path
-    d="M 512 410
-       C 502 356, 442 330, 348 330
-       C 294 330, 266 366, 260 420
-       C 254 490, 232 600, 196 706
+    d="M 512 428
+       C 504 362, 448 326, 348 330
+       C 296 332, 268 368, 262 420
+       C 256 490, 234 600, 196 706
        C 172 770, 216 784, 256 784
        C 262 784, 250 826, 238 856
        C 230 888, 252 916, 292 920
@@ -45,13 +44,13 @@
        C 772 916, 794 888, 786 856
        C 774 826, 762 784, 768 784
        C 808 784, 852 770, 828 706
-       C 792 600, 770 490, 764 420
-       C 758 366, 730 330, 676 330
-       C 582 330, 522 356, 512 410
+       C 790 600, 768 490, 762 420
+       C 756 368, 728 332, 676 330
+       C 576 326, 520 362, 512 428
        Z"
     fill="#5C8A6E"
     stroke="#403A34"
-    stroke-width="11"
+    stroke-width="8"
     stroke-linejoin="round"/>
 
   <!-- cream belly (chest patch) -->
@@ -82,15 +81,15 @@
   <circle cx="672" cy="440" r="82" fill="none" stroke="#D9A441" stroke-width="16"/>
 
   <!-- straight bridge between the lenses -->
-  <path d="M 436 462 L 588 462" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 434 460 L 590 460" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
 
   <!-- temple arms -->
-  <path d="M 268 438 L 234 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
-  <path d="M 756 438 L 790 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 268 438 L 236 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 756 438 L 788 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
 
   <!-- gentle smile (wide, shallow, corners up) on the chin -->
-  <path d="M 404 552 Q 512 580 620 552" fill="none" stroke="#403A34" stroke-width="18" stroke-linecap="round"/>
+  <path d="M 406 536 Q 512 562 618 536" fill="none" stroke="#403A34" stroke-width="18" stroke-linecap="round"/>
 
   <!-- short content line below the smile, on the belly -->
-  <path d="M 484 648 L 540 648" fill="none" stroke="#403A34" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 486 646 L 538 646" fill="none" stroke="#403A34" stroke-width="8" stroke-linecap="round"/>
 </svg>
