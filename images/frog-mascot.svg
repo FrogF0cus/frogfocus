@@ -1,97 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <title>Frog Focus mascot</title>
-  <desc>Hand-built flat vector frog mascot: sage green head and chest, gold-rimmed glasses, cream belly, subtle blush, gentle smile. Built from clean beziers, circles and ellipses — mathematically smooth at any size.</desc>
-
-  <!-- ============ PALETTE (sampled from images/icon-512.png + apple-touch-icon.png) ============
-       body green   #5C8A6E  (sampled #5B886D family)
-       outline      #403A34  (dark warm contour, sampled #40373A family)
-       belly cream  #F9EDD5  (sampled)
-       belly shade  #E7DBC3  (inner shadow line, sampled #E3D7BD family)
-       lens cream   #F8D798  (eye white through the glass, sampled)
-       rim gold     #D9A441  (warm ochre-gold, sampled #D59B42/#C7A346 family)
-       pupil        #2B251F  (deep warm near-black, brand charcoal-brown)
-       blush        #EFC0AC  (soft dusty pink, sampled blend #DEA690/#E8B6A9)
-       ========================================================================================= -->
-
-  <defs>
-    <path id="belly"
-      d="M 306 570
-         Q 512 616 718 570
-         C 726 686, 722 800, 704 862
-         C 694 894, 620 918, 512 914
-         C 404 918, 330 894, 320 862
-         C 302 800, 298 686, 306 570
-         Z"/>
-    <clipPath id="bellyClip">
-      <use href="#belly"/>
-    </clipPath>
-  </defs>
-
-  <!-- full-bleed white background -->
+  <desc>Faithful vector trace of images/icon-192.png — same silhouette, proportions, palette and feature geometry, measured pixel-by-pixel from the original artwork.</desc>
   <rect width="1024" height="1024" fill="#FFFFFF"/>
-
-  <!-- frog silhouette: head + chest from the chest up, two eye-dome bumps on top -->
-  <path
-    d="M 512 428
-       C 504 362, 448 326, 348 330
-       C 296 332, 268 368, 262 420
-       C 256 492, 234 600, 198 706
-       C 186 768, 222 784, 262 790
-       C 268 792, 258 828, 248 858
-       C 240 888, 256 914, 292 920
-       C 352 924, 432 934, 512 934
-       C 592 934, 672 924, 732 920
-       C 768 914, 784 888, 776 858
-       C 766 828, 756 792, 762 790
-       C 802 784, 838 768, 826 706
-       C 790 600, 768 492, 762 420
-       C 756 368, 728 332, 676 330
-       C 576 326, 520 362, 512 428
-       Z"
-    fill="#5C8A6E"
-    stroke="#403A34"
-    stroke-width="8"
-    stroke-linejoin="round"/>
-
-  <!-- cream belly (chest patch) -->
-  <use href="#belly" fill="#F9EDD5"/>
-  <!-- soft inner shadow line where the belly meets the green -->
-  <g clip-path="url(#bellyClip)">
-    <use href="#belly" fill="none" stroke="#E7DBC3" stroke-width="12" opacity="0.9"/>
+  <g transform="scale(5.333333333333333)">
+    <!-- frog silhouette (head + body) -->
+    <path d="M 71.0 61.5 C 69.8 61.6, 66.2 61.5, 64.0 62.0 C 61.8 62.5, 59.2 63.5, 58.0 64.5 C 56.8 65.5, 56.9 66.9, 56.5 68.0 C 56.1 69.1, 55.8 69.8, 55.5 71.0 C 55.2 72.2, 54.7 73.5, 54.5 75.0 C 54.3 76.5, 54.4 78.3, 54.3 80.0 C 54.2 81.7, 54.3 83.3, 54.0 85.0 C 53.7 86.7, 53.2 88.3, 52.5 90.0 C 51.8 91.7, 50.7 93.5, 50.0 95.0 C 49.3 96.5, 48.8 97.5, 48.3 99.0 C 47.8 100.5, 47.5 102.3, 47.3 104.0 C 47.1 105.7, 47.0 107.5, 47.0 109.0 C 47.0 110.5, 47.0 111.7, 47.3 113.0 C 47.5 114.3, 47.9 115.7, 48.5 117.0 C 49.1 118.3, 50.0 119.7, 51.0 121.0 C 52.0 122.3, 53.2 123.7, 54.5 125.0 C 55.8 126.3, 57.8 127.8, 58.5 129.0 C 59.2 130.2, 59.1 130.8, 59.0 132.0 C 58.9 133.2, 58.6 134.7, 58.0 136.0 C 57.4 137.3, 56.4 138.3, 55.5 140.0 C 54.6 141.7, 53.4 144.0, 52.5 146.0 C 51.6 148.0, 50.9 149.7, 50.0 152.0 C 49.1 154.3, 48.2 157.0, 47.3 160.0 C 46.4 163.0, 45.3 166.7, 44.5 170.0 C 43.7 173.3, 42.9 177.2, 42.3 180.0 C 41.7 182.8, 41.3 185.2, 41.0 187.0 C 40.7 188.8, 22.1 190.3, 40.5 191.0 C 58.9 191.7, 133.1 191.7, 151.5 191.0 C 169.9 190.3, 151.3 188.8, 151.0 187.0 C 150.7 185.2, 150.2 182.8, 149.5 180.0 C 148.8 177.2, 147.8 173.3, 147.0 170.0 C 146.2 166.7, 145.4 163.0, 144.5 160.0 C 143.6 157.0, 142.4 154.3, 141.5 152.0 C 140.6 149.7, 139.8 148.0, 139.0 146.0 C 138.2 144.0, 137.3 141.7, 136.5 140.0 C 135.7 138.3, 134.6 137.3, 134.0 136.0 C 133.4 134.7, 133.1 133.2, 133.0 132.0 C 132.9 130.8, 132.8 130.2, 133.5 129.0 C 134.2 127.8, 136.2 126.3, 137.5 125.0 C 138.8 123.7, 140.0 122.3, 141.0 121.0 C 142.0 119.7, 142.9 118.3, 143.5 117.0 C 144.1 115.7, 144.4 114.3, 144.7 113.0 C 144.9 111.7, 145.0 110.5, 145.0 109.0 C 145.0 107.5, 144.9 105.7, 144.7 104.0 C 144.5 102.3, 144.2 100.5, 143.7 99.0 C 143.2 97.5, 142.2 96.5, 141.5 95.0 C 140.8 93.5, 140.1 91.7, 139.5 90.0 C 138.9 88.3, 138.3 86.7, 138.0 85.0 C 137.7 83.3, 137.8 81.7, 137.7 80.0 C 137.6 78.3, 137.7 76.5, 137.5 75.0 C 137.3 73.5, 136.8 72.2, 136.5 71.0 C 136.2 69.8, 136.1 69.1, 135.5 68.0 C 134.9 66.9, 134.4 65.5, 133.0 64.5 C 131.6 63.5, 129.2 62.5, 127.0 62.0 C 124.8 61.5, 122.0 61.7, 120.0 61.8 C 118.0 61.9, 116.7 62.0, 115.0 62.5 C 113.3 63.0, 111.3 64.1, 110.0 65.0 C 108.7 65.9, 111.3 67.5, 107.0 68.0 C 102.7 68.5, 88.5 68.6, 84.0 68.0 C 79.5 67.4, 81.3 65.5, 80.0 64.5 C 78.7 63.5, 77.5 62.5, 76.0 62.0 C 74.5 61.5, 71.8 61.6, 71.0 61.5" fill="#5B886D" stroke="#4C4646" stroke-width="1.8" stroke-linejoin="round"/>
+    <!-- cream belly patch; its top edge traces the smile curve -->
+    <path d="M 60.0 112.0 C 59.6 112.5, 58.1 114.2, 57.5 115.0 C 56.9 115.8, 56.1 116.3, 56.5 117.0 C 56.9 117.7, 58.4 118.5, 60.0 119.0 C 61.6 119.5, 64.0 119.6, 66.0 119.8 C 68.0 120.0, 70.0 120.1, 72.0 120.2 C 74.0 120.3, 76.0 120.3, 78.0 120.4 C 80.0 120.5, 82.0 120.6, 84.0 120.7 C 86.0 120.8, 88.0 120.9, 90.0 121.0 C 92.0 121.1, 94.0 121.2, 96.0 121.2 C 98.0 121.2, 100.0 121.1, 102.0 121.0 C 104.0 120.9, 106.0 120.8, 108.0 120.7 C 110.0 120.6, 112.0 120.5, 114.0 120.4 C 116.0 120.3, 118.0 120.3, 120.0 120.2 C 122.0 120.1, 124.1 120.0, 126.0 119.8 C 127.9 119.6, 130.1 119.5, 131.5 119.0 C 132.9 118.5, 134.2 117.3, 134.5 116.5 C 134.8 115.7, 133.9 114.8, 133.5 114.0 C 133.1 113.2, 132.1 111.7, 132.0 112.0 C 131.9 112.3, 132.6 114.7, 133.0 116.0 C 133.4 117.3, 134.2 118.7, 134.5 120.0 C 134.8 121.3, 134.8 122.7, 134.5 124.0 C 134.2 125.3, 133.7 126.7, 133.0 128.0 C 132.3 129.3, 131.5 130.8, 130.5 132.0 C 129.5 133.2, 128.2 134.2, 127.0 135.0 C 125.8 135.8, 124.2 136.2, 123.0 137.0 C 121.8 137.8, 120.6 138.8, 120.0 139.5 C 119.4 140.2, 119.4 140.8, 119.5 141.5 C 119.6 142.2, 120.1 143.1, 120.5 144.0 C 120.9 144.9, 121.5 145.9, 122.0 147.0 C 122.5 148.1, 123.2 149.2, 123.8 150.5 C 124.4 151.8, 125.0 153.2, 125.5 155.0 C 126.0 156.8, 126.5 158.8, 127.0 161.0 C 127.5 163.2, 128.1 165.7, 128.5 168.0 C 128.9 170.3, 129.2 172.7, 129.5 175.0 C 129.8 177.3, 130.2 179.3, 130.5 182.0 C 130.8 184.7, 142.8 189.5, 131.0 191.0 C 119.2 192.5, 71.8 192.5, 60.0 191.0 C 48.2 189.5, 60.2 184.7, 60.5 182.0 C 60.8 179.3, 61.1 177.3, 61.5 175.0 C 61.9 172.7, 62.5 170.3, 63.0 168.0 C 63.5 165.7, 64.0 163.2, 64.5 161.0 C 65.0 158.8, 65.5 156.8, 66.0 155.0 C 66.5 153.2, 67.2 151.8, 67.8 150.5 C 68.4 149.2, 69.0 148.1, 69.5 147.0 C 70.0 145.9, 70.6 144.9, 71.0 144.0 C 71.4 143.1, 71.9 142.2, 72.0 141.5 C 72.1 140.8, 72.0 140.2, 71.5 139.5 C 71.0 138.8, 70.1 137.8, 69.0 137.0 C 67.9 136.2, 66.2 135.8, 65.0 135.0 C 63.8 134.2, 62.8 133.2, 62.0 132.0 C 61.2 130.8, 60.9 129.3, 60.5 128.0 C 60.1 126.7, 59.9 125.3, 59.5 124.0 C 59.1 122.7, 58.5 121.0, 58.0 120.0 C 57.5 119.0, 56.8 118.7, 56.5 118.0 C 56.2 117.3, 56.1 116.3, 56.0 116.0" fill="#F9EDD5" stroke="#4C4646" stroke-width="1.6" stroke-linejoin="round"/>
+    <!-- subtle belly shading band -->
+    <ellipse cx="96" cy="140.5" rx="15.5" ry="3.2" fill="#E3D7BE" opacity="0.95"/>
+    <!-- lower lip dash -->
+    <path d="M 92 126.2 L 100 126.2" fill="none" stroke="#4C4646" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- blush -->
+    <ellipse cx="60" cy="99.5" rx="5.5" ry="2.6" fill="#D29D86"/>
+    <ellipse cx="132" cy="99.5" rx="5.5" ry="2.6" fill="#D29D86"/>
+    <!-- left eye -->
+    <circle cx="71.9" cy="82.8" r="9.6" fill="#EFD9A5"/>
+    <circle cx="71.9" cy="82.8" r="11.6" fill="none" stroke="#F6D497" stroke-width="4.2"/>
+    <ellipse cx="71.3" cy="83.4" rx="7.0" ry="5.0" fill="#4C4646"/>
+    <circle cx="75.7" cy="80.1" r="1.6" fill="#FFFFFF"/>
+    <!-- right eye -->
+    <circle cx="120.6" cy="82.8" r="9.6" fill="#EFD9A5"/>
+    <circle cx="120.6" cy="82.8" r="11.6" fill="none" stroke="#F6D497" stroke-width="4.2"/>
+    <ellipse cx="120.1" cy="83.3" rx="7.0" ry="5.0" fill="#4C4646"/>
+    <circle cx="124.7" cy="80.1" r="1.6" fill="#FFFFFF"/>
+    <!-- bridge (thin, upper) -->
+    <path d="M 87 81.8 Q 96 80.2 105 81.8" fill="none" stroke="#F6D497" stroke-width="1.9" stroke-linecap="round"/>
+    <!-- temples (long, thin, from outer-lower lens edge angling outward-down) -->
+    <path d="M 56.3 82 L 50.3 87.5" fill="none" stroke="#F6D497" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M 135.7 82 L 141.7 87.5" fill="none" stroke="#F6D497" stroke-width="1.6" stroke-linecap="round"/>
   </g>
-
-  <!-- subtle pink blush cheeks -->
-  <ellipse cx="298" cy="530" rx="36" ry="24" fill="#EFC0AC" transform="rotate(-12 298 530)"/>
-  <ellipse cx="726" cy="530" rx="36" ry="24" fill="#EFC0AC" transform="rotate(12 726 530)"/>
-
-  <!-- eye whites visible through the glasses -->
-  <circle cx="352" cy="440" r="82" fill="#F8D798"/>
-  <circle cx="672" cy="440" r="82" fill="#F8D798"/>
-
-  <!-- pupils (slightly lower-inner) -->
-  <ellipse cx="360" cy="454" rx="38" ry="34" fill="#2B251F"/>
-  <ellipse cx="664" cy="454" rx="38" ry="34" fill="#2B251F"/>
-
-  <!-- eye glints (primary upper-outer, tiny secondary sparkle) -->
-  <ellipse cx="342" cy="432" rx="18" ry="12" fill="#FFFFFF" transform="rotate(-18 342 432)"/>
-  <ellipse cx="682" cy="432" rx="18" ry="12" fill="#FFFFFF" transform="rotate(18 682 432)"/>
-  <circle cx="372" cy="470" r="6" fill="#FFFFFF" opacity="0.9"/>
-  <circle cx="652" cy="470" r="6" fill="#FFFFFF" opacity="0.9"/>
-
-  <!-- warm gold-rimmed round glasses -->
-  <circle cx="352" cy="440" r="82" fill="none" stroke="#D9A441" stroke-width="16"/>
-  <circle cx="672" cy="440" r="82" fill="none" stroke="#D9A441" stroke-width="16"/>
-
-  <!-- straight bridge between the lenses -->
-  <path d="M 434 460 L 590 460" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
-
-  <!-- temple arms -->
-  <path d="M 268 438 L 236 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
-  <path d="M 756 438 L 788 430" fill="none" stroke="#D9A441" stroke-width="9" stroke-linecap="round"/>
-
-  <!-- gentle smile (wide, shallow, corners up) on the chin -->
-  <path d="M 406 536 Q 512 574 618 536" fill="none" stroke="#403A34" stroke-width="18" stroke-linecap="round"/>
-
-  <!-- short content line below the smile, on the belly -->
-  <path d="M 486 646 L 538 646" fill="none" stroke="#403A34" stroke-width="8" stroke-linecap="round"/>
 </svg>

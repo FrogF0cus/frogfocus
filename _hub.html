@@ -355,9 +355,9 @@
           <h3>🖥 Live Preview</h3>
           
           <div class="preview-tabs">
-            <button class="preview-tab active" onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('_hub.html', this)">_hub.html</button><button class="preview-tab " onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('diag.html', this)">diag.html</button>
+            <button class="preview-tab active" onclick="switchPreview('_hub.html', this)">_hub.html</button><button class="preview-tab " onclick="switchPreview('_portal.html', this)">_portal.html</button><button class="preview-tab " onclick="switchPreview('index.html', this)">index.html</button><button class="preview-tab " onclick="switchPreview('diag.html', this)">diag.html</button>
           </div>
-          <iframe id="preview-iframe" class="preview-frame" src="_portal.html"></iframe>
+          <iframe id="preview-iframe" class="preview-frame" src="_hub.html"></iframe>
         </div>
         
 
@@ -370,16 +370,16 @@
         <h3>📄 Pages</h3>
         <div class="file-grid">
           
+            <a href="_hub.html" class="file-card" target="_blank">
+              <span class="file-icon">📄</span>
+              <span class="file-name">_hub.html</span>
+              <span class="file-meta">58.6 KB</span>
+            </a>
+          
             <a href="_portal.html" class="file-card" target="_blank">
               <span class="file-icon">📄</span>
               <span class="file-name">_portal.html</span>
               <span class="file-meta">55.1 KB</span>
-            </a>
-          
-            <a href="_hub.html" class="file-card" target="_blank">
-              <span class="file-icon">📄</span>
-              <span class="file-name">_hub.html</span>
-              <span class="file-meta">58.1 KB</span>
             </a>
           
             <a href="index.html" class="file-card" target="_blank">
@@ -499,6 +499,30 @@
         <h3>📁 Other Files</h3>
         <div class="file-grid">
           
+            <a href="scripts/build_svg.py" class="file-card" target="_blank">
+              <span class="file-icon">📁</span>
+              <span class="file-name">scripts/build_svg.py</span>
+              <span class="file-meta">8.3 KB</span>
+            </a>
+          
+            <a href="screenshots/icon-belly-zoom.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">screenshots/icon-belly-zoom.png</span>
+              <span class="file-meta">31.2 KB</span>
+            </a>
+          
+            <a href="screenshots/icon-goldmap.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">screenshots/icon-goldmap.png</span>
+              <span class="file-meta">10.3 KB</span>
+            </a>
+          
+            <a href="screenshots/icon-falsecolor.png" class="file-card" target="_blank">
+              <span class="file-icon">🖼️</span>
+              <span class="file-name">screenshots/icon-falsecolor.png</span>
+              <span class="file-meta">10.8 KB</span>
+            </a>
+          
             <a href="uploads/frog-face.png" class="file-card" target="_blank">
               <span class="file-icon">🖼️</span>
               <span class="file-name">uploads/frog-face.png</span>
@@ -535,32 +559,8 @@
               <span class="file-meta">8.8 KB</span>
             </a>
           
-            <a href="screenshots/icon-mouth-zoom.png" class="file-card" target="_blank">
-              <span class="file-icon">🖼️</span>
-              <span class="file-name">screenshots/icon-mouth-zoom.png</span>
-              <span class="file-meta">9.5 KB</span>
-            </a>
-          
-            <a href="scripts/probe2_icon.py" class="file-card" target="_blank">
-              <span class="file-icon">📁</span>
-              <span class="file-name">scripts/probe2_icon.py</span>
-              <span class="file-meta">2.3 KB</span>
-            </a>
-          
-            <a href="scripts/fit_icon.py" class="file-card" target="_blank">
-              <span class="file-icon">📁</span>
-              <span class="file-name">scripts/fit_icon.py</span>
-              <span class="file-meta">6.4 KB</span>
-            </a>
-          
-            <a href="screenshots/icon-192-4x.png" class="file-card" target="_blank">
-              <span class="file-icon">🖼️</span>
-              <span class="file-name">screenshots/icon-192-4x.png</span>
-              <span class="file-meta">35.6 KB</span>
-            </a>
-          
         </div>
-        <p class="more-files">+124 more files</p>
+        <p class="more-files">+128 more files</p>
       </div>
     
 
@@ -603,7 +603,7 @@
         <div class="sidebar-panel">
           <h3>📊 Quick Stats</h3>
           <div class="quick-stat-grid">
-            <div class="qs-card"><div class="qs-val">153</div><div class="qs-label">Files</div></div>
+            <div class="qs-card"><div class="qs-val">157</div><div class="qs-label">Files</div></div>
             <div class="qs-card"><div class="qs-val">4</div><div class="qs-label">Pages</div></div>
             <div class="qs-card"><div class="qs-val">12</div><div class="qs-label">Code</div></div>
             <div class="qs-card"><div class="qs-val">0</div><div class="qs-label">Decisions</div></div>
@@ -615,6 +615,36 @@
         <div class="sidebar-panel" style="margin-top:1rem;">
           <h3>📁 All Files</h3>
           <ul class="all-files-list">
+            
+              <li>
+                <span>📁</span>
+                <a href="scripts/build_svg.py" target="_blank">scripts/build_svg.py</a>
+                <span class="file-size">8.3 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="screenshots/icon-belly-zoom.png" target="_blank">screenshots/icon-belly-zoom.png</a>
+                <span class="file-size">31.2 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="screenshots/icon-goldmap.png" target="_blank">screenshots/icon-goldmap.png</a>
+                <span class="file-size">10.3 KB</span>
+              </li>
+            
+              <li>
+                <span>🖼️</span>
+                <a href="screenshots/icon-falsecolor.png" target="_blank">screenshots/icon-falsecolor.png</a>
+                <span class="file-size">10.8 KB</span>
+              </li>
+            
+              <li>
+                <span>📄</span>
+                <a href="_hub.html" target="_blank">_hub.html</a>
+                <span class="file-size">58.6 KB</span>
+              </li>
             
               <li>
                 <span>📄</span>
@@ -632,12 +662,6 @@
                 <span>🖼️</span>
                 <a href="screenshots/icon-top-zoom.png" target="_blank">screenshots/icon-top-zoom.png</a>
                 <span class="file-size">18.7 KB</span>
-              </li>
-            
-              <li>
-                <span>📄</span>
-                <a href="_hub.html" target="_blank">_hub.html</a>
-                <span class="file-size">58.1 KB</span>
               </li>
             
               <li>
